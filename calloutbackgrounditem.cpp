@@ -1,0 +1,177 @@
+
+/****************************************************************************
+**
+** Copyright (C) 2007-2008 Kevin Clague. All rights reserved.
+**
+** This file may be used under the terms of the GNU General Public
+** License version 2.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of
+** this file.  Please review the following information to ensure GNU
+** General Public Licensing requirements will be met:
+** http://www.trolltech.com/products/qt/opensource.html
+**
+** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+**
+****************************************************************************/
+
+/****************************************************************************
+ *
+ * The class described in this file is a refined version of the background
+ * graphics item class that is used specifically for callouts.
+ *
+ * Please see lpub.h for an overall description of how the files in LPub
+ * make up the LPub program.
+ *
+ ***************************************************************************/
+
+#include <QtGui>
+
+#include "callout.h"
+#include "calloutbackgrounditem.h"
+#include "pointer.h"
+#include "pointeritem.h"
+#include "lpub.h"
+#include <QGraphicsView.h>
+#include "commonmenus.h"
+
+void CalloutBackgroundItem::contextMenuEvent(
+  QGraphicsSceneContextMenuEvent *event)
+{
+  QMenu menu;
+  QString co = "this Callout ";
+
+  QAction *addPointerAction = menu.addAction("Add Pointer");
+  addPointerAction->setWhatsThis("Add triangle shaped pointer from this callout to the step where it is used");
+
+  menu.addSeparator();
+
+  QString       name = "Move This Callout";  
+  QAction      *placementAction      = menu.addAction(name);
+  PlacementData placementData = callout->meta.LPub.callout.placement.value();
+  placementAction->setWhatsThis(
+    commonMenus.naturalLanguagePlacementWhatsThis(CalloutType,placementData,name));
+
+  QAction *perStepAction;
+  if (callout->meta.LPub.callout.pli.perStep.value()) {
+    perStepAction = menu.addAction("No Parts List per Step");
+  } else {
+    perStepAction = menu.addAction("Parts List per Step");
+  }
+
+  QAction *editBackgroundAction = commonMenus.backgroundMenu(menu,co);
+  QAction *editBorderAction     = commonMenus.borderMenu(menu,co);
+  QAction *marginAction         = commonMenus.marginMenu(menu,co);
+
+  QAction *unCalloutAction      = menu.addAction("Unpack Callout");
+
+  QAction *selectedAction = menu.exec(event->screenPos());
+
+  if (selectedAction == addPointerAction) {
+    Pointer *pointer = new Pointer(callout->meta.context.topOfRanges(),calloutMeta);
+    CalloutPointerItem *calloutPointer = 
+      new CalloutPointerItem(calloutRect,
+                             csiRect,&callout->meta,pointer,submodelLevel,this,view);
+    calloutPointer->defaultPointer();
+
+  } else if (selectedAction == perStepAction) {
+    changeBool(callout->meta.context.topOfRanges(),&callout->meta.LPub.callout.pli.perStep);
+
+  } else if (selectedAction == placementAction) {
+    changePlacement(parentRelativeType, relativeType,"Placement",callout->meta.context.topOfRanges(), &placement, false);
+
+  } else if (selectedAction == editBackgroundAction) {
+    changeBackground("Background",callout->meta.context.topOfRanges(), &background, false);
+
+  } else if (selectedAction == editBorderAction) {
+    changeBorder("Border",callout->meta.context.topOfRanges(), &border, false);
+
+  } else if (selectedAction == marginAction) {
+    changeMargins("Callout Margins",callout->meta.context.topOfRanges(), &margin, false);
+
+  } else if (selectedAction == unCalloutAction) {
+    removeCallout(callout->meta.context);
+  }
+}
+
+/*
+ * As the callout moves, the CSI stays in place, yet since the callout is
+ * grouped with the pointer, the pointer is moved.  
+ */
+
+void CalloutBackgroundItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
+{
+  PlacementData placementData = callout->meta.LPub.callout.placement.value();
+
+  if (isSelected()) {
+    positionChanged = false;
+    setFlag(QGraphicsItem::ItemIsMovable,true);
+    position = pos();
+  } else {
+    setFlag(QGraphicsItem::ItemIsSelectable,true);
+    setFlag(QGraphicsItem::ItemIsMovable,false);
+  }
+  QGraphicsItem::mousePressEvent(event);
+}
+
+/*
+ * When moving a callout, we want the tip of any pointers to stay still.  We
+ * need to figure out how much the callout moved, and then compensate 
+ */
+
+void CalloutBackgroundItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
+{
+  QGraphicsPixmapItem::mouseMoveEvent(event);
+  // when sliding the callout up, we get negative Y
+  // when sliding left of callout base we get negativeX?
+  if ((flags() & QGraphicsItem::ItemIsMovable) && isSelected()) {
+    QPoint delta(position.x() - pos().x() + 0.5,
+                 position.y() - pos().y() + 0.5);
+
+    if (delta.x() || delta.y()) {
+      for (int i = 0; i < callout->graphicsPointerList.size(); i++) {
+        CalloutPointerItem *pointer = callout->graphicsPointerList[i];
+        pointer->drawTip(delta);
+      }
+      positionChanged = true;
+    }
+  }
+}
+void CalloutBackgroundItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
+{
+
+  if (isSelected() && (flags() & QGraphicsItem::ItemIsMovable) && positionChanged) {
+    gui->beginMacro(QString("DraggingCallout"));
+
+    QPointF delta(position.x() - pos().x(),
+                  position.y() - pos().y());
+
+    if (delta.x() || delta.y()) {
+
+      QPoint deltaI(delta.x()+0.5,delta.y()+0.5);
+      for (int i = 0; i < callout->graphicsPointerList.size(); i++) {
+        CalloutPointerItem *pointer = callout->graphicsPointerList[i];
+        pointer->updatePointer(deltaI);
+      }
+      PlacementData placementData = placement.value();
+
+      float w = delta.x()/callout->meta.LPub.page.size.value(0);
+      float h = delta.y()/callout->meta.LPub.page.size.value(1);
+
+      if (placementData.relativeTo == CsiType) {
+        w = delta.x()/csiRect.width();
+        h = delta.y()/csiRect.height();
+      }
+  
+      placementData.offsets[0] -= w;
+      placementData.offsets[1] -= h;
+      placement.setValue(placementData);
+
+      changePlacementOffset(callout->meta.context.topOfRanges(),&placement);  
+    }
+    QGraphicsItem::mouseReleaseEvent(event);
+    gui->endMacro();
+  } else {
+    QGraphicsItem::mouseReleaseEvent(event);
+  } 
+}
