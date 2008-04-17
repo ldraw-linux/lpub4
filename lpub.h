@@ -401,7 +401,8 @@ public:
   {
     displayPageNum += offset;
   }
-  void displayPage();
+  void    displayPage();
+  void    setRenderer(QString const &);
 
   /* We need to send ourselved these, to eliminate resursion and the model
    * changing under foot */
@@ -419,6 +420,7 @@ public:
    *--------------------------------------------------------------------*/
 
   QString readLine(const Where &here);
+  bool    isSubmodel(const QString &modelName);
 
   void insertLine (const Where &here, const QString &line, QUndoCommand *parent = 0);
   void appendLine (const Where &here, const QString &line, QUndoCommand *parent = 0);

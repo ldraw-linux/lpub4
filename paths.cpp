@@ -22,12 +22,10 @@
 
 Paths paths;
 
-QString Paths::ldrawPath   = "c:/ldraw";
-QString Paths::lpubPath    = ".";
-QString Paths::ldglitePath = "c:/ldraw/apps/ldglite";
-QString Paths::ldgliteExe  = "c:/ldraw/apps/ldglite/ldglite.exe";
-QString Paths::ldviewPath  = "c:/ldraw/apps/ldview";
-QString Paths::ldviewExe   = "c:/ldraw/apps/ldview/ldview.exe";
+QString Paths::ldrawPath;
+QString Paths::lpubPath = ".";
+QString Paths::ldgliteExe;
+QString Paths::ldviewExe;
 QString Paths::pliFile;
 
 QString Paths::lpubDir   = "LPub";
@@ -45,10 +43,12 @@ void Paths::getLDrawPath(
 
   if ( ! refind) {
 
-    QDir cwd(ldrawPath);
+    if (ldrawPath != "") {
+      QDir cwd(ldrawPath);
 
-    if (cwd.exists()) {
-      return;
+      if (cwd.exists()) {
+        return;
+      }
     }
 
     ldrawPath = settings.value("LDRAWDIR").toString();
@@ -90,8 +90,12 @@ QString Paths::getLdglitePath(bool *ok, bool refind, QWidget *parent)
   QString exe = getPath(refind,
                         ldgliteExe, 
                         LDGLITEEXE, 
+#ifdef __APPLE__
+                        ".app",
+#else
                         ".exe",
-                        "Please locate program ldglite.exe", 
+#endif
+                        "Please locate program ldglite", 
                         ok, 
                         parent);
   if (*ok) {
@@ -105,12 +109,12 @@ QString Paths::getLdviewPath(bool *ok, bool refind, QWidget *parent)
   QString exe = getPath(refind,
                         ldviewExe, 
                         LDVIEWEXE, 
-#ifdef _APPLE_
+#ifdef __APPLE__
                         ".app",
 #else
                         ".exe",
 #endif
-                        "Please locate program ldview.exe", 
+                        "Please locate program ldview", 
                         ok, 
                         parent);
   if (*ok) {
@@ -127,11 +131,13 @@ QString Paths::getPliPath(bool *ok, bool refind, QWidget *parent)
   if ( ! refind) {
     QFileInfo fileInfo;
 
-    fileInfo.setFile(pliFile);
+    if (pliFile != "") {
+      fileInfo.setFile(pliFile);
 
-    if (fileInfo.exists()) {
-      *ok = true;
-      return pliFile;
+      if (fileInfo.exists()) {
+        *ok = true;
+        return pliFile;
+      }
     }
 
     /* Try settings */
@@ -202,28 +208,41 @@ QString Paths::getPath(
 
   if ( ! refind) {
 
-    fileInfo.setFile(exe);
+    app = settings.value(name).toString();
 
-    if (fileInfo.exists()) {
-      *ok = true;
-      return exe;
+    if (app == "CANCELLED") {
+      *ok = false;
+      return app;
+    }
+
+    if (exe != "") {
+
+      fileInfo.setFile(exe);
+
+      if (fileInfo.exists()) {
+        *ok = true;
+        return exe;
+      }
     }
 
     /* Try settings */
 
-    app = settings.value(name).toString();
     fileInfo.setFile(app);
 
-    if (fileInfo.exists()) {
+    if (app != "" && fileInfo.exists()) {
       *ok = true;
       return app;
     }
 
     /* Try path */
 
-    fileInfo.setFile(exe);
+    if (exe == "") {
+      app = name;
+    } else {
+      fileInfo.setFile(exe);
   
-    app = fileInfo.baseName();
+      app = fileInfo.baseName();
+    }
 
     // see if exe is already in our path
 
@@ -271,9 +290,17 @@ QString Paths::getPath(
       *ok = true;
       settings.setValue(name,selectedFile);
       return fileInfo.absoluteFilePath();
+    } else {
+      *ok = false;
+      exe.clear();
+      return exe;
     }
+  } else {
+    // The user must have hit cancel
+    // Lets mark the seetings as cancel so we know not to
+    // try this again
+    settings.setValue(name,"CANCELLLED");
+    *ok = false;
+    return "CANCELLED";
   }
-  *ok = false;
-  exe.clear();
-  return exe;
 }

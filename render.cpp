@@ -241,6 +241,7 @@ int LDView::renderCsi(
   arguments << cg;
   arguments << "-SaveAlpha=1";
   arguments << "-AutoCrop=1";
+  arguments << "-EdgeThickness=1";
   arguments << w;
   arguments << h;
   arguments << s;
@@ -297,6 +298,7 @@ int LDView::renderPli(
   arguments << cg;
   arguments << "-SaveAlpha=1";
   arguments << "-AutoCrop=1";
+  arguments << "-EdgeThickness=1";
   arguments << w;
   arguments << h;
   arguments << s;

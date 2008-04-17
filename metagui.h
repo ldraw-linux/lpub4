@@ -467,4 +467,28 @@ public slots:
   void valueChange(QString const &);
 };
 
+/***********************************************************************
+ *
+ * Renderer
+ *
+ **********************************************************************/
+
+class RendererGui : public MetaGui
+{
+  Q_OBJECT
+public:
+
+  RendererGui(QGroupBox *parent = NULL);
+  ~RendererGui() {}
+
+  virtual void apply(QString &modelName);
+
+private:
+  QComboBox *combo;
+  QString    pick;
+
+public slots:
+  void typeChange(QString const &);
+};
+
 #endif

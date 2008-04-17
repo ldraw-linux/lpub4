@@ -44,11 +44,9 @@ public:
     static QString ldrawPath;
     static void    getLDrawPath(bool refind = false, QWidget *parent=0);
 
-    static QString ldglitePath;
     static QString ldgliteExe;
     static QString getLdglitePath(bool *ok, bool refind = false, QWidget *parent=0);
 
-    static QString ldviewPath;
     static QString ldviewExe;
     static QString getLdviewPath(bool *ok, bool refind = false, QWidget *parent=0);
 

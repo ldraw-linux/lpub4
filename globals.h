@@ -15,14 +15,14 @@
 **
 ****************************************************************************/
 
-/****************************************************************************
+/***************************************************************************
+ 
+ * This header file describes the global setup dialogs used to configur
+ * global settings for page, assembly, parts lists, callouts, step groups
+ * and projects
  *
- * This header file describes the global setup dialogs used to configure
- * global settings for page, assembly, parts lists, callouts, step groups,
- * and projects.
- *
- * Please see lpub.h for an overall description of how the files in LPub
- * make up the LPub program.
+ * Please see lpub.h for an overall description of how the files in LPu
+ * make up the LPub program
  *
  ***************************************************************************/
 

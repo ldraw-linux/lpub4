@@ -26,11 +26,11 @@
 QHash<QString, QColor>  LDrawColor::name2color;
 QHash<QString, QString> LDrawColor::color2name;
 
-    /*
-     * This constructor reads in the LDraw ldconfig.ldr file and extracts
-     * the color codes, color names, and color values and puts them in
-     * the xlate (name to color translate) hash table.
-     */
+/*
+ * This constructor reads in the LDraw ldconfig.ldr file and extracts
+ * the color codes, color names, and color values and puts them in
+ * the xlate (name to color translate) hash table.
+ */
 LDrawColor::LDrawColor ()
 {
   name2color.clear();

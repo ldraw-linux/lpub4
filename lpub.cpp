@@ -421,6 +421,10 @@ QString Gui::readLine(const Where &here)
 {
   return ldrawFile.readLine(here.modelName,here.lineNumber);
 }
+bool Gui::isSubmodel(const QString &modelName)
+{
+  return ldrawFile.contains(modelName);
+}
 
 void Gui::beginMacro(QString name)
 {
@@ -694,6 +698,20 @@ void Gui::findPliFile()
  * starts up
  *
  ******************************************************************************/
+
+void Gui::setRenderer(
+  QString const &pick)
+{
+  if (pick == "LDGLite") {
+    renderer = &ldglite;
+    clearPLICache();
+    clearCSICache();
+  } else if (pick == "LDView") {
+    renderer = &ldview;
+    clearPLICache();
+    clearCSICache();
+  }
+}
 
 Gui::Gui()
 {

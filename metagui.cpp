@@ -53,6 +53,7 @@
 #include "color.h"
 
 #include "lpub.h"
+#include "paths.h"
 
 /***********************************************************************
  *
@@ -1241,5 +1242,50 @@ void ResolutionGui::apply(QString &modelName)
   if (modified) {
     MetaItem mi;
     mi.setGlobalMeta(modelName,meta);
+  }
+}
+
+/***********************************************************************
+ *
+ * Renderer
+ *
+ **********************************************************************/
+
+RendererGui::RendererGui(
+  QGroupBox     *parent)
+{
+  QHBoxLayout *layout;
+
+  layout = new QHBoxLayout(this);
+  
+  if (parent) {
+    parent->setLayout(layout);
+  } else {
+    setLayout(layout);
+  }
+
+  combo = new QComboBox(this);
+  if (Paths::ldgliteExe != "") {
+    combo->addItem("LDGLite");
+  }
+  if (Paths::ldviewExe != "") {
+    combo->addItem("LDView");
+  }
+  combo->setCurrentIndex(0);
+  connect(combo,SIGNAL(currentIndexChanged(QString const &)),
+          this, SLOT(  typeChange(         QString const &)));
+  layout->addWidget(combo);
+}
+
+void RendererGui::typeChange(QString const &type)
+{
+  pick = type;
+  modified = true;
+}
+
+void RendererGui::apply(QString & /* unused */)
+{
+  if (modified) {
+    gui->setRenderer(pick);
   }
 }
