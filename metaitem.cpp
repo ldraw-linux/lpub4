@@ -560,9 +560,33 @@ void MetaItem::convertToCallout(Meta *meta)
     }
   } while (--walk >= 0);
 
+  /* Now scan the lines following this line, to see if there is another
+   * part just like this one that needs to be added as a callout
+   * multiplier */
+
   Where calledOut = meta->submodelStack[meta->submodelStack.size() - 1];
-  Where here = calledOut+1;
-  insertMeta(here,     "0 !LPUB CALLOUT END");
+  walk = calledOut+1;
+  numLines = gui->subFileSize(walk.modelName);
+  modelName = meta->context.topOfFile().modelName;
+  for ( ; walk.lineNumber < numLines; walk++) {
+    QString line = gui->readLine(walk);
+    QStringList argv;
+    split(line,argv);
+    if (argv.size() == 2 && argv[0] == "0") {
+      if (argv[1] == "STEP" || argv[1] == "ROTSTEP") {
+        break;
+      }
+    } else if (argv.size() == 15 && argv[0] == "1") {
+      if (gui->isSubmodel(argv[14])) {
+        if (argv[14] == modelName) {
+        } else {
+          break;
+        }
+      }
+    }
+  }
+
+  insertMeta(walk,     "0 !LPUB CALLOUT END");
   insertMeta(calledOut,"0 !LPUB CALLOUT BEGIN");
   endMacro();
 }

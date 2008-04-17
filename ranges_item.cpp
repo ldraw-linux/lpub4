@@ -41,6 +41,8 @@ MultiStepRangesBackgroundItem::MultiStepRangesBackgroundItem(
   meta = _meta;
   ranges = _ranges;
   setRect(rect);
+  setPen(Qt::NoPen);
+  setBrush(Qt::NoBrush);
   setParentItem(parent);
   QString toolTip("Step Group");
   setToolTip(toolTip);
