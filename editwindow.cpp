@@ -72,6 +72,11 @@ void EditWindow::createActions()
                               "selection"));
     connect(pasteAct, SIGNAL(triggered()), _textEdit, SLOT(paste()));
 
+    redrawAct = new QAction(QIcon(":/images/redraw.png"), tr("&Redraw"), this);
+    redrawAct->setShortcut(tr("Ctrl+R"));
+    redrawAct->setStatusTip(tr("Redraw page"));
+    connect(redrawAct, SIGNAL(triggered()), this, SLOT(redraw()));
+
     cutAct->setEnabled(false);
     copyAct->setEnabled(false);
     connect(_textEdit, SIGNAL(copyAvailable(bool)),
@@ -86,6 +91,7 @@ void EditWindow::createToolBars()
     editToolBar->addAction(cutAct);
     editToolBar->addAction(copyAct);
     editToolBar->addAction(pasteAct);
+    editToolBar->addAction(redrawAct);
 }
 
 void EditWindow::contentsChange(
@@ -131,4 +137,9 @@ void EditWindow::displayFile(
   connect(_textEdit->document(), SIGNAL(contentsChange(int,int,int)),
           this,                  SLOT(  contentsChange(int,int,int)));
 
+}
+
+void EditWindow::redraw()
+{
+  redrawSig();
 }

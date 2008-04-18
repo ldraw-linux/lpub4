@@ -61,12 +61,15 @@ private:
     QAction  *cutAct;
     QAction  *copyAct;
     QAction  *pasteAct;
+    QAction  *redrawAct;
 
 signals:
     void contentsChange(int position, int charsRemoved, const QString &charsAdded);
+    void redrawSig();
 
 private slots:
     void contentsChange(int position, int charsRemoved, int charsAdded);
+    void redraw();
 
 public slots:
     void displayFile(LDrawFile *, const QString &fileName);
