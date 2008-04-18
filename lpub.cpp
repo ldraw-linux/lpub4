@@ -60,7 +60,7 @@ void Gui::open()
       this,
       tr("Open LDraw File"),
       Paths::ldrawPath + "\\MODELS",
-      tr("LDraw Files (*.DAT;*.LDR;*.MPD;*.dat;*.ldr;*.mpd"));
+      tr("LDraw Files (*.DAT *.LDR *.MPD *.dat *.ldr *.mpd"));
 
     if (!fileName.isEmpty()) {
         openFile(fileName);
