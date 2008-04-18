@@ -276,7 +276,11 @@ QString Paths::getPath(
   if (suffix == ".exe" || suffix == ".app") {
     dialog.setFilter("Program (" + app + suffix + ")");
   } else {
-    dialog.setFilter("LDraw File (*.ldr *.mpd *.dat *.LDR *.MPD *.DAT)");
+	QStringList filters;
+	filters << 
+	filters << QObject::tr("All Files (*.*)");
+	dialog.setFilter(QObject::tr("LDraw File (*.ldr *.mpd *.dat *.LDR *.MPD "
+		"*.DAT)\nAll Files (*.*)"));
   }
 
   if (dialog.exec()) {
