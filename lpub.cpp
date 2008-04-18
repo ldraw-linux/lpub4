@@ -222,6 +222,11 @@ void Gui::firstPage()
   displayPage();
 }
 
+void Gui::redrawPage()
+{
+  displayPage();
+}
+
 void Gui::lastPage()
 {
   countPages();
@@ -759,6 +764,9 @@ Gui::Gui()
     connect(editWindow, SIGNAL(contentsChange(int,int,const QString &)),
             this,       SLOT(  contentsChange(int,int,const QString &)));
 
+    connect(editWindow, SIGNAL(redrawSig()),
+            this,       SLOT(  redrawPage()));
+
     connect(undoStack,  SIGNAL(canRedoChanged(bool)),
             this,       SLOT(  canRedoChanged(bool)));
     connect(undoStack,  SIGNAL(canUndoChanged(bool)),
@@ -827,7 +835,7 @@ void Gui::createActions()
     saveAsAct->setStatusTip(tr("Save the document under a new name"));
     connect(saveAsAct, SIGNAL(triggered()), this, SLOT(saveAs()));
 
-    printToFileAct = new QAction(QIcon(":/images/print.png"), tr("Print to &File"), this);
+    printToFileAct = new QAction(QIcon(":/images/pdf_logo.png"), tr("Print to &File"), this);
     printToFileAct->setShortcut(tr("Ctrl+F"));
     printToFileAct->setStatusTip(tr("Print your document to a file"));
     connect(printToFileAct, SIGNAL(triggered()), this, SLOT(printToFile()));
@@ -847,9 +855,15 @@ void Gui::createActions()
     // undo/redo
 
     undoAct = new QAction(QIcon(":/images/editundo.png"), tr("Undo"), this);
+    undoAct->setShortcut(tr("Ctrl+Z"));
     undoAct->setStatusTip(tr("Undo last change"));
     connect(undoAct, SIGNAL(triggered()), this, SLOT(undo()));
     redoAct = new QAction(QIcon(":/images/editredo.png"), tr("Redo"), this);
+#ifdef __APPLE__
+    redoAct->setShortcut(tr("Ctrl+Shift+Z"));
+#else
+    redoAct->setShortcut(tr("Ctrl+Y"));
+#endif
     redoAct->setStatusTip(tr("Redo last change"));
     connect(redoAct, SIGNAL(triggered()), this, SLOT(redo()));
 
@@ -873,12 +887,12 @@ void Gui::createActions()
     // zoomIn,zoomOut
 
     zoomInAct = new QAction(QIcon(":/images/zoomin.png"), tr("&Zoom In"), this);
-    zoomInAct->setShortcut(tr("Ctrl+Z"));
+    zoomInAct->setShortcut(tr("Ctrl++"));
     zoomInAct->setStatusTip(tr("Zoom in"));
     connect(zoomInAct, SIGNAL(triggered()), this, SLOT(zoomIn()));
 
     zoomOutAct = new QAction(QIcon(":/images/zoomout.png"),tr("Zoom &Out"),this);
-    zoomOutAct->setShortcut(tr("Ctrl+O"));
+    zoomOutAct->setShortcut(tr("Ctrl+-"));
     zoomOutAct->setStatusTip(tr("Zoom out"));
     connect(zoomOutAct, SIGNAL(triggered()), this, SLOT(zoomOut()));
 
