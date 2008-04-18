@@ -32,7 +32,7 @@
 #include <QAction>
 #include <QMenu>
 #include <QPainter>
-#include <QFile.h>
+#include <QFile>
 #include "color.h"
 
 void BackgroundItem::setBackground(

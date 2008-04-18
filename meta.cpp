@@ -1556,7 +1556,7 @@ void AssemMeta::init(BranchMeta *parent, QString name)
 
 PliMeta::PliMeta()
 {
-  placement.setValue(TopLeft,PageType,Inside);
+  placement.setValue(Right,Top,PageNumberType,Outside);
   ConstrainData constraint;
   constraint.type = PliConstrainArea;
   constraint.constraint = 0;
@@ -1804,7 +1804,7 @@ void ResolutionMeta::doc(QTextStream &out, QString preamble)
 
 LPubMeta::LPubMeta()
 {
-  stepNumber.placement.setValue(Right,Top,PartsListType,Outside);
+  stepNumber.placement.setValue(TopLeft,PageType,Inside);
   stepNumber.color.setValue("black");
   // stepNumber - default 
 }

@@ -346,6 +346,7 @@
 #include <QUndoStack>
 #include <QDateTime>
 #include <QFileSystemWatcher>
+#include <QComboBox>
 
 #include "color.h"
 #include "partslist.h"

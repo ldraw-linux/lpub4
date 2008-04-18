@@ -32,7 +32,7 @@
 #include "pointer.h"
 #include "pointeritem.h"
 #include "lpub.h"
-#include <QGraphicsView.h>
+#include <QGraphicsView>
 #include "commonmenus.h"
 
 void CalloutBackgroundItem::contextMenuEvent(
