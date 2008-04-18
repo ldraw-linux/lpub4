@@ -241,7 +241,9 @@ int LDView::renderCsi(
   arguments << cg;
   arguments << "-SaveAlpha=1";
   arguments << "-AutoCrop=1";
-  arguments << "-EdgeThickness=1";
+  arguments << "-ShowHighlightLines=1";
+  arguments << "-ConditionalHighlights=1";
+  arguments << "-SaveZoomToFit=0";
   arguments << w;
   arguments << h;
   arguments << s;
@@ -249,7 +251,9 @@ int LDView::renderCsi(
   QStringList list;
   list = meta.LPub.assem.ldviewParms.value().split("\\s+");
   for (int i = 0; i < list.size(); i++) {
-    arguments << list[i];
+    if (list[0] != "" && list[0] != " ") {
+      arguments << list[i];
+    }
   }
   arguments << ldrName;
   
@@ -298,7 +302,9 @@ int LDView::renderPli(
   arguments << cg;
   arguments << "-SaveAlpha=1";
   arguments << "-AutoCrop=1";
-  arguments << "-EdgeThickness=1";
+  arguments << "-ShowHighlightLines=1";
+  arguments << "-ConditionalHighlights=1";
+  arguments << "-SaveZoomToFit=0";
   arguments << w;
   arguments << h;
   arguments << s;
