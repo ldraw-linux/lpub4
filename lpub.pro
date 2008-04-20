@@ -7,6 +7,13 @@ TARGET =
 DEPENDPATH += .
 INCLUDEPATH += .
 
+macx {
+  ICON = LPub.icns
+  MOC_DIR = ./moc
+  OBJECTS_DIR = ./objs
+  RCC_DIR = ./rcc
+}
+
 # Input
 HEADERS += backgrounddialog.h \
            backgrounditem.h \
