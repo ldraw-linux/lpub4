@@ -244,6 +244,9 @@ int LDView::renderCsi(
   arguments << "-ShowHighlightLines=1";
   arguments << "-ConditionalHighlights=1";
   arguments << "-SaveZoomToFit=0";
+  arguments << "-SubduedLighting=1";
+  arguments << "-UseSpecular=0";
+  arguments << "-LightVector=-1,1,1";
   arguments << w;
   arguments << h;
   arguments << s;
@@ -305,6 +308,9 @@ int LDView::renderPli(
   arguments << "-ShowHighlightLines=1";
   arguments << "-ConditionalHighlights=1";
   arguments << "-SaveZoomToFit=0";
+  arguments << "-SubduedLighting=1";
+  arguments << "-UseSpecular=0";
+  arguments << "-LightVector=-1,1,1";
   arguments << w;
   arguments << h;
   arguments << s;
