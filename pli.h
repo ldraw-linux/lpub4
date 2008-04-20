@@ -286,6 +286,9 @@ public:
     placement = meta.LPub.pli.placement;
     setPixmap(*pixmap);
     setParentItem(parent);
+    if (parentRelativeType != SingleStepType) {
+      setFlag(QGraphicsItem::ItemIsMovable,false);
+    }
   }
   void setPos(float x, float y)
   {
