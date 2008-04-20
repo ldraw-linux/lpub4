@@ -63,6 +63,11 @@ CsiItem::CsiItem(
   submodelLevel = _submodelLevel;
 
   setToolTip(step->path());
+
+  setFlag(QGraphicsItem::ItemIsSelectable,true);
+  if (parentRelativeType == SingleStepType) {
+    setFlag(QGraphicsItem::ItemIsMovable,true);
+  }
 }
 void CsiItem::setFlag(GraphicsItemFlag flag, bool value)
 {
@@ -114,50 +119,58 @@ void CsiItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
     if ((boundary & StartOfRange) && ! (boundary & StartOfRanges)) {
       if (allocType == Vertical) {
         movePrevAction = menu.addAction("Move Step Left One Column");
-        movePrevAction->setWhatsThis("Move Step Left One Column:\n"
-                                     "  Remove this step from its current column,\n"
-                                     "  and put it in column to the left");
+        movePrevAction->setWhatsThis(
+          "Move Step Left One Column:\n"
+          "  Remove this step from its current column,\n"
+          "  and put it in column to the left");
       } else {
         movePrevAction = menu.addAction("Move Step Up One Row");
-        movePrevAction->setWhatsThis("Move Step Up One Row:\n"
-                                     "  Remove this step from its current row,\n"
-                                     "  and put in the row above");
+        movePrevAction->setWhatsThis(
+          "Move Step Up One Row:\n"
+          "  Remove this step from its current row,\n"
+          "  and put in the row above");
       }
     }
 
     if ((boundary & EndOfRange) && ! (boundary & EndOfRanges)) {
       if (allocType == Vertical) {
         moveNextAction = menu.addAction("Move Step Right One Column");
-        moveNextAction->setWhatsThis("Move Step Right One Column:\n"
-                                     "  Remove this step from its current column,\n"
-                                     "  and put it in the column to the right");
+        moveNextAction->setWhatsThis(
+          "Move Step Right One Column:\n"
+          "  Remove this step from its current column,\n"
+          "  and put it in the column to the right");
       } else {
         moveNextAction = menu.addAction("Move Step Down One Row");
-        moveNextAction->setWhatsThis("Move Step Down One Row:\n"
-                                     "  Remove this step from its current row,\n"
-                                     "  and put it in the row below");
+        moveNextAction->setWhatsThis(
+          "Move Step Down One Row:\n"
+          "  Remove this step from its current row,\n"
+          "  and put it in the row below");
       }
     }
     if ( ! (boundary & EndOfRange) && ! (boundary & EndOfRanges)) {
       addDividerAction = menu.addAction("Add Divider After Step");
       if (allocType == Vertical) {
-        addDividerAction->setWhatsThis("Add Divider After Step:\n"
-                                       "  Put the step(s) after this into a new column");
+        addDividerAction->setWhatsThis(
+          "Add Divider After Step:\n"
+          "  Put the step(s) after this into a new column");
       } else {
-        addDividerAction->setWhatsThis("Add Divider After Step:\n"
-                                       "  Put the step(s) after this into a new row");
+        addDividerAction->setWhatsThis(
+          "Add Divider After Step:\n"
+          "  Put the step(s) after this into a new row");
       } 
     }
     if (allocType == Vertical) {
       allocAction = menu.addAction("Display as Rows");
-      allocAction->setWhatsThis("Display as Rows:\n"
-                                "  Change this whole set of steps from columns of steps\n"
-                                "  to rows of steps");
+      allocAction->setWhatsThis(
+        "Display as Rows:\n"
+        "  Change this whole set of steps from columns of steps\n"
+        "  to rows of steps");
     } else {
       allocAction = menu.addAction("Display as Columns");
-      allocAction->setWhatsThis("Display as Columns:\n"
-                                "  Change this whole set of steps from rows of steps\n"
-                                "  to columns of steps");
+      allocAction->setWhatsThis(
+        "Display as Columns:\n"
+        "  Change this whole set of steps from rows of steps\n"
+        "  to columns of steps");
     }
   }
 
@@ -165,46 +178,47 @@ void CsiItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 
   if (parentRelativeType == SingleStepType) {
     placementAction = menu.addAction("Move This Step");
-    placementAction->setWhatsThis(   "Move This Step:\n"
-                                     "  Move this assembly step image using a dialog (window)\n"
-                                     "  with buttons.  You can also move this step image around\n"
-                                     "  by clicking and dragging it using the mouse.");
+    placementAction->setWhatsThis(   
+      "Move This Step:\n"
+      "  Move this assembly step image using a dialog (window)\n"
+      "  with buttons.  You can also move this step image around\n"
+      "  by clicking and dragging it using the mouse.");
   }
 
   QAction *scaleAction = menu.addAction("Change Size");
   scaleAction->setWhatsThis("Change Size:\n"
-                            "  You can change the size of this assembly image using the scale\n"
-                            "  dialog (window).  You can make the render window larger, which\n"
-                            "  makes this assembly image larger, and the final image has more\n"
-                            "  pixels (e.g. higher resolution.  You can make the render window\n"
-                            "  smaller");
+    "  You can change the size of this assembly image using the scale\n"
+    "  dialog (window).  You can make the render window larger, which\n"
+    "  makes this assembly image larger, and the final image has more\n"
+    "  pixels (e.g. higher resolution.  You can make the render window\n"
+    "  smaller");
        
   QAction *marginsAction = menu.addAction("Change Assembly Margins");
 
   switch (parentRelativeType) {
     case SingleStepType:
       marginsAction->setWhatsThis("Change Assembly Margins:\n"
-                                  "  Margins are the empty space around this assembly picture.\n"
-                                  "  You can change the margins if things are too close together,\n"
-                                  "  or too far apart. ");
+        "  Margins are the empty space around this assembly picture.\n"
+        "  You can change the margins if things are too close together,\n"
+        "  or too far apart. ");
     break;
     case StepGroupType:
       marginsAction->setWhatsThis("Change Assembly Margins:\n"
-                                  "  Margins are the empty space around this assembly picture.\n"
-                                  "  You can change the margins if things are too close together,\n"
-                                  "  or too far apart. You can change the margins around the\n"
-                                  "  whole group of steps, by clicking the menu button with your\n"
-                                  "  cursor near this assembly image, and using that\n"
-                                  "  \"Change Step Group Margins\" menu");
+        "  Margins are the empty space around this assembly picture.\n"
+        "  You can change the margins if things are too close together,\n"
+        "  or too far apart. You can change the margins around the\n"
+        "  whole group of steps, by clicking the menu button with your\n"
+        "  cursor near this assembly image, and using that\n"
+        "  \"Change Step Group Margins\" menu");
     break;
     case CalloutType:
       marginsAction->setWhatsThis("Change Assembly Margins:\n"
-                                  "  Margins are the empty space around this assembly picture.\n"
-                                  "  You can change the margins if things are too close together,\n"
-                                  "  or too far apart. You can change the margins around callout\n"
-                                  "  this step is in, by putting your cursor on the background\n"
-                                  "  of the callout, clicking the menu button, and using that\n"
-                                  "  \"Change Callout Margins\" menu");
+        "  Margins are the empty space around this assembly picture.\n"
+        "  You can change the margins if things are too close together,\n"
+        "  or too far apart. You can change the margins around callout\n"
+        "  this step is in, by putting your cursor on the background\n"
+        "  of the callout, clicking the menu button, and using that\n"
+        "  \"Change Callout Margins\" menu");
     break;
     default:
     break;
@@ -296,14 +310,8 @@ void CsiItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
   QGraphicsItem::mousePressEvent(event);
   if (parentRelativeType == SingleStepType) {
-    if (isSelected()) {
-      positionChanged = false;
-      setFlag(QGraphicsItem::ItemIsMovable,true);
-      position = pos();
-    } else {
-      setFlag(QGraphicsItem::ItemIsSelectable,true);
-      setFlag(QGraphicsItem::ItemIsMovable,false);
-    }
+    positionChanged = false;
+    position = pos();
   }
 }
 

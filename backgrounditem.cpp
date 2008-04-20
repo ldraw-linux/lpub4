@@ -147,6 +147,8 @@ void BackgroundItem::setBackground(
     painter.drawRect(prect);
   }
   setToolTip(toolTip);
+  setFlag(QGraphicsItem::ItemIsSelectable,true);
+  setFlag(QGraphicsItem::ItemIsMovable,true);
 }
 
 void PlacementBackgroundItem::setBackground(
@@ -177,15 +179,9 @@ void PlacementBackgroundItem::setBackground(
 
 void PlacementBackgroundItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
-  if (isSelected()) {
-    positionChanged = false;
-    setFlag(QGraphicsItem::ItemIsMovable,true);
-  } else {
-    setFlag(QGraphicsItem::ItemIsSelectable,true);
-    setFlag(QGraphicsItem::ItemIsMovable,false);
-    position = pos();
-  }
   QGraphicsItem::mousePressEvent(event);
+  positionChanged = false;
+  position = pos();
 }
 
 void PlacementBackgroundItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)

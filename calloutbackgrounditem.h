@@ -57,36 +57,7 @@ public:
     int            submodelLevel,
     QString        _path,
     QGraphicsItem *parent,
-    QGraphicsView *_view)
-  {
-    callout     = _callout;
-    view        = _view;
-    calloutRect = _calloutRect;
-    csiRect     = _csiRect;
-
-    QPixmap *pixmap = new QPixmap(_calloutRect.width(),_calloutRect.height());
-    QString toolTip(_path);
-    setBackground(pixmap,
-                  CalloutType,
-                  parentRelativeType,
-                  meta->LPub.callout.placement,
-                  meta->LPub.callout.background,
-                  meta->LPub.callout.border,
-                  meta->LPub.callout.margin,
-                  meta->LPub.callout.subModelColor,
-                  submodelLevel,
-                  toolTip);
-    setPixmap(*pixmap);
-    delete pixmap;
-    setParentItem(parent);
-
-    calloutMeta = meta->LPub.callout;
-    perStep = &calloutMeta.pli.perStep;
-    alloc   = &calloutMeta.alloc;
-    page    = &meta->LPub.page;
-
-    setZValue(98);
-  }
+    QGraphicsView *_view);
 
   void setPos(float x, float y)
   {

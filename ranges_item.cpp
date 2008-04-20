@@ -46,19 +46,15 @@ MultiStepRangesBackgroundItem::MultiStepRangesBackgroundItem(
   setParentItem(parent);
   QString toolTip("Step Group");
   setToolTip(toolTip);
+  setFlag(QGraphicsItem::ItemIsSelectable,true);
+  setFlag(QGraphicsItem::ItemIsMovable,true);
 }
 
 void MultiStepRangesBackgroundItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
-  if (isSelected()) {
-    positionChanged = false;
-    setFlag(QGraphicsItem::ItemIsMovable,true);
-    position = pos();
-  } else {
-    setFlag(QGraphicsItem::ItemIsSelectable,true);
-    setFlag(QGraphicsItem::ItemIsMovable,false);
-  }
   QGraphicsItem::mousePressEvent(event);
+  positionChanged = false;
+  position = pos();
 }
 
 void MultiStepRangesBackgroundItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
