@@ -112,16 +112,23 @@ int LDGLite::renderCsi(
   QStringList list;
   list = meta.LPub.assem.ldgliteParms.value().split("\\s+");
   for (int i = 0; i < list.size(); i++) {
-    arguments << list[i];
+	if (list[i] != "" && list[i] != " ") {
+      arguments << list[i];
+	}
   }
+
   arguments << mf;
   arguments << ldrName;
   
   QProcess    ldglite;
-  ldglite.setEnvironment(QProcess::systemEnvironment());
+  QStringList env = QProcess::systemEnvironment();
+  env << "LDRAWDIR=" + Paths::ldrawPath;
+  ldglite.setEnvironment(env);
   ldglite.setWorkingDirectory(QDir::currentPath()+"/"+Paths::tmpDir);
+  ldglite.setStandardErrorFile(QDir::currentPath() + "/stderr");
+  ldglite.setStandardOutputFile(QDir::currentPath() + "/stdout");
   ldglite.start(Paths::ldgliteExe,arguments);
-  if (ldglite.waitForFinished()) {
+  if ( ! ldglite.waitForFinished()) {
     if (ldglite.exitCode() != 0) {
       QByteArray status = ldglite.readAll();
       QString str;
@@ -174,18 +181,22 @@ int LDGLite::renderPli(
   QStringList list;
   list = meta->LPub.pli.ldgliteParms.value().split("\\s+");
   for (int i = 0; i < list.size(); i++) {
-    arguments << list[i];
+	if (list[i] != "" && list[i] != " ") {
+      arguments << list[i];
+	}
   }
   arguments << mf;
   arguments << ldrName;
-
-  QString LDGLiteCommand = arguments.join(" ");
   
   QProcess    ldglite;
-  ldglite.setEnvironment(QProcess::systemEnvironment());
+  QStringList env = QProcess::systemEnvironment();
+  env << "LDRAWDIR=" + Paths::ldrawPath;
+  ldglite.setEnvironment(env);  
   ldglite.setWorkingDirectory(QDir::currentPath());
+  ldglite.setStandardErrorFile(QDir::currentPath() + "/stderr");
+  ldglite.setStandardOutputFile(QDir::currentPath() + "/stdout");
   ldglite.start(Paths::ldgliteExe,arguments);
-  if (ldglite.waitForFinished()) {
+  if (! ldglite.waitForFinished()) {
     if (ldglite.exitCode()) {
       QByteArray status = ldglite.readAll();
       QString str;
@@ -246,7 +257,7 @@ int LDView::renderCsi(
   arguments << "-SaveZoomToFit=0";
   arguments << "-SubduedLighting=1";
   arguments << "-UseSpecular=0";
-  arguments << "-LightVector=-1,1,1";
+  arguments << "-LightVector=0,1,1";
   arguments << w;
   arguments << h;
   arguments << s;
@@ -254,7 +265,7 @@ int LDView::renderCsi(
   QStringList list;
   list = meta.LPub.assem.ldviewParms.value().split("\\s+");
   for (int i = 0; i < list.size(); i++) {
-    if (list[0] != "" && list[0] != " ") {
+    if (list[i] != "" && list[i] != " ") {
       arguments << list[i];
     }
   }
@@ -265,8 +276,8 @@ int LDView::renderCsi(
   ldview.setWorkingDirectory(QDir::currentPath()+"/"+Paths::tmpDir);
   ldview.start(Paths::ldviewExe,arguments);
 
-  if (ldview.waitForFinished()) {
-    if (ldview.exitCode() != 0) {
+  if ( ! ldview.waitForFinished()) {
+    if (ldview.exitCode() != 0 || 1) {
       QByteArray status = ldview.readAll();
       QString str;
       str.append(status);
@@ -310,7 +321,7 @@ int LDView::renderPli(
   arguments << "-SaveZoomToFit=0";
   arguments << "-SubduedLighting=1";
   arguments << "-UseSpecular=0";
-  arguments << "-LightVector=-1,1,1";
+  arguments << "-LightVector=0,1,1";
   arguments << w;
   arguments << h;
   arguments << s;
@@ -318,7 +329,7 @@ int LDView::renderPli(
   QStringList list;
   list = meta->LPub.pli.ldviewParms.value().split("\\s+");
   for (int i = 0; i < list.size(); i++) {
-    if (list[0] != "" && list[0] != " ") {
+    if (list[i] != "" && list[i] != " ") {
       arguments << list[i];
     }
   }
@@ -328,7 +339,7 @@ int LDView::renderPli(
   ldview.setEnvironment(QProcess::systemEnvironment());
   ldview.setWorkingDirectory(QDir::currentPath());
   ldview.start(Paths::ldviewExe,arguments);
-  if (ldview.waitForFinished()) {
+  if ( ! ldview.waitForFinished()) {
     if (ldview.exitCode() != 0) {
       QByteArray status = ldview.readAll();
       QString str;
