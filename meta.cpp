@@ -1539,7 +1539,7 @@ AssemMeta::AssemMeta()
   modelSize.setRange(1.0,10000.0);
   modelSize.setFormats(7,1,"99999.9");
   modelSize.setValue(12.0);
-  ldgliteParms.setValue("-fh -w1 -q");
+  ldgliteParms.setValue("-fh -w1");
   ldviewParms.setValue("");
 }
 void AssemMeta::init(BranchMeta *parent, QString name)
@@ -1556,7 +1556,7 @@ void AssemMeta::init(BranchMeta *parent, QString name)
 
 PliMeta::PliMeta()
 {
-  placement.setValue(Right,Top,PageNumberType,Outside);
+  placement.setValue(Right,Top,StepNumberType,Outside);
   ConstrainData constraint;
   constraint.type = PliConstrainArea;
   constraint.constraint = 0;
@@ -1580,7 +1580,7 @@ PliMeta::PliMeta()
   angle.setRange(-360.0,360.0);
   angle.setFormats(6,1,"#999.9");
   show.setValue(true);
-  ldgliteParms.setValue("-fh -w1 -q");
+  ldgliteParms.setValue("-fh -w1");
   ldviewParms.setValue("");
   includeSubs.setValue(false);
   subModelColor.setValue("0xffffff");
