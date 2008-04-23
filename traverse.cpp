@@ -284,8 +284,6 @@ int Gui::drawPage(
 
       /* since we have a part usage, we have a valid step */
 
-      // QMessageBox::warning(this,"LPub",line);
-
       if (step == NULL) {
         if (range == NULL) {
           if (calledOut) {
