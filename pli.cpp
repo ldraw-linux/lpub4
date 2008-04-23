@@ -67,10 +67,6 @@ float PliPart::maxMargin()
 
 void Pli::clear()
 {
-  QString key;
-  foreach(key, parts.keys()) {
-    delete parts[key];
-  }
   parts.clear();
 }
 

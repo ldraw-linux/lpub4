@@ -280,7 +280,7 @@ int Gui::drawPage(
       QString color = tokens[1];
       QString type  = tokens[tokens.size()-1];
 
-	    partsAdded = true;
+      partsAdded = true;
 
       /* since we have a part usage, we have a valid step */
 
@@ -822,10 +822,10 @@ int Gui::drawPage(
             }
           }
           ranges->meta.pop();
-		      if (partsAdded) {
+          if (partsAdded) {
             stepNum++;
-		      }
-		      partsAdded = false;
+          }
+          partsAdded = false;
           step = NULL;
         break;
         case RangeErrorRc:
@@ -856,6 +856,7 @@ int Gui::drawPage(
                             .arg(line));
       return InvalidLDrawLineRc;
     }
+
   } while (gprc != EndOfFileRc);
 
   if (multiStep) {

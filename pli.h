@@ -174,6 +174,7 @@ class Pli : public Placement {
     void unite(Pli &pli)
     {
       QString key;
+      int foo = pli.parts.size();
       foreach(key,pli.parts.keys()) {
         PliPart *part = pli.parts[key];
         pli.parts.remove(key);
@@ -199,10 +200,8 @@ class Pli : public Placement {
       QString key;
       foreach(key,from.parts.keys()) {
         PliPart *part = from.parts[key];
-        from.parts.remove(key);
         parts.insert(key,part);
       }
-      from.parts.clear();
       placement = from.placement;
       margin    = from.margin;
       bom       = from.bom;
