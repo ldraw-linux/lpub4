@@ -95,6 +95,19 @@ void Pli::append(
   parts[key]->instances.append(here);
 }
 
+void Pli::unite(Pli &pli)
+{
+  QString key;
+  foreach(key,pli.parts.keys()) {
+    if (parts.contains(key)) {
+      parts[key]->instances += pli.parts[key]->instances;
+    } else {
+      PliPart *part = new PliPart(*pli.parts[key]);
+      parts.insert(key,part);
+    }
+  }
+}
+
 QHash<int, QString>     annotationString;
 QList<QString>          titles;
 

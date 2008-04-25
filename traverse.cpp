@@ -365,7 +365,6 @@ int Gui::drawPage(
 
         if (ranges->meta.LPub.pli.show.value() && ! pliIgnore && ! partIgnore && ! synthBegin) {
           pli.unite(callout->pli);
-          callout->pli.clear();
         }
 
         /* remind user what file we're working on */
@@ -681,6 +680,7 @@ int Gui::drawPage(
           if ( ! callout) {
             parseError("CALLOUT END without a CALLOUT BEGIN",current);
           } else {
+            callout->pli.clear();
             callout->placement = callout->meta.LPub.callout.placement;
             callout->meta.context.setBottomOfRanges(current);
             callout = NULL;

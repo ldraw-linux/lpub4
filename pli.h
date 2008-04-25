@@ -171,17 +171,7 @@ class Pli : public Placement {
 
     void clear();
 
-    void unite(Pli &pli)
-    {
-      QString key;
-      int foo = pli.parts.size();
-      foreach(key,pli.parts.keys()) {
-        PliPart *part = pli.parts[key];
-        pli.parts.remove(key);
-        parts.insert(key,part);
-      }
-      pli.clear();
-    }
+    void unite(Pli &pli);
 
 	int  placeSort(QList<QString> &);
     int  placePli(QList<QString> &, int,int,bool,bool,int&,int&,int&);
