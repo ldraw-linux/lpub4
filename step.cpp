@@ -996,11 +996,22 @@ void Step::addGraphicsItems(
   if (stepNumber.number > 0) {
     StepNumberItem *sn; 
     if (calledOut) {
-      sn = new StepNumberItem(parentRelativeType,meta->context.topOfRanges(),meta,meta->LPub.callout.stepNum,
-                              "%d", stepNumber.number,parent);
+      sn = new StepNumberItem(parentRelativeType,
+                              meta->context.topOfRanges(),
+                              meta->context.bottomOfRanges(),
+                              meta,meta->LPub.callout.stepNum,
+                              "%d", 
+                              stepNumber.number,
+                              parent);
     } else {
-      sn = new StepNumberItem(parentRelativeType,meta->context.topOfRanges(),meta,meta->LPub.multiStep.stepNum,
-                              "%d", stepNumber.number,parent);
+      sn = new StepNumberItem(parentRelativeType,
+                              meta->context.topOfRanges(),
+                              meta->context.bottomOfRanges(),
+                              meta,
+                              meta->LPub.multiStep.stepNum,
+                              "%d", 
+                              stepNumber.number,
+                              parent);
     }
     sn->setPos(offsetX + stepNumber.offset[XX],
                offsetY + stepNumber.offset[YY]);

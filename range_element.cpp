@@ -38,6 +38,11 @@ const Where &AbstractRangeElement::topOfRanges()
   return parent->topOfRanges();
 }
 
+const Where &AbstractRangeElement::bottomOfRanges()
+{
+  return parent->bottomOfRanges();
+}
+
 QString AbstractRangeElement::path()
 {
   return parent->path();

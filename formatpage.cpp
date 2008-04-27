@@ -192,6 +192,7 @@ int Gui::addGraphicsPageItems(
             StepNumberItem *stepNumber = 
               new StepNumberItem(ranges->relativeType,
                                  step->topOfRanges(),
+                                 step->bottomOfRanges(),
                                 &ranges->meta, 
                                  ranges->meta.LPub.stepNumber, 
                                  "%d", 

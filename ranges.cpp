@@ -98,6 +98,10 @@ const Where &Ranges::topOfRanges()
 {
   return meta.context.topOfRanges();
 }
+const Where &Ranges::bottomOfRanges()
+{
+  return meta.context.bottomOfRanges();
+}
 /*********************************************
  *
  * Ranges function

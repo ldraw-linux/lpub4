@@ -82,7 +82,8 @@ public:
   void changePlacement( PlacementType parentType,
                         PlacementType placedType, 
                         QString, 
-                        const Where &where, 
+                        const Where &top,
+                        const Where &bottom, 
                         PlacementMeta *, 
                         bool checkLocal = true);
 
@@ -90,10 +91,10 @@ public:
   void changeColor(              const Where &, StringMeta  *,   bool checkLocal = true);
   void changeBackground(QString, const Where &, BackgroundMeta*, bool checkLocal = true);
   void changeBorder(    QString, const Where &, BorderMeta  *,   bool checkLocal = true);
-  void changeAlloc(              const Where &, AllocMeta   &,   bool checkLocal = false);
+  void changeAlloc(              const Where &, const Where &, AllocMeta   &);
   void changeViewAngle( QString, const Where &, FloatPairMeta *, bool checkLocal = true);
   void changeConstraint(QString, const Where &, ConstrainMeta *, bool checkLocal = true);
-  void changeBool(               const Where &, BoolMeta    *,   bool checkLocal = false);
+  void changeBool(               const Where &, const Where &, BoolMeta    *, bool allowLocal = false);
   void changeDivider(   QString, const Where &, SepMeta     *,   bool checkLocal = true);
   void changeMargins(   QString, const Where &, MarginsMeta *,   bool checkLocal = true);
 

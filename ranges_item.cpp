@@ -145,9 +145,17 @@ void MultiStepRangeBackgroundItem::contextMenuEvent(
   QAction *selectedAction = menu.exec(event->screenPos());
 
   if (selectedAction == placementAction) {
-    changePlacement(PageType,relativeType,"Step Group Placement",meta->context.topOfRanges(),&meta->LPub.multiStep.placement,false);
+    changePlacement(PageType,
+                    relativeType,
+                    "Step Group Placement",
+                    meta->context.topOfRanges(),
+                    meta->context.bottomOfRanges(),
+                    &meta->LPub.multiStep.placement,
+                    false);
   } else if (selectedAction == perStepAction) {
-    changeBool(meta->context.topOfRanges(),&meta->LPub.multiStep.pli.perStep);
+    changeBool(meta->context.topOfRanges(),
+               meta->context.bottomOfRanges(),
+              &meta->LPub.multiStep.pli.perStep);
   } else if (selectedAction == marginAction) {
     changeMargins("Step Group Margins",meta->context.topOfRanges(),margin);
   }

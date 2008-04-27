@@ -86,5 +86,6 @@ class Ranges : public Placement {
     Boundary boundary(AbstractRangesElement *);
 
     const Where &topOfRanges();
+    const Where &bottomOfRanges();
 };
 #endif

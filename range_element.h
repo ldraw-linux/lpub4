@@ -62,6 +62,7 @@ class AbstractRangeElement : public Placement {
       return context.topOfFile();
     }
     const Where &topOfRanges();
+    const Where &bottomOfRanges();
 
     QString path();
     QStringList submodelStack();

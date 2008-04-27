@@ -1260,10 +1260,21 @@ void PliBackgroundItem::contextMenuEvent(
         switch (parentRelativeType) {
           case StepGroupType:
           case CalloutType:
-            changePlacement(parentRelativeType,PartsListType,me+" Placement",meta->context.topOfRanges(),placementMeta,false);
+            changePlacement(parentRelativeType,
+                            PartsListType,
+                            me+" Placement",
+                            meta->context.topOfRanges(),
+                            meta->context.bottomOfRanges(),
+                            placementMeta,
+                            false);
           break;
           default:
-            changePlacement(parentRelativeType,PartsListType,me+" Placement",meta->context.topOfStep(),placementMeta);
+            changePlacement(parentRelativeType,
+                            PartsListType,
+                            me+" Placement",
+                            meta->context.topOfStep(),
+                            meta->context.bottomOfStep(),
+                            placementMeta);
         }
       } else if (selectedAction == backgroundAction) {
         changeBackground(me+" Background",pli->topOfPLI(),&meta->LPub.pli.background);

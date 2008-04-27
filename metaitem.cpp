@@ -755,7 +755,8 @@ void MetaItem::changePlacement(
   PlacementType  parentType,
   PlacementType  relativeType,
   QString        title,
-  const Where   &here,
+  const Where   &topOfRanges,
+  const Where   &bottomOfRanges,
   PlacementMeta *placement,
   bool           useLocal) 
 {
@@ -765,10 +766,25 @@ void MetaItem::changePlacement(
 
   if (ok) {
     placement->setValue(placementData);
-    if (useLocal) {
-      setLocalMeta(placement,here);
+
+    int  lineNumber = placement->here().lineNumber;
+    bool metaInRange;
+
+    metaInRange = 
+        placement->here().modelName == topOfRanges.modelName
+     && lineNumber >= topOfRanges.lineNumber 
+     && lineNumber <= bottomOfRanges.lineNumber;
+
+    if (metaInRange) {
+      QString line = placement->format(placement->pushed);
+      replaceMeta(placement->here(),line);
     } else {
-      setMeta(here,placement);
+      if (/* allow */ useLocal) {
+        useLocal = LocalDialog::getLocal(LPUB,
+                "Change only this step?",gui);
+      }
+      QString line = placement->format(useLocal);
+      insertMeta(bottomOfRanges, line);
     }
   }
 }
@@ -1039,15 +1055,31 @@ void MetaItem::changeBorder(
 }
 
 void MetaItem::changeBool(
-  const Where &topOfStep,
+  const Where &topOfRanges,
+  const Where &bottomOfRanges,
   BoolMeta    *boolMeta,
-  bool         useLocal)
+  bool         local)   // allow local metas
 {
   boolMeta->setValue( ! boolMeta->value());
-  if (useLocal) {
-    setLocalMeta(boolMeta,topOfStep);
+
+  int  lineNumber = boolMeta->here().lineNumber;
+  bool metaInRange;
+
+  metaInRange = 
+      boolMeta->here().modelName == topOfRanges.modelName
+   && lineNumber >= topOfRanges.lineNumber 
+   && lineNumber <= bottomOfRanges.lineNumber;
+
+  if (metaInRange) {
+    QString line = boolMeta->format(boolMeta->pushed);
+    replaceMeta(boolMeta->here(),line);
   } else {
-    setMeta(topOfStep,boolMeta);
+    if (/* allow */ local) {
+      local = LocalDialog::getLocal(LPUB,
+              "Change only this step?",gui);
+    }
+    QString line = boolMeta->format(local);
+    appendMeta(topOfRanges, line);
   }
 }
 
@@ -1072,16 +1104,29 @@ void MetaItem::changeDivider(
 }
 
 void MetaItem::changeAlloc(
-  const Where &topOfStep,
-  AllocMeta   &alloc,
-  bool         useLocal)
+  const Where &topOfRanges,
+  const Where &bottomOfRanges,
+  AllocMeta   &alloc)
 {
   AllocEnc allocType = alloc.value();
   alloc.setValue(allocType == Vertical ? Horizontal : Vertical);
-  if (useLocal) {
-    setLocalMeta(&alloc,topOfStep);
+
+  int  lineNumber = alloc.here().lineNumber;
+  bool metaInRange;
+
+  metaInRange = 
+      alloc.here().modelName == topOfRanges.modelName
+   && lineNumber >= topOfRanges.lineNumber 
+   && lineNumber <= bottomOfRanges.lineNumber;
+
+  if (metaInRange) {
+    QString line = alloc.format(alloc.pushed);
+    replaceMeta(alloc.here(),line);
   } else {
-    setMeta(topOfStep,&alloc);
+    QString line = alloc.format(false);
+    // By setting this at the bottom of range, it does not 
+    // affect callouts evoked in the middle of the range
+    insertMeta(bottomOfRanges, line);
   }
 }
 

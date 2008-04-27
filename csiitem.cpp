@@ -272,10 +272,16 @@ void CsiItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 
   } else if (selectedAction == allocAction) {
     changeAlloc(step->parent->getContext().topOfRanges(),
+                step->parent->getContext().bottomOfRanges(),
                 step->parent->allocMeta());
 
   } else if (selectedAction == placementAction) {
-    changePlacement(parentRelativeType,CsiType,"Assembly Placement",step->context.topOfStep(), &meta->LPub.assem.placement);
+    changePlacement(parentRelativeType,
+                    CsiType,
+                    "Assembly Placement",
+                    step->context.topOfStep(), 
+                    step->context.bottomOfStep(),
+                    &meta->LPub.assem.placement);
   } else if (selectedAction == scaleAction) {
     switch (parentRelativeType) {
       case StepGroupType:

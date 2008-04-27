@@ -117,10 +117,17 @@ void CalloutBackgroundItem::contextMenuEvent(
     calloutPointer->defaultPointer();
 
   } else if (selectedAction == perStepAction) {
-    changeBool(callout->meta.context.topOfRanges(),&callout->meta.LPub.callout.pli.perStep);
+    changeBool(callout->meta.context.topOfRanges(),
+               callout->meta.context.bottomOfRanges(),
+               &callout->meta.LPub.callout.pli.perStep);
 
   } else if (selectedAction == placementAction) {
-    changePlacement(parentRelativeType, relativeType,"Placement",callout->meta.context.topOfRanges(), &placement, false);
+    changePlacement(parentRelativeType, 
+                    relativeType,
+                    "Placement",
+                    callout->meta.context.topOfRanges(),
+                    callout->meta.context.bottomOfRanges(),
+                    &placement, false);
 
   } else if (selectedAction == editBackgroundAction) {
     changeBackground("Background",callout->meta.context.topOfRanges(), &background, false);

@@ -206,7 +206,12 @@ void PageNumberItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 
   if (selectedAction == placementAction) {
 
-    changePlacement(PageType,PageNumberType,"Page Number Placement",meta->context.topOfStep(),placement);
+    changePlacement(PageType,
+                    PageNumberType,
+                    "Page Number Placement",
+                    meta->context.topOfStep(),
+                    meta->context.bottomOfStep(),
+                    placement);
 
   } else if (selectedAction == fontAction) {
 
@@ -226,7 +231,8 @@ void PageNumberItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 
 StepNumberItem::StepNumberItem(
   PlacementType  parentRelativeType,
-  Where          _topOfRanges,
+  const Where   &_topOfRanges,
+  const Where   &_bottomOfRanges,
   Meta          *_meta,
   NumberPlacementMeta    &_number,
   const char    *_format,
@@ -235,6 +241,7 @@ StepNumberItem::StepNumberItem(
   QString        name)
 {
   topOfRanges = _topOfRanges;
+  bottomOfRanges = _bottomOfRanges;
   QString toolTip("Step Number");
   setAttributes(StepNumberType,
                 parentRelativeType,
@@ -261,13 +268,31 @@ void StepNumberItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 
     switch (parentRelativeType) {
       case StepGroupType:
-        changePlacement(parentRelativeType,StepNumberType,"Move Step Number", topOfRanges,placement,false);
+        changePlacement(parentRelativeType,
+                        StepNumberType,
+                        "Move Step Number", 
+                        topOfRanges,
+                        bottomOfRanges,
+                        placement,
+                        false);
       break;
       case CalloutType:
-        changePlacement(parentRelativeType,StepNumberType,"Move Step Number", topOfRanges-1,placement,false);
+        changePlacement(parentRelativeType,
+                        StepNumberType,
+                        "Move Step Number", 
+                        topOfRanges,
+                        bottomOfRanges,
+                        placement,
+                        false);
       break;
       case SingleStepType:
-        changePlacement(parentRelativeType,StepNumberType,"Move Step Number", meta->context.topOfStep(),placement,true);
+        changePlacement(parentRelativeType,
+                        StepNumberType,
+                        "Move Step Number", 
+                        meta->context.topOfStep(),
+                        meta->context.bottomOfStep(),
+                        placement,
+                        true);
       break;
       default:
       break;

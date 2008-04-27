@@ -142,10 +142,12 @@ protected:
 class StepNumberItem : public NumberPlacementItem
 {
   Where topOfRanges;
+  Where bottomOfRanges;
 public:
   StepNumberItem(
     PlacementType  parentRelativeType,
-    Where          topOfRanges,
+    const Where   &topOfRanges,
+    const Where   &bottomOfRanges,
     Meta          *meta,
     NumberPlacementMeta &number,
     const char    *format,
