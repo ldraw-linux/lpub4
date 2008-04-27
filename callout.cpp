@@ -470,15 +470,18 @@ void CalloutInstanceItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event
 
   if (selectedAction == fontAction) {
 
-    changeFont(meta->context.topOfRanges(), font);
+    changeFont(meta->context.topOfRanges(), meta->context.bottomOfRanges(),font);
 
   } else if (selectedAction == colorAction) {
 
-    changeColor(meta->context.topOfRanges(), color);
+    changeColor(meta->context.topOfRanges(), meta->context.bottomOfRanges(),color);
 
   } else if (selectedAction == marginAction) {
 
-    changeMargins("Times Used Margin",meta->context.topOfRanges(), margin);
+    changeMargins("Times Used Margin",
+                  meta->context.topOfRanges(), 
+                  meta->context.bottomOfRanges(),
+                  margin);
   }
 }
 

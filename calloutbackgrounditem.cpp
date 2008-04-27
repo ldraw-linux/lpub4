@@ -130,13 +130,25 @@ void CalloutBackgroundItem::contextMenuEvent(
                     &placement, false);
 
   } else if (selectedAction == editBackgroundAction) {
-    changeBackground("Background",callout->meta.context.topOfRanges(), &background, false);
+    changeBackground("Background",
+                     callout->meta.context.topOfRanges(), 
+                     callout->meta.context.bottomOfRanges(),
+                     &background, 
+                     false);
 
   } else if (selectedAction == editBorderAction) {
-    changeBorder("Border",callout->meta.context.topOfRanges(), &border, false);
+    changeBorder("Border",
+                 callout->meta.context.topOfRanges(), 
+                 callout->meta.context.bottomOfRanges(),
+                 &border, 
+                 false);
 
   } else if (selectedAction == marginAction) {
-    changeMargins("Callout Margins",callout->meta.context.topOfRanges(), &margin, false);
+    changeMargins("Callout Margins",
+                  callout->meta.context.topOfRanges(), 
+                  callout->meta.context.bottomOfRanges(), 
+                  &margin, 
+                  false);
 
   } else if (selectedAction == unCalloutAction) {
     removeCallout(callout->meta.context);

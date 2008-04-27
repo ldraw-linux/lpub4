@@ -746,10 +746,10 @@ void MetaItem::convertToIgnore(Meta *meta)
   endMacro();
 }
 
-/**************************************************************************************
+/*******************************************************************************
  *
  *
- *************************************************************************************/
+ ******************************************************************************/
 
 void MetaItem::changePlacement(
   PlacementType  parentType,
@@ -762,7 +762,8 @@ void MetaItem::changePlacement(
 {
   PlacementData placementData = placement->value();
   bool ok;
-  ok = PlacementDialog::getPlacement(parentType,relativeType,placementData,title);
+  ok = PlacementDialog
+       ::getPlacement(parentType,relativeType,placementData,title);
 
   if (ok) {
     placement->setValue(placementData);
@@ -804,7 +805,7 @@ void MetaItem::changePlacementOffset(
 
     if (scanBackward(walk,StepMask,partsAdded) == EndOfFileRc) {
       Meta tmpMeta;
-      defaultWhere = sortedGlobalWhere(tmpMeta,defaultWhere.modelName,"ZZZZ") - 1;
+      defaultWhere = sortedGlobalWhere(tmpMeta,defaultWhere.modelName,"ZZZZ")-1;
     }
     insertMeta(defaultWhere,newMetaString);
   } else {
@@ -815,19 +816,38 @@ void MetaItem::changePlacementOffset(
 void MetaItem::changeBackground(
   QString         title,
   const Where    &topOfStep,
+  const Where    &bottomOfStep,
   BackgroundMeta *background,
-  bool            useLocal)
+  bool            local)
 {
   BackgroundData backgroundData = background->value();
   bool ok;
   ok = BackgroundDialog::getBackground(backgroundData,title,gui);
 
   if (ok) {
+
     background->setValue(backgroundData);
-    if (useLocal) {
-      setLocalMeta(background,topOfStep);
+
+    int  lineNumber = background->here().lineNumber;
+    bool metaInRange;
+
+    metaInRange = 
+        background->here().modelName == topOfStep.modelName
+     && lineNumber >= topOfStep.lineNumber 
+     && lineNumber <= bottomOfStep.lineNumber;
+
+    if (metaInRange) {
+      QString line = background->format(background->pushed);
+      replaceMeta(background->here(),line);
     } else {
-      setMeta(topOfStep,background);
+      // By setting this at the bottom of range, it does not 
+      if (/* allow */ local) {
+        local = LocalDialog::getLocal(LPUB,
+                "Change only this step?",gui);
+      }
+      QString line = background->format(local);
+      // affect callouts evoked in the middle of the range
+      insertMeta(bottomOfStep, line);
     }
   }
 }
@@ -835,27 +855,47 @@ void MetaItem::changeBackground(
 void MetaItem::changeConstraint(
   QString        title,
   const Where   &topOfStep,
+  const Where   &bottomOfStep,
   ConstrainMeta *constraint,
-  bool           useLocal)
+  bool           local)
 {
   ConstrainData constrainData = constraint->value();
   bool ok;
   ok = ConstrainDialog::getConstraint(constrainData,title,gui);
 
   if (ok) {
+
     constraint->setValueUnit(constrainData);
-    if (useLocal) {
-      setLocalMeta(constraint,topOfStep);
+
+    int  lineNumber = constraint->here().lineNumber;
+    bool metaInRange;
+
+    metaInRange = 
+        constraint->here().modelName == topOfStep.modelName
+     && lineNumber >= topOfStep.lineNumber 
+     && lineNumber <= bottomOfStep.lineNumber;
+
+    if (metaInRange) {
+      QString line = constraint->format(constraint->pushed);
+      replaceMeta(constraint->here(),line);
     } else {
-      setMeta(topOfStep,constraint);
+      // By setting this at the bottom of range, it does not 
+      if (/* allow */ local) {
+        local = LocalDialog::getLocal(LPUB,
+                "Change only this step?",gui);
+      }
+      QString line = constraint->format(local);
+      // affect callouts evoked in the middle of the range
+      insertMeta(bottomOfStep, line);
     }
   }
 }
 
 void MetaItem::changeFont(
   const Where   &topOfStep,
+  const Where   &bottomOfStep,
   FontMeta      *font,
-  bool           useLocal)
+  bool           local)
 {
   bool ok;
   QFont _font;
@@ -865,42 +905,66 @@ void MetaItem::changeFont(
 
   _font = QFontDialog::getFont(&ok,_font);
 
-  if ( ! _fdb.isSmoothlyScalable(_font.family())) {
-    int ret = QMessageBox::warning(
-                NULL,
-                QMessageBox::tr(LPUB),
-                QMessageBox::tr("The font you picked is not smoothly scalable.  It may cause problems if you print you building instructions"),
-                QMessageBox::Ok | QMessageBox::Cancel,
-                QMessageBox::Cancel);
-
-    if (ret == QMessageBox::Cancel) {
-      return;
-    }
-  }
   if (ok) {
+
     font->setValueUnit(_font.toString());
-    if (useLocal) {
-      setLocalMeta(font,topOfStep);
+
+    int  lineNumber = font->here().lineNumber;
+    bool metaInRange;
+
+    metaInRange = 
+        font->here().modelName == topOfStep.modelName
+     && lineNumber >= topOfStep.lineNumber 
+     && lineNumber <= bottomOfStep.lineNumber;
+
+    if (metaInRange) {
+      QString line = font->format(font->pushed);
+      replaceMeta(font->here(),line);
     } else {
-      setMeta(topOfStep,font);
+      // By setting this at the bottom of range, it does not 
+      if (/* allow */ local) {
+        local = LocalDialog::getLocal(LPUB,
+                "Change only this step?",gui);
+      }
+      QString line = font->format(local);
+      // affect callouts evoked in the middle of the range
+      insertMeta(bottomOfStep, line);
     }
   }
 }
 
 void MetaItem::changeColor(
-  const Where&topOfStep,
+  const Where &topOfStep,
+  const Where &bottomOfStep,
   StringMeta *color,
-  bool        useLocal)
+  bool        local)
 {
   QColor _color = LDrawColor::color(color->value());
   _color = QColorDialog::getColor(_color,NULL);
 
   if (_color.isValid()) {
     color->setValue(_color.name());
-    if (useLocal) {
-      setLocalMeta(color,topOfStep);
+
+    int  lineNumber = color->here().lineNumber;
+    bool metaInRange;
+
+    metaInRange = 
+        color->here().modelName == topOfStep.modelName
+     && lineNumber >= topOfStep.lineNumber 
+     && lineNumber <= bottomOfStep.lineNumber;
+
+    if (metaInRange) {
+      QString line = color->format(color->pushed);
+      replaceMeta(color->here(),line);
     } else {
-      setMeta(topOfStep,color);
+      // By setting this at the bottom of range, it does not 
+      if (/* allow */ local) {
+        local = LocalDialog::getLocal(LPUB,
+                "Change only this step?",gui);
+      }
+      QString line = color->format(local);
+      // affect callouts evoked in the middle of the range
+      insertMeta(bottomOfStep, line);
     }
   }
 }
@@ -908,8 +972,9 @@ void MetaItem::changeColor(
 void MetaItem::changeMargins(
   QString        title,
   const Where   &topOfStep,
+  const Where   &bottomOfStep,
   MarginsMeta   *margin,
-  bool           useLocal)
+  bool           local)
 {
   float values[2];
 
@@ -920,12 +985,30 @@ void MetaItem::changeMargins(
                 values,
                 title,
                 gui);
+
   if (ok) {
     margin->setValueUnits(values[0],values[1]);
-    if (useLocal) {
-      setLocalMeta(margin,topOfStep);
+
+    int  lineNumber = margin->here().lineNumber;
+    bool metaInRange;
+
+    metaInRange = 
+        margin->here().modelName == topOfStep.modelName
+     && lineNumber >= topOfStep.lineNumber 
+     && lineNumber <= bottomOfStep.lineNumber;
+
+    if (metaInRange) {
+      QString line = margin->format(margin->pushed);
+      replaceMeta(margin->here(),line);
     } else {
-      setMeta(topOfStep,margin);
+      // By setting this at the bottom of range, it does not 
+      if (/* allow */ local) {
+        local = LocalDialog::getLocal(LPUB,
+                "Change only this step?",gui);
+      }
+      QString line = margin->format(local);
+      // affect callouts evoked in the middle of the range
+      insertMeta(bottomOfStep, line);
     }
   }
 }
@@ -933,8 +1016,9 @@ void MetaItem::changeMargins(
 void MetaItem::changeUnits(
   QString       title,
   const Where  &topOfStep,
+  const Where  &bottomOfStep,
   UnitsMeta    *units,
-  bool          useLocal)
+  bool          local)
 {
   float values[2];
 
@@ -947,10 +1031,27 @@ void MetaItem::changeUnits(
                 gui);
   if (ok) {
     units->setValueUnits(values[0],values[1]);
-    if (useLocal) {
-      setLocalMeta(units,topOfStep);
+
+    int  lineNumber = units->here().lineNumber;
+    bool metaInRange;
+
+    metaInRange = 
+        units->here().modelName == topOfStep.modelName
+     && lineNumber >= topOfStep.lineNumber 
+     && lineNumber <= bottomOfStep.lineNumber;
+
+    if (metaInRange) {
+      QString line = units->format(units->pushed);
+      replaceMeta(units->here(),line);
     } else {
-      setMeta(topOfStep,units);
+      // By setting this at the bottom of range, it does not 
+      if (/* allow */ local) {
+        local = LocalDialog::getLocal(LPUB,
+                "Change only this step?",gui);
+      }
+      QString line = units->format(local);
+      // affect callouts evoked in the middle of the range
+      insertMeta(bottomOfStep, line);
     }
   }
 }
@@ -958,8 +1059,9 @@ void MetaItem::changeUnits(
 void MetaItem::changeViewAngle(
   QString        title,
   const Where   &topOfStep,
+  const Where   &bottomOfStep,
   FloatPairMeta *va,
-  bool           useLocal)
+  bool           local)
 {
   float floats[2];
   floats[0] = va->value(0);
@@ -970,12 +1072,30 @@ void MetaItem::changeViewAngle(
               "Lattitude",
               "Longitude",
               gui);
+
   if (ok) {
     va->setValues(floats[0],floats[1]);
-    if (useLocal) {
-      setLocalMeta(va,topOfStep);
+
+    int  lineNumber = va->here().lineNumber;
+    bool metaInRange;
+
+    metaInRange = 
+        va->here().modelName == topOfStep.modelName
+     && lineNumber >= topOfStep.lineNumber 
+     && lineNumber <= bottomOfStep.lineNumber;
+
+    if (metaInRange) {
+      QString line = va->format(va->pushed);
+      replaceMeta(va->here(),line);
     } else {
-      setMeta(topOfStep,va);
+      // By setting this at the bottom of range, it does not 
+      if (/* allow */ local) {
+        local = LocalDialog::getLocal(LPUB,
+                "Change only this step?",gui);
+      }
+      QString line = va->format(local);
+      // affect callouts evoked in the middle of the range
+      insertMeta(bottomOfStep, line);
     }
   }
 }
@@ -984,8 +1104,9 @@ void MetaItem::changeFloat(
   QString      title,
   QString      label,
   const Where &topOfStep,
+  const Where &bottomOfStep,
   FloatMeta   *floatMeta,
-  bool         useLocal)
+  bool         local)
 {
   float data;
   bool ok = FloatDialog::getFloat(title,
@@ -1001,10 +1122,27 @@ void MetaItem::changeFloat(
 
   if (ok) {
     floatMeta->setValue(data);
-    if (useLocal) {
-      setLocalMeta(floatMeta,topOfStep);
+
+    int  lineNumber = floatMeta->here().lineNumber;
+    bool metaInRange;
+
+    metaInRange = 
+        floatMeta->here().modelName == topOfStep.modelName
+     && lineNumber >= topOfStep.lineNumber 
+     && lineNumber <= bottomOfStep.lineNumber;
+
+    if (metaInRange) {
+      QString line = floatMeta->format(floatMeta->pushed);
+      replaceMeta(floatMeta->here(),line);
     } else {
-      setMeta(topOfStep,floatMeta);
+      // By setting this at the bottom of range, it does not 
+      if (/* allow */ local) {
+        local = LocalDialog::getLocal(LPUB,
+                "Change only this step?",gui);
+      }
+      QString line = floatMeta->format(local);
+      // affect callouts evoked in the middle of the range
+      insertMeta(bottomOfStep, line);
     }
   }
 }
@@ -1013,8 +1151,9 @@ void MetaItem::changeFloatSpin(
   QString      title,
   QString      label,
   const Where &topOfStep,
+  const Where &bottomOfStep,
   FloatMeta   *floatMeta,
-  bool         useLocal)
+  bool         local)
 {
   float data = floatMeta->value();
   bool ok = DoubleSpinDialog::getFloat(
@@ -1027,10 +1166,27 @@ void MetaItem::changeFloatSpin(
                                   gui);
   if (ok) {
     floatMeta->setValue(data);
-    if (useLocal) {
-      setLocalMeta(floatMeta,topOfStep);
+
+    int  lineNumber = floatMeta->here().lineNumber;
+    bool metaInRange;
+
+    metaInRange = 
+        floatMeta->here().modelName == topOfStep.modelName
+     && lineNumber >= topOfStep.lineNumber 
+     && lineNumber <= bottomOfStep.lineNumber;
+
+    if (metaInRange) {
+      QString line = floatMeta->format(floatMeta->pushed);
+      replaceMeta(floatMeta->here(),line);
     } else {
-      setMeta(topOfStep,floatMeta);
+      // By setting this at the bottom of range, it does not 
+      if (/* allow */ local) {
+        local = LocalDialog::getLocal(LPUB,
+                "Change only this step?",gui);
+      }
+      QString line = floatMeta->format(local);
+      // affect callouts evoked in the middle of the range
+      insertMeta(bottomOfStep, line);
     }
   }
 }
@@ -1038,18 +1194,37 @@ void MetaItem::changeFloatSpin(
 void MetaItem::changeBorder(
   QString      title,
   const Where &topOfStep,
+  const Where &bottomOfStep,
   BorderMeta  *border,
-  bool         useLocal)
+  bool         local)
 {
   BorderData borderData = border->valueUnit();
   bool ok = BorderDialog::getBorder(borderData,title);
 
   if (ok) {
+
     border->setValueUnit(borderData);
-    if (useLocal) {
-      setLocalMeta(border,topOfStep);
+
+    int  lineNumber = border->here().lineNumber;
+    bool metaInRange;
+
+    metaInRange = 
+        border->here().modelName == topOfStep.modelName
+     && lineNumber >= topOfStep.lineNumber 
+     && lineNumber <= bottomOfStep.lineNumber;
+
+    if (metaInRange) {
+      QString line = border->format(border->pushed);
+      replaceMeta(border->here(),line);
     } else {
-      setMeta(topOfStep,border);
+      // By setting this at the bottom of range, it does not 
+      if (/* allow */ local) {
+        local = LocalDialog::getLocal(LPUB,
+                "Change only this step?",gui);
+      }
+      QString line = border->format(local);
+      // affect callouts evoked in the middle of the range
+      insertMeta(bottomOfStep, line);
     }
   }
 }
@@ -1087,20 +1262,39 @@ void MetaItem::changeBool(
 void MetaItem::changeDivider(
   QString       title,
   const Where  &topOfStep,
+  const Where  &bottomOfStep,
   SepMeta      *sepMeta,
-  bool          useLocal)
+  bool          local)
 {
   SepData     sepData = sepMeta->valueUnit();
   bool ok = DividerDialog::getDivider(sepData,title,gui);
 
   if (ok) {
+
     sepMeta->setValueUnit(sepData);
-    if (useLocal) {
-      setLocalMeta(sepMeta,topOfStep);
+
+    int  lineNumber = sepMeta->here().lineNumber;
+    bool metaInRange;
+
+    metaInRange = 
+        sepMeta->here().modelName == topOfStep.modelName
+     && lineNumber >= topOfStep.lineNumber 
+     && lineNumber <= bottomOfStep.lineNumber;
+
+    if (metaInRange) {
+      QString line = sepMeta->format(sepMeta->pushed);
+      replaceMeta(sepMeta->here(),line);
     } else {
-      setMeta(topOfStep,sepMeta);
+      // By setting this at the bottom of range, it does not 
+      if (/* allow */ local) {
+        local = LocalDialog::getLocal(LPUB,
+                "Change only this step?",gui);
+      }
+      QString line = sepMeta->format(local);
+      // affect callouts evoked in the middle of the range
+      insertMeta(bottomOfStep, line);
     }
-  } 
+  }
 }
 
 void MetaItem::changeAlloc(

@@ -285,26 +285,49 @@ void CsiItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
   } else if (selectedAction == scaleAction) {
     switch (parentRelativeType) {
       case StepGroupType:
-        changeFloatSpin("Assembly","Model Size",step->context.topOfRanges(), &meta->LPub.assem.modelSize, false);
+        changeFloatSpin("Assembly",
+                        "Model Size",
+                        step->context.topOfRanges(), 
+                        step->context.bottomOfRanges(), 
+                        &meta->LPub.assem.modelSize, 
+                        false);
       break;
       case CalloutType:
-        changeFloatSpin("Assembly","Model Size",step->topOfRanges(), &meta->LPub.assem.modelSize, false);
+        changeFloatSpin("Assembly",
+                        "Model Size",
+                        step->topOfRanges(), 
+                        step->bottomOfRanges(), 
+                        &meta->LPub.assem.modelSize, 
+                        false);
       break;
       default:
-        changeFloatSpin("Assembly","Model Size",step->context.topOfStep(), &meta->LPub.assem.modelSize);
+        changeFloatSpin("Assembly",
+                        "Model Size",
+                        step->context.topOfStep(), 
+                        step->context.bottomOfStep(), 
+                        &meta->LPub.assem.modelSize);
       break;
     }
   } else if (selectedAction == marginsAction) {
 
     switch (parentRelativeType) {
       case StepGroupType:
-        changeMargins("Assembly Margins",step->context.topOfStep(), &meta->LPub.multiStep.csi.margin);
+        changeMargins("Assembly Margins",
+                      step->context.topOfStep(), 
+                      step->context.bottomOfStep(), 
+                      &meta->LPub.multiStep.csi.margin);
       break;
       case CalloutType:
-        changeMargins("Assembly Margins",step->context.topOfStep(), &meta->LPub.callout.csi.margin);
+        changeMargins("Assembly Margins",
+                      step->context.topOfStep(), 
+                      step->context.bottomOfStep(), 
+                      &meta->LPub.callout.csi.margin);
       break;
       case SingleStepType:
-        changeMargins("Assembly Margins",step->context.topOfStep(), &meta->LPub.assem.margin);
+        changeMargins("Assembly Margins",
+                      step->context.topOfStep(), 
+                      step->context.bottomOfStep(), 
+                      &meta->LPub.assem.margin);
       break;
       default:
       break;

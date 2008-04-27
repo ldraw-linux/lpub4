@@ -1255,7 +1255,10 @@ void PliBackgroundItem::contextMenuEvent(
       Meta *meta = pli->meta;
       QString me = pli->bom ? "BOM" : "PLI";
       if (selectedAction == constrainAction) {
-        changeConstraint(me+" Constraint",pli->topOfPLI(),&constraint);
+        changeConstraint(me+" Constraint",
+                         pli->topOfPLI(),
+                         pli->bottomOfPLI(),
+                         &constraint);
       } else if (selectedAction == placementAction) {
         switch (parentRelativeType) {
           case StepGroupType:
@@ -1277,11 +1280,20 @@ void PliBackgroundItem::contextMenuEvent(
                             placementMeta);
         }
       } else if (selectedAction == backgroundAction) {
-        changeBackground(me+" Background",pli->topOfPLI(),&meta->LPub.pli.background);
+        changeBackground(me+" Background",
+                         pli->topOfPLI(),
+                         pli->bottomOfPLI(),
+                         &meta->LPub.pli.background);
       } else if (selectedAction == borderAction) {
-        changeBorder(me+" Border",pli->topOfPLI(),&border);
+        changeBorder(me+" Border",
+                     pli->topOfPLI(),
+                     pli->bottomOfPLI(),
+                     &border);
       } else if (selectedAction == marginAction) {
-        changeMargins(me+" Margins",pli->topOfPLI(),&margin);
+        changeMargins(me+" Margins",
+                      pli->topOfPLI(),
+                      pli->bottomOfPLI(),
+                      &margin);
       }
   	}
   }
@@ -1306,11 +1318,14 @@ void AnnotateTextItem::contextMenuEvent(
 
   Meta *meta = pli->meta;
   if (selectedAction == fontAction) {
-    changeFont(pli->range.topOf,&meta->LPub.pli.annotate.font);
+    changeFont(pli->range.topOf,pli->range.bottomOf,&meta->LPub.pli.annotate.font);
   } else if (selectedAction == colorAction) {
-    changeColor(pli->range.topOf,&meta->LPub.pli.annotate.color);
+    changeColor(pli->range.topOf,pli->range.bottomOf,&meta->LPub.pli.annotate.color);
   } else if (selectedAction == marginAction) {
-    changeMargins("Part Length Margins",pli->range.topOf,&meta->LPub.pli.annotate.margin);
+    changeMargins("Part Length Margins",
+                  pli->range.topOf,
+                  pli->range.bottomOf,
+                  &meta->LPub.pli.annotate.margin);
   }
 }
 
@@ -1333,11 +1348,14 @@ void InstanceTextItem::contextMenuEvent(
 
   Meta *meta = pli->meta;
   if (selectedAction == fontAction) {
-    changeFont(pli->range.topOf,&meta->LPub.pli.instance.font);
+    changeFont(pli->range.topOf,pli->range.bottomOf,&meta->LPub.pli.instance.font);
   } else if (selectedAction == colorAction) {
-    changeColor(pli->range.topOf,&meta->LPub.pli.instance.color);
+    changeColor(pli->range.topOf,pli->range.bottomOf,&meta->LPub.pli.instance.color);
   } else if (selectedAction == marginAction) {
-    changeMargins("Parts Count Margins",pli->range.topOf,&meta->LPub.pli.instance.margin);
+    changeMargins("Parts Count Margins",
+                  pli->range.topOf,
+                  pli->range.bottomOf,
+                  &meta->LPub.pli.instance.margin);
   }
 }
 
@@ -1361,12 +1379,16 @@ void PGraphicsPixmapItem::contextMenuEvent(
 
   Meta *meta = pli->meta;
   if (selectedAction == marginAction) {
-    changeMargins("Parts List Part Margins",pli->range.topOf,&meta->LPub.pli.part.margin);
+    changeMargins("Parts List Part Margins",
+                  pli->range.topOf,
+                  pli->range.bottomOf,
+                  &meta->LPub.pli.part.margin);
   } else if (selectedAction == scaleAction) {
     changeFloatSpin(
       "Parts List",
       "Model Size",
       pli->range.topOf,
+      pli->range.bottomOf,
       &meta->LPub.pli.modelSize);
     gui->clearPLICache();
   }

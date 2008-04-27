@@ -157,15 +157,18 @@ void MultiStepRangeBackgroundItem::contextMenuEvent(
                meta->context.bottomOfRanges(),
               &meta->LPub.multiStep.pli.perStep);
   } else if (selectedAction == marginAction) {
-    changeMargins("Step Group Margins",meta->context.topOfRanges(),margin);
+    changeMargins("Step Group Margins",
+                  meta->context.topOfRanges(),
+                  meta->context.bottomOfRanges(),
+                  margin);
   }
 }
 
 DividerItem::DividerItem(
   Ranges        *ranges,
   Meta          *_meta,
-  Where          _sepWhere,
-  Where          _divWhere,
+  Where          _topOfRanges,
+  Where          _bottomOfRanges,
   int            offsetX,
   int            offsetY)
 {
@@ -179,8 +182,8 @@ DividerItem::DividerItem(
   }
   parentRelativeType = ranges->relativeType;
   meta = _meta;
-  sepWhere = _sepWhere;
-  divWhere = _divWhere;
+  topOfRanges    = _topOfRanges;
+  bottomOfRanges = _bottomOfRanges;
 
   SepData sepData = sep->value();
 
@@ -263,9 +266,9 @@ void DividerItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
   }
 
   if (selectedAction == editAction) {
-    changeDivider("Divider",sepWhere,sep,false);
+    changeDivider("Divider",topOfRanges,bottomOfRanges,sep,false);
   } else if (selectedAction == deleteAction) {
-    deleteMultiStepDivider(divWhere);
+    deleteMultiStepDivider(sep->here());
   }
 }
 void DividerLine::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)

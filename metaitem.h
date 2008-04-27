@@ -87,20 +87,79 @@ public:
                         PlacementMeta *, 
                         bool checkLocal = true);
 
-  void changeFont(               const Where &, FontMeta  *,     bool checkLocal = true);
-  void changeColor(              const Where &, StringMeta  *,   bool checkLocal = true);
-  void changeBackground(QString, const Where &, BackgroundMeta*, bool checkLocal = true);
-  void changeBorder(    QString, const Where &, BorderMeta  *,   bool checkLocal = true);
-  void changeAlloc(              const Where &, const Where &, AllocMeta   &);
-  void changeViewAngle( QString, const Where &, FloatPairMeta *, bool checkLocal = true);
-  void changeConstraint(QString, const Where &, ConstrainMeta *, bool checkLocal = true);
-  void changeBool(               const Where &, const Where &, BoolMeta    *, bool allowLocal = false);
-  void changeDivider(   QString, const Where &, SepMeta     *,   bool checkLocal = true);
-  void changeMargins(   QString, const Where &, MarginsMeta *,   bool checkLocal = true);
+  void changeAlloc(     const Where &, 
+                        const Where &, 
+				        AllocMeta   &);
+  void changeBool(      const Where &, 
+                        const Where &, 
+                        BoolMeta    *, 
+                        bool allowLocal = false);
 
-  void changeFloat(     QString, QString, const Where &, FloatMeta *, bool checkLocal = true);
-  void changeUnits(     QString,          const Where &, UnitsMeta *, bool checkLocal = true);
-  void changeFloatSpin( QString, QString, const Where &, FloatMeta *, bool checkLocal = true);
+  void changeFont(      const Where &, 
+                        const Where &,
+                        FontMeta  *,
+                        bool checkLocal = true);  
+  
+  void changeColor(     const Where &, 
+                        const Where &,
+                        StringMeta  *,   
+                        bool checkLocal = true);
+
+  void changeBackground(QString, 
+                        const Where &, 
+                        const Where &,
+                        BackgroundMeta*, 
+                        bool checkLocal = true);
+
+  void changeBorder(    QString, 
+                        const Where &, 
+                        const Where &,
+                        BorderMeta  *,   
+                        bool checkLocal = true);
+
+  void changeViewAngle( QString, 
+                        const Where &, 
+                        const Where &, 
+                        FloatPairMeta *, 
+                        bool checkLocal = true);
+
+  void changeConstraint(QString, 
+                        const Where &, 
+                        const Where &, 
+                        ConstrainMeta *, 
+                        bool checkLocal = true);
+
+  void changeDivider(   QString, 
+                        const Where &, 
+                        const Where &, 
+                        SepMeta *,   
+                        bool checkLocal = true);
+
+  void changeMargins(   QString, 
+                        const Where &, 
+                        const Where &, 
+                        MarginsMeta *,   
+                        bool checkLocal = true);
+
+  void changeFloat(     QString, 
+                        QString, 
+                        const Where &, 
+                        const Where &, 
+                        FloatMeta *, 
+                        bool checkLocal = true);
+
+  void changeFloatSpin( QString, 
+                        QString, 
+                        const Where &, 
+                        const Where &, 
+                        FloatMeta *, 
+                        bool checkLocal = true);
+
+  void changeUnits(     QString,          
+                        const Where &, 
+                        const Where &, 
+                        UnitsMeta *, 
+                        bool checkLocal = true);
 
   void changePlacementOffset(Where defaultconst, PlacementMeta *placement, bool local = true);  
 

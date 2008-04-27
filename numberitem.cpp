@@ -215,17 +215,20 @@ void PageNumberItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 
   } else if (selectedAction == fontAction) {
 
-    changeFont(meta->context.topOfStep(),font);
+    changeFont(meta->context.topOfStep(),meta->context.bottomOfStep(),font);
 
   } else if (selectedAction == colorAction) {
 
-    changeColor(meta->context.topOfStep(),color);
+    changeColor(meta->context.topOfStep(),meta->context.bottomOfStep(),color);
 
   } else if (selectedAction == marginAction) {
 
     QString foo = PlacementDialog::relativeToName(relativeType);
 
-    changeMargins("Page Number Margins",meta->context.topOfStep(),margin);
+    changeMargins("Page Number Margins",
+                  meta->context.topOfStep(),
+                  meta->context.bottomOfStep(),
+                  margin);
   }
 }
 
@@ -301,13 +304,13 @@ void StepNumberItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 
     switch (parentRelativeType) {
       case StepGroupType:
-        changeFont(topOfRanges, font,false);
+        changeFont(topOfRanges, bottomOfRanges, font,false);
       break;
       case CalloutType:
-        changeFont(topOfRanges-1, font, false);
+        changeFont(topOfRanges-1, bottomOfRanges, font, false);
       break;
       case SingleStepType:
-        changeFont(meta->context.topOfStep(),font);
+        changeFont(meta->context.topOfStep(),meta->context.bottomOfStep(),font);
       break;
       default:
       break;
@@ -316,13 +319,13 @@ void StepNumberItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 
     switch (parentRelativeType) {
       case StepGroupType:
-        changeColor(topOfRanges,color,false);
+        changeColor(topOfRanges,bottomOfRanges,color,false);
       break;
       case CalloutType:
-        changeColor(topOfRanges-1,color,false);
+        changeColor(topOfRanges-1,bottomOfRanges,color,false);
       break;
       case SingleStepType:
-        changeColor(meta->context.topOfStep(),color);
+        changeColor(meta->context.topOfStep(),meta->context.bottomOfStep(),color);
       break;
       default:
       break;
@@ -331,13 +334,24 @@ void StepNumberItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 
     switch (parentRelativeType) {
       case StepGroupType:
-        changeMargins("Change Step Number Margins",topOfRanges, margin, false);
+        changeMargins("Change Step Number Margins",
+                      topOfRanges, 
+                      bottomOfRanges,
+                      margin, 
+                      false);
       break;
       case CalloutType:
-        changeMargins("Change Step Number Margins",topOfRanges-1, margin, false);
+        changeMargins("Change Step Number Margins",
+                      topOfRanges-1, 
+                      bottomOfRanges,
+                      margin, 
+                      false);
       break;
       case SingleStepType:
-        changeMargins("Change Step Number Margins",meta->context.topOfStep(), margin);
+        changeMargins("Change Step Number Margins",
+                      meta->context.topOfStep(), 
+                      meta->context.bottomOfStep(),
+                      margin);
       break;
       default:
       break;

@@ -1685,7 +1685,7 @@ CalloutMeta::CalloutMeta()
   subModelColor.setValue("0xffcccc");
   subModelColor.setValue("0xccccff");
   subModelFontColor.setValue("black");
-  placement.setValue(TopRight,PageType,Inside);
+  placement.setValue(Right,Center,CsiType,Inside);
   // freeform
   alloc.setValue(Vertical);
   pli.perStep.setValue(true);

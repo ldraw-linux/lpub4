@@ -96,15 +96,15 @@ public:
     SepMeta      *sep;
     PlacementType parentRelativeType;
     DividerLine  *lineItem;
-    Where         sepWhere;
-    Where         divWhere;
+    Where         topOfRanges;
+    Where         bottomOfRanges;
 
     DividerItem() {}
     DividerItem(
       Ranges *_ranges,
       Meta   *_meta,
-      Where   _sepWhere,
-      Where   _divWhere,
+      Where   _topWhere,
+      Where   _bottomWhere,
       int     _offset_x,
       int     _offset_y);
     

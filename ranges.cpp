@@ -466,7 +466,7 @@ void Ranges::addGraphicsItemsVert(
                           this,
                          &meta,
                           meta.context.topOfRanges(),
-                          range->context.bottomOfRange(),
+                          meta.context.bottomOfRanges(),
                           offset_x + offset[XX] + range->offset[XX] + range->size[XX],
                           offset_y + offset[YY] + range->offset[YY]);
           divider->setParentItem(parent);
