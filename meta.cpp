@@ -1285,8 +1285,7 @@ void PliBeginMeta::init(BranchMeta *parent, QString name)
 {
   AbstractMeta::init(parent, name);
   ignore.init(this, "IGN",    PliBeginIgnRc);
-  ignore.init(this, "IGNORE", PliBeginIgnRc);
-  sub.init   (this, "(SUB|SUBSTITUTE)");
+  sub.init   (this, "(SUB)");
 }
 
 /* ------------------ */ 
@@ -1391,8 +1390,7 @@ void SubMeta::doc(QTextStream &out, QString preamble)
 void PartBeginMeta::init(BranchMeta *parent, QString name)
 {
   AbstractMeta::init(parent, name);
-  ignore.init (this, "IGNORE",PartBeginIgnRc);
-  ignore2.init(this, "IGN",   PartBeginIgnRc);
+  ignore.init(this, "IGN",   PartBeginIgnRc);
 }
 
 /* ------------------ */ 

@@ -1222,7 +1222,6 @@ class PartBeginMeta : public BranchMeta
 {
 public:
   RcMeta          ignore;
-  RcMeta          ignore2;
   PartBeginMeta() 
   {
   }
