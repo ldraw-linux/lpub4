@@ -138,7 +138,7 @@ PlacementDialog::PlacementDialog(
           oks = Csi | Pli;
         break;
         case CalloutType:
-          oks = Page | Csi | Pli | Sn;
+          oks = Page | Csi | Pli | Sn | Ms;
         break;
         default:
           oks = Csi | Pli | Sn;
