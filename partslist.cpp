@@ -80,9 +80,6 @@ bool PartsList::isKnownPart(QString &part)
     for (int i = 0; i < partialPaths.size(); i++) {
       testName = Paths::ldrawPath + partialPaths[i] + part;
       info.setFile(testName);
-//      QMessageBox::warning(NULL,QMessageBox::tr("LPub"),
-  //                              QMessageBox::tr("testName %1")
-    //                            .arg(testName));
 	  
       if (info.exists()) {
         QFile file(testName);
