@@ -46,22 +46,6 @@
 #include "paths.h"
 #include "rx.h"
 
-void MetaItem::setMeta(
-  const Where &here,
-  LeafMeta    *leaf,
-  bool         local)
-{
-  QString newMeta = leaf->format(local);
-
-  if (leaf->here().modelName == "undefined") {
-    insertMeta(here,newMeta);
-  } else if (leaf->here() == here) {
-    replaceMeta(here,newMeta);
-  } else {
-    insertMeta(here,newMeta);
-  }
-}
-
 void MetaItem::setGlobalMeta(
   QString  &topLevelFile,
   LeafMeta *leaf)
@@ -72,32 +56,6 @@ void MetaItem::setGlobalMeta(
   } else {
     Where here = sortedGlobalWhere(topLevelFile,newMeta);
     insertMeta(here,newMeta);
-  }
-}
-
-void MetaItem::setLocalMeta(
-  LeafMeta *leaf,
-  Where     topOfStep)
-{
-  if (leaf->here().modelName != "undefined" &&
-      leaf->here().modelName == topOfStep.modelName &&
-      leaf->here().lineNumber >= topOfStep.lineNumber) {
-
-    QString replace = leaf->format(leaf->pushed != 0);
-    replaceMeta(leaf->here(),replace);
-  } else {
-    bool partsAdded;
-    bool ret = LocalDialog::getLocal(LPUB,
-      "Change only this step?",gui);
-
-    QString insert = leaf->format(ret == true);
-
-    Where walk = topOfStep;
-
-    if (scanBackward(walk,StepMask,partsAdded) == EndOfFileRc) {
-      topOfStep = sortedGlobalWhere(topOfStep.modelName,insert);
-    }
-    insertMeta(topOfStep,insert);
   }
 }
 
@@ -915,6 +873,15 @@ void MetaItem::setMetaTopOf(
       local = LocalDialog::getLocal(LPUB, "Change only this step?",gui);
     }
     QString line = meta->format(local);
+
+    if (topOf.lineNumber == 0) {
+      QString line = gui->readLine(topOf);
+      QStringList argv;
+      split(line,argv);
+      if (argv.size() >= 1 && argv[0] != "0") {
+        insertMeta(topOf,"0");
+      }
+    }
     appendMeta(topOf, line);
   }
 }
@@ -1374,7 +1341,7 @@ Where MetaItem::sortedGlobalWhere(
   QString modelName,
   QString metaString)
 {
-  Where walk = Where(modelName,1);
+  Where walk = Where(modelName,0);
   int maxLines = gui->subFileSize(modelName);
   QRegExp lines1_5("^\\s*[1-5]");
 
@@ -1383,6 +1350,15 @@ Where MetaItem::sortedGlobalWhere(
   for ( ; walk < maxLines; walk++)
   {
     QString line = gui->readLine(walk);
+
+    if (walk.lineNumber == 0) {
+      QStringList argv;
+      split(line,argv);
+      if (argv[0] != "0") {
+        insertMeta(walk,"0");
+        maxLines++;
+      }
+    }
 
     int i;
     for (i = 0; i < LDrawHeaderRx.size(); i++) {
