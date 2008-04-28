@@ -1271,7 +1271,11 @@ RendererGui::RendererGui(
   if (Paths::ldviewExe != "") {
     combo->addItem("LDView");
   }
-  combo->setCurrentIndex(0);
+  QString renderer = gui->getRenderer();
+
+  int currentIndex = renderer == "LDView";
+
+  combo->setCurrentIndex(currentIndex);
   connect(combo,SIGNAL(currentIndexChanged(QString const &)),
           this, SLOT(  typeChange(         QString const &)));
   layout->addWidget(combo);
