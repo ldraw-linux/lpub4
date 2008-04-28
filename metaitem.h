@@ -54,13 +54,13 @@ class StepGroup;
 
 class MetaItem {
 public:
-  void setMeta(const Where &here, LeafMeta *leaf, bool local = false);
   void setGlobalMeta(QString &topLevelFile, LeafMeta *leaf);
-  void setLocalMeta(LeafMeta *leaf, Where topOfStep);
 
   void convertToCallout(       Meta *);
+  void nestCallouts(           const QString & );
   void addCalloutDivider (     Where,   RcMeta *divider);
   void removeCallout(          Context &);
+  void unnestCallouts(         const QString & );
   void updatePointer(          Where,   PointerMeta *pointer);
   void deletePointer(          Where);
 
@@ -77,7 +77,6 @@ public:
   void moveStepNext(           PlacementType, Where, Where, Where, Where);
 
   void convertToIgnore(        Meta *);
-
 
   void changePlacement( PlacementType parentType,
                         PlacementType placedType, 
@@ -160,6 +159,16 @@ public:
                         const Where &, 
                         UnitsMeta *, 
                         bool checkLocal = true);
+
+  void setMetaTopOf(    const Where &,
+                        const Where &,
+                        LeafMeta *,
+                        bool);
+
+  void setMetaBottomOf( const Where &,
+                        const Where &,
+                        LeafMeta *,
+                        bool);
 
   void changePlacementOffset(Where defaultconst, PlacementMeta *placement, bool local = true);  
 
