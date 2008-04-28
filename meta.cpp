@@ -1882,7 +1882,7 @@ Meta::Meta(
  
     tokenMap["PAGE"]         = PageType;
     tokenMap["ASSEM"]        = CsiType;
-    tokenMap["MULT_STEP"]    = StepGroupType;
+    tokenMap["MULTI_STEP"]   = StepGroupType;
     tokenMap["STEP_GROUP"]   = StepGroupType;
     tokenMap["STEP_NUMBER"]  = StepNumberType;
     tokenMap["PLI"]          = PartsListType;
