@@ -67,6 +67,7 @@ class Step : public AbstractRangeElement
     }
 
     int  createCsi(
+	       QString     &fileName,
            QStringList &csiParts,
            QPixmap     *pixmap,
            Meta        &meta);

@@ -795,7 +795,11 @@ int Gui::drawPage(
               exit(-1);
             }
 
-            int rc = step->createCsi(csiParts,step->csiPixmap.pixmap,ranges->meta);
+            int rc = step->createCsi(
+              curFile,
+              csiParts,
+              step->csiPixmap.pixmap,
+              ranges->meta);
 
             statusBar()->showMessage("Processing " + current.modelName);
 
