@@ -44,6 +44,21 @@ Render *renderer;
 
 /***************************************************************************
  *
+ * The math for zoom factor.  1.0 is true size.
+ *
+ * 1 LDU is 1/64 of an inch
+ *
+ * LDGLite produces 72 DPI
+ *
+ * Camera angle is 0.01
+ *
+ * What distance do we need to put the camera, given a user chosen DPI,
+ * to get zoom factor of 1.0?
+ *
+ **************************************************************************/
+
+/***************************************************************************
+ *
  * LDGLite renderer
  *
  **************************************************************************/
@@ -52,15 +67,24 @@ Render *renderer;
 #define CA "-ca0.01"
 
 static double pi = 4*atan(1.0);
-static float LduDistance = 1/tan(0.01*pi/180);
+// the default camera distance for real size
+static float LduDistance = 10.0/tan(0.005*pi/180);
 
 float Render::cameraDistance(
-  Meta *meta,
-  float ldus)
+  Meta &meta,
+  float scale)
 {
-  float ldu = meta->LPub.resolution.ldu();
-  ldus /= ldu;
-  return ldus*LduDistance; 
+  float onexone;
+  float factor;
+
+  // Do the math in pixels
+
+  onexone  = 20*meta.LPub.resolution.ldu(); // size of 1x1 in units
+  onexone *= meta.LPub.resolution.value();  // size of 1x1 in pixels
+  onexone *= scale;
+  factor   = meta.LPub.page.size.value(0)/onexone; // in pixels;
+  
+  return factor*LduDistance; 
 }
 
 int LDGLite::renderCsi(
@@ -85,7 +109,7 @@ int LDGLite::renderCsi(
   
   QStringList arguments;
 
-  int cd = cameraDistance(&meta,meta.LPub.assem.modelSize.value());
+  int cd = cameraDistance(meta,meta.LPub.assem.modelScale.value());
 
   int width = meta.LPub.page.size.value(0);
   int height = meta.LPub.page.size.value(1);
@@ -112,9 +136,9 @@ int LDGLite::renderCsi(
   QStringList list;
   list = meta.LPub.assem.ldgliteParms.value().split("\\s+");
   for (int i = 0; i < list.size(); i++) {
-	if (list[i] != "" && list[i] != " ") {
+    if (list[i] != "" && list[i] != " ") {
       arguments << list[i];
-	}
+    }
   }
 
   arguments << mf;
@@ -147,17 +171,17 @@ int LDGLite::renderCsi(
 int LDGLite::renderPli(
   const QString &ldrName,
   const QString &pngName,
-  Meta    *meta)
+  Meta    &meta)
 {
-  int width  = meta->LPub.page.size.value(0);
-  int height = meta->LPub.page.size.value(1);
-
-  int cd = cameraDistance(meta,meta->LPub.pli.modelSize.value());
-
+  int width  = meta.LPub.page.size.value(0);
+  int height = meta.LPub.page.size.value(1);
+  
   /* determine camera distance */
 
-  QString cg = QString("-cg%1,%2,%3") .arg(meta->LPub.pli.angle.value(0)) 
-                                      .arg(meta->LPub.pli.angle.value(1))
+  int cd = cameraDistance(meta,meta.LPub.pli.modelScale.value());
+
+  QString cg = QString("-cg%1,%2,%3") .arg(meta.LPub.pli.angle.value(0)) 
+                                      .arg(meta.LPub.pli.angle.value(1))
                                       .arg(cd);
 
   QString v  = QString("-v%1,%2")   .arg(width)
@@ -179,7 +203,7 @@ int LDGLite::renderPli(
   arguments << "-q";
 
   QStringList list;
-  list = meta->LPub.pli.ldgliteParms.value().split("\\s+");
+  list = meta.LPub.pli.ldgliteParms.value().split("\\s+");
   for (int i = 0; i < list.size(); i++) {
 	if (list[i] != "" && list[i] != " ") {
       arguments << list[i];
@@ -238,7 +262,7 @@ int LDView::renderCsi(
   
   QStringList arguments;
 
-  int cd = cameraDistance(&meta,meta.LPub.assem.modelSize.value());
+  int cd = cameraDistance(meta,meta.LPub.assem.modelScale.value());
   int width = meta.LPub.page.size.value(0);
   int height = meta.LPub.page.size.value(1);
 
@@ -295,17 +319,17 @@ int LDView::renderCsi(
 int LDView::renderPli(
   const QString &ldrName,
   const QString &pngName,
-  Meta    *meta)
+  Meta    &meta)
 {
-  int width  = meta->LPub.page.size.value(0);
-  int height = meta->LPub.page.size.value(1);
+  int width  = meta.LPub.page.size.value(0);
+  int height = meta.LPub.page.size.value(1);
 
   /* determine camera distance */
   
-  int cd = cameraDistance(meta,meta->LPub.pli.modelSize.value());
+  int cd = cameraDistance(meta,meta.LPub.pli.modelScale.value());
 
-  QString cg = QString("-cg%1,%2,%3") .arg(meta->LPub.pli.angle.value(0)) 
-                                      .arg(meta->LPub.pli.angle.value(1))
+  QString cg = QString("-cg%1,%2,%3") .arg(meta.LPub.pli.angle.value(0)) 
+                                      .arg(meta.LPub.pli.angle.value(1))
                                       .arg(cd);
   QString w  = QString("-SaveWidth=%1")  .arg(width);
   QString h  = QString("-SaveHeight=%1") .arg(height);
@@ -327,7 +351,7 @@ int LDView::renderPli(
   arguments << s;
 
   QStringList list;
-  list = meta->LPub.pli.ldviewParms.value().split("\\s+");
+  list = meta.LPub.pli.ldviewParms.value().split("\\s+");
   for (int i = 0; i < list.size(); i++) {
     if (list[i] != "" && list[i] != " ") {
       arguments << list[i];

@@ -41,7 +41,7 @@ public:
   Meta       meta;
   QString    topLevelFile;
   QList<MetaGui *> children;
-  MetaGui   *modelSize;
+  MetaGui   *modelScale;
 
   GlobalAssemPrivate(QString &_topLevelFile)
   {
@@ -82,11 +82,11 @@ GlobalAssemDialog::GlobalAssemDialog(
   boxGrid->addWidget(child,0,0,1,2);
 
   child = new DoubleSpinGui(
-    "Size",&assem->modelSize,
-    assem->modelSize._min,
-    assem->modelSize._max,
-    1.0,box);
-  data->modelSize = child;
+    "Scale",&assem->modelScale,
+    assem->modelScale._min,
+    assem->modelScale._max,
+    0.1,box);
+  data->modelScale = child;
   data->children.append(child);
   boxGrid->addWidget(child,1,0,1,2);
   
@@ -128,7 +128,7 @@ void GlobalAssemDialog::accept()
 {
   MetaItem mi;
 
-  if (data->modelSize->modified) {
+  if (data->modelScale->modified) {
     void clearCsiCache();
     clearCsiCache();
   }

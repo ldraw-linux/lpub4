@@ -39,9 +39,9 @@ class Render
     Render() {}
     virtual ~Render() {};
     virtual int renderCsi(const QStringList &, const QString &, Meta &) = 0;
-    virtual int renderPli(const QString &,     const QString &, Meta *) = 0;
+    virtual int renderPli(const QString &,     const QString &, Meta &) = 0;
   protected:
-    float cameraDistance(Meta *meta, float);
+    float cameraDistance(Meta &meta, float);
     int rotateParts(      RotStepMeta &rotStep,
                     const QStringList &parts,
                           QString     &ldrName);
@@ -55,7 +55,7 @@ class LDGLite : public Render
     LDGLite() {}
     virtual ~LDGLite() {}
     virtual int renderCsi(const QStringList &, const QString &, Meta &);
-    virtual int renderPli(const QString &,     const QString &, Meta *);
+    virtual int renderPli(const QString &,     const QString &, Meta &);
 };
 
 class LDView : public Render
@@ -64,7 +64,7 @@ class LDView : public Render
     LDView() {}
     virtual ~LDView() {}
     virtual int renderCsi(const QStringList &, const QString &, Meta &);
-    virtual int renderPli(const QString &,     const QString &, Meta *);
+    virtual int renderPli(const QString &,     const QString &, Meta &);
 };
 
 

@@ -185,13 +185,12 @@ void CsiItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
       "  by clicking and dragging it using the mouse.");
   }
 
-  QAction *scaleAction = menu.addAction("Change Size");
-  scaleAction->setWhatsThis("Change Size:\n"
+  QAction *scaleAction = menu.addAction("Change Scale");
+  scaleAction->setWhatsThis("Change Scale:\n"
     "  You can change the size of this assembly image using the scale\n"
-    "  dialog (window).  You can make the render window larger, which\n"
-    "  makes this assembly image larger, and the final image has more\n"
-    "  pixels (e.g. higher resolution.  You can make the render window\n"
-    "  smaller");
+    "  dialog (window).  A scale of 1.0 is true size.  A scale of 2.0\n"
+    "  doubles the size of your model.  A scale of 0.5 makes your model\n"
+    "  half real size\n");
        
   QAction *marginsAction = menu.addAction("Change Assembly Margins");
 
@@ -289,7 +288,7 @@ void CsiItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
                         "Model Size",
                         step->context.topOfRanges(), 
                         step->context.bottomOfRanges(), 
-                        &meta->LPub.assem.modelSize, 
+                        &meta->LPub.assem.modelScale, 
                         false);
       break;
       case CalloutType:
@@ -297,7 +296,7 @@ void CsiItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
                         "Model Size",
                         step->topOfRanges(), 
                         step->bottomOfRanges(), 
-                        &meta->LPub.assem.modelSize, 
+                        &meta->LPub.assem.modelScale, 
                         false);
       break;
       default:
@@ -305,7 +304,7 @@ void CsiItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
                         "Model Size",
                         step->context.topOfStep(), 
                         step->context.bottomOfStep(), 
-                        &meta->LPub.assem.modelSize);
+                        &meta->LPub.assem.modelScale);
       break;
     }
   } else if (selectedAction == marginsAction) {

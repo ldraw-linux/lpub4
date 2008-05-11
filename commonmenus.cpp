@@ -309,14 +309,14 @@ QAction* CommonMenus::scaleMenu(
         QMenu   &menu, 
   const QString  name)
 {
-  QString formatted = QString("Change %1Size") .arg(name);
+  QString formatted = QString("Change %1Scalee") .arg(name);
 
   QAction *action;
   action = menu.addAction(formatted);
 
   action->setWhatsThis(
     "You can make %1look bigger or smaller on the page by changing the scale."
-    "If you're bricks keep getting smaller as you add bricks, make the scale larger.");
+    "A scale of 1 is true size.  A scale of 2 is double true size\n");
 
   return action;
 }

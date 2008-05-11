@@ -250,7 +250,7 @@ int Pli::createPartImage(
   QPixmap  *pixmap,
   Meta     *meta)
 {
-  float modelSize = meta->LPub.pli.modelSize.value();
+  float modelScale = meta->LPub.pli.modelScale.value();
   ResolutionType resolutionType = meta->LPub.resolution.type();
   QString        unitsName = resolutionType ? "DPI" : "DPCM";
   float          resolution    = meta->LPub.resolution.value();
@@ -260,7 +260,7 @@ int Pli::createPartImage(
                     .arg(meta->LPub.page.size.value(0)) 
                     .arg(resolution)
                     .arg(resolutionType == DPI ? "DPI" : "DPCM")
-                    .arg(modelSize)
+                    .arg(modelScale)
                     .arg(meta->LPub.pli.angle.value(0))
                     .arg(meta->LPub.pli.angle.value(1));
   QString imageName = QDir::currentPath() + "/" +
@@ -289,7 +289,7 @@ int Pli::createPartImage(
       
     // feed DAT to LDGLite
   
-    int rc = renderer->renderPli(ldrName,imageName,meta);
+    int rc = renderer->renderPli(ldrName,imageName,*meta);
   
     if (rc != 0) {
       QMessageBox::warning(NULL,QMessageBox::tr(LPUB),
@@ -1210,15 +1210,15 @@ void PliBackgroundItem::contextMenuEvent(
       
       QAction *constrainAction  = menu.addAction("Change Shape");
       constrainAction->setWhatsThis(             "Change Shape:\n"
-                                                 "  You can change the shape of this parts list.  One way, is\n"
-                                                 "  is to ask the computer to make the parts list as small as\n"
-                                                 "  possible (area). Another way is to ask the computer to\n"
-                                                 "  make it as close to square as possible.  You can also pick\n"
-                                                 "  how wide you want it, and the computer will make it as\n"
-                                                 "  tall as is needed.  Another way is to pick how tall you\n"
-                                                 "  and it, and the computer will make it as wide as it needs.\n"
-                                                 "  The last way is to tell the computer how many columns it\n"
-                                                 "  can have, and then it will try to make all the columns the\n"
+        "  You can change the shape of this parts list.  One way, is\n"
+        "  is to ask the computer to make the parts list as small as\n"
+        "  possible (area). Another way is to ask the computer to\n"
+        "  make it as close to square as possible.  You can also pick\n"
+        "  how wide you want it, and the computer will make it as\n"
+        "  tall as is needed.  Another way is to pick how tall you\n"
+        "  and it, and the computer will make it as wide as it needs.\n"
+        "  The last way is to tell the computer how many columns it\n"
+        "  can have, and then it will try to make all the columns the\n"
                                                  "  same height\n");
       PlacementMeta *placementMeta;
 
@@ -1389,7 +1389,7 @@ void PGraphicsPixmapItem::contextMenuEvent(
       "Model Size",
       pli->range.topOf,
       pli->range.bottomOf,
-      &meta->LPub.pli.modelSize);
+      &meta->LPub.pli.modelScale);
     gui->clearPLICache();
   }
 }

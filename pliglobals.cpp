@@ -114,9 +114,9 @@ GlobalPliDialog::GlobalPliDialog(
   box->setLayout(partsLayout);
 
   child = new DoubleSpinGui(
-    "Size",&pliMeta->modelSize,
-    pliMeta->modelSize._min,
-    pliMeta->modelSize._max,
+    "Scale",&pliMeta->modelScale,
+    pliMeta->modelScale._min,
+    pliMeta->modelScale._max,
     1.0,box);
   data->children.append(child);
   partsLayout->addWidget(child);
