@@ -60,7 +60,7 @@ void Gui::open()
       this,
       tr("Open LDraw File"),
       Paths::ldrawPath + "\\MODELS",
-      tr("LDraw Files (*.DAT *.LDR *.MPD *.dat *.ldr *.mpd)\nAll Files (*.*)"));
+      tr("LDraw Files (*.DAT;*.LDR;*.MPD;*.dat;*.ldr;*.mpd"));
 
     if (!fileName.isEmpty()) {
         openFile(fileName);
@@ -718,6 +718,15 @@ void Gui::setRenderer(
   }
 }
 
+QString const Gui::getRenderer()
+{
+  if (renderer == &ldglite) {
+    return "LDGLite";
+  } else {
+    return "LDView";
+  }
+}
+
 Gui::Gui()
 {
     displayPageNum = 1;
@@ -790,6 +799,12 @@ Gui::Gui()
     qt_mac_set_native_menubar(true);
 #endif
 
+#if 0
+  QDialog *preferences = new QDialog;
+  Ui::Dialog preferencesForm;
+  preferencesForm.setupUi(preferences);
+  preferences->show();
+#endif
 }
 
 Gui::~Gui()
