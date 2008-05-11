@@ -404,6 +404,7 @@ public:
   }
   void    displayPage();
   void    setRenderer(QString const &);
+  QString const getRenderer();
 
   /* We need to send ourselved these, to eliminate resursion and the model
    * changing under foot */
