@@ -1335,7 +1335,7 @@ public:
   // bottom == cur step
   MarginsMeta   margin;
   PlacementMeta placement;
-  FloatMeta     modelSize;
+  FloatMeta     modelScale;
   StringMeta    ldviewParms;
   StringMeta    ldgliteParms;
   AssemMeta();
@@ -1355,7 +1355,7 @@ public:
   NumberMeta     annotate;
   PlacementMeta  placement;
   ConstrainMeta  constrain;
-  FloatMeta      modelSize;
+  FloatMeta      modelScale;
   FloatPairMeta  angle;
   PartMeta       part;
   PliBeginMeta   begin;

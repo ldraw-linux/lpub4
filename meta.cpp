@@ -1534,9 +1534,9 @@ void PageMeta::init(BranchMeta *parent, QString name)
 AssemMeta::AssemMeta()
 {
   placement.setValue(Center,Center,PageType,Inside);
-  modelSize.setRange(1.0,10000.0);
-  modelSize.setFormats(7,1,"99999.9");
-  modelSize.setValue(12.0);
+  modelScale.setRange(-10000.0,10000.0);
+  modelScale.setFormats(7,1,"99999.9");
+  modelScale.setValue(1.0);
   ldgliteParms.setValue("-fh -w1");
   ldviewParms.setValue("");
 }
@@ -1545,7 +1545,7 @@ void AssemMeta::init(BranchMeta *parent, QString name)
   AbstractMeta::init(parent, name);
   margin.init       (this,"MARGINS");
   placement.init    (this,"PLACEMENT");
-  modelSize.init    (this,"MODEL_SIZE");
+  modelScale.init   (this,"MODEL_SCALE");
   ldviewParms.init  (this,"LDGLITE_PARMS");
   ldgliteParms.init (this,"LDVIEW_PARMS");
 }
@@ -1571,9 +1571,9 @@ PliMeta::PliMeta()
   margin.setValueUnits(0.0,0.0);
   // instance - default
   // annotate - default
-  modelSize.setRange(1.0,10000.0);
-  modelSize.setFormats(7,1,"99999.9");
-  modelSize.setValue(12.0);
+  modelScale.setRange(-10000.0,10000.0);
+  modelScale.setFormats(7,1,"99999.9");
+  modelScale.setValue(1.0);
   angle.setValues(23,-45);
   angle.setRange(-360.0,360.0);
   angle.setFormats(6,1,"#999.9");
@@ -1600,7 +1600,7 @@ void PliMeta::init(BranchMeta *parent, QString name)
   margin       .init(this,"MARGINS");
   instance     .init(this,"INSTANCE_COUNT");
   annotate     .init(this,"ANNOTATE");
-  modelSize    .init(this,"MODEL_SIZE");
+  modelScale   .init(this,"MODEL_SCALE");
   angle        .init(this,"VIEW_ANGLE");
   show         .init(this,"SHOW");
   ldviewParms  .init(this,"LDVIEW_PARMS");
