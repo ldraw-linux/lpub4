@@ -694,7 +694,7 @@ void MetaItem::removeCallout(
       deleteMeta(walk);
     }
   }
-  unnestCallouts(modelName);
+  //unnestCallouts(modelName);
   endMacro();
 }
 
