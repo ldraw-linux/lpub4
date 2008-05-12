@@ -31,10 +31,50 @@
 #include <QGraphicsSceneContextMenuEvent>
 #include <QFileDialog>
 #include "commonmenus.h"
+#include "ranges_element.h"
+#include "range.h"
+#include "range_element.h"
+#include "step.h"
 
 void PageBackgroundItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 {
   QMenu menu;
+
+  // figure out if first step step number is greater than 1
+
+  QAction *addNextAction = NULL;
+
+  Step    *lastStep;
+  AbstractRangesElement *range = page->list[page->list.size()-1];
+  if (range->relativeType == RangeType) {
+    AbstractRangeElement *rangeElement = range->list[range->list.size()-1];
+    if (rangeElement->relativeType == StepType) {
+      lastStep = dynamic_cast<Step *> (rangeElement);
+      MetaItem mi;
+      int numSteps = mi.numSteps(lastStep->context.topOfFile().modelName);
+      if (lastStep->stepNumber.number != numSteps) {
+        addNextAction = menu.addAction("Add Next Step");
+        addNextAction->setWhatsThis("Add Next Step:\n Add the first step of the next page to this page\n");
+      }
+    }
+  }
+
+  // figure out if first step step number is greater than 1
+
+  QAction *addPrevAction = NULL;
+
+  Step    *firstStep;
+  range = page->list[0];
+  if (range->relativeType == RangeType) {
+    AbstractRangeElement *rangeElement = range->list[0];
+    if (rangeElement->relativeType == StepType) {
+      firstStep = dynamic_cast<Step *> (rangeElement);
+      if (firstStep->stepNumber.number > 1) {
+        addPrevAction = menu.addAction("Add Previous Step");
+        addPrevAction->setWhatsThis("Add Previous Step:\n Add the last step of the previous page to this page\n");
+      }
+    }
+  }
 
   QAction *calloutAction = NULL;
   QAction *ignoreAction = NULL;
@@ -42,8 +82,8 @@ void PageBackgroundItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
   if (page->meta.submodelStack.size() > 0) {
     calloutAction = menu.addAction("Convert to Callout");
     calloutAction->setWhatsThis("Convert to Callout:\n"
-                                "  A callout shows how to build these steps in a picture next\n"
-                                "  to where it is added the the set you are building");
+      "  A callout shows how to build these steps in a picture next\n"
+      "  to where it is added the the set you are building");
   
     ignoreAction  = menu.addAction("Ignore this submodel");
     ignoreAction->setWhatsThis("Stops these steps from showing up in your instructions");
@@ -61,5 +101,17 @@ void PageBackgroundItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
   } else if (selectedAction == ignoreAction) {
     convertToIgnore(&page->meta);
 
+  } else if (selectedAction == addNextAction) {
+    if (relativeType == StepGroupType) {
+      addNextStep(lastStep->topOfRanges());
+    } else {
+      addNextStep(lastStep->context.topOfStep());
+    }
+  } else if (selectedAction == addPrevAction) {
+    if (relativeType == StepGroupType) {
+      addPrevStep(firstStep->topOfRanges());
+    } else {
+      addPrevStep(firstStep->context.topOfStep());
+    }
   }
 }
