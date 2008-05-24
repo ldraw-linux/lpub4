@@ -49,14 +49,16 @@
  * delete all the GraphicsItems and do a freeRanges.
  */
 
-void Gui::clearPage()
+void Gui::clearPage(
+  LGraphicsView  *view,
+  QGraphicsScene * /* scene - unused */)
 {
   page.freeRanges();
   page.pli.clear();
 
-  if (pageView->pageBackgroundItem) {
-    delete pageView->pageBackgroundItem;
-    pageView->pageBackgroundItem = NULL;
+  if (view->pageBackgroundItem) {
+    delete view->pageBackgroundItem;
+    view->pageBackgroundItem = NULL;
   }
 }
 
@@ -69,13 +71,14 @@ void Gui::clearPage()
 
 int Gui::addGraphicsPageItems(
   Ranges         *ranges,
+  LGraphicsView  *view,
   QGraphicsScene *scene)
 {
   statusBarMsg("Displaying Page");
 
   PageBackgroundItem *pageBg = new PageBackgroundItem(ranges);
 
-  pageView->pageBackgroundItem = pageBg;
+  view->pageBackgroundItem = pageBg;
 
   Placement plPage;
   plPage.relativeType = PageType;
@@ -252,16 +255,16 @@ int Gui::addGraphicsPageItems(
   }
   scene->addItem(pageBg);
 
-  pageView->setSceneRect(0,0,ranges->meta.LPub.page.size.value(0),
+  view->setSceneRect(0,0,ranges->meta.LPub.page.size.value(0),
                              ranges->meta.LPub.page.size.value(1));
 
-  pageView->horizontalScrollBar()->setRange(0,ranges->meta.LPub.page.size.value(0));
-  pageView->verticalScrollBar()->setRange(0,ranges->meta.LPub.page.size.value(1));
+  view->horizontalScrollBar()->setRange(0,ranges->meta.LPub.page.size.value(0));
+  view->verticalScrollBar()->setRange(0,ranges->meta.LPub.page.size.value(1));
 
   if (fitMode == FitWidth) {
-    fitWidth();
+    fitWidth(view);
   } else if (fitMode == FitVisible) {
-    fitVisible();
+    fitVisible(view);
   }
 
 #if 0
