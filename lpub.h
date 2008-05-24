@@ -347,7 +347,8 @@
 #include <QDateTime>
 #include <QFileSystemWatcher>
 #include <QComboBox>
-
+#include <QPrinter>
+ 
 #include "color.h"
 #include "partslist.h"
 #include "ranges.h"
@@ -389,6 +390,7 @@ class Gui : public QMainWindow
 public:
   Gui();
   ~Gui();
+  
   FitMode fitMode;         // how to fit the scene into the view
   bool    ldrawFileContains(const QString &fileName) 
   { 
@@ -408,9 +410,10 @@ public:
 
   /* We need to send ourselved these, to eliminate resursion and the model
    * changing under foot */
-  void drawPage();                 // this is the workhorse for preparing a
-                                   // page for viewing.  It depends heavily
-                                   // on the next two functions
+  void drawPage(                   // this is the workhorse for preparing a
+    LGraphicsView *view,           // page for viewing.  It depends heavily
+    QGraphicsScene *scene);        // on the next two functions
+  
   int  numSteps(const QString &modelName)
   {
     return ldrawFile.numSteps(modelName);
@@ -440,6 +443,11 @@ public:
   }
 
   int             maxPages;
+  
+  LGraphicsView *pageview()
+  {
+    return KpageView;
+  }
 
 public slots:
 
@@ -479,8 +487,10 @@ public slots:
   void calloutSetup();
   void multiStepSetup();
   void projectSetup();
-  void fitWidth();
-  void fitVisible();
+  
+  void fitWidth(  LGraphicsView *view);
+  void fitVisible(LGraphicsView *view);
+  void actualSize(LGraphicsView *view);
 
   void clearPLICache();
   void clearCSICache();
@@ -500,8 +510,8 @@ private:
   int             displayPageNum;  // what page are we displaying
   Ranges          page;            // the abstract version of page contents
 
-  QGraphicsScene *pageScene;       // top of displayed page's graphics items
-  LGraphicsView  *pageView;        // the visual representation of the scene
+  QGraphicsScene *KpageScene;       // top of displayed page's graphics items
+  LGraphicsView  *KpageView;        // the visual representation of the scene
 
   LDrawFile       ldrawFile;       // contains MPD or all files used in model
   QString         curFile;         // the file name for MPD, or top level file
@@ -520,11 +530,15 @@ private:
   void countPages();
 
   int findPage(                    // traverse the hierarchy until we get to the
-    int         &pageNum,          // page of interest, let traverse process the
-    Where        current,          // page, and then finish by counting the rest
-    Meta        &meta);            // of the pages
+    LGraphicsView  *view,          // page of interest, let traverse process the
+	QGraphicsScene *scene,         // page, and then finish by counting the rest
+    int         &pageNum,          // of the pages
+    Where        current,    
+	Meta        &meta);
 
   int drawPage(                    // process the page of interest and any callouts
+    LGraphicsView  *view,
+	QGraphicsScene *scene,
     Ranges      *ranges,
     int          stepNum,
     Where       &current,
@@ -534,7 +548,8 @@ private:
     bool         calledOut = false);
 
   int addGraphicsPageItems(        // this converts the abstract page into
-    Ranges         *ranges,         // a graphics scene
+    Ranges         *ranges,        // a graphics view
+	LGraphicsView  *view, 
     QGraphicsScene *scene);
 
 private slots:
@@ -554,9 +569,8 @@ private slots:
     void firstPage();
     void lastPage();
 
-    void actualSize();
-    void zoomIn();
-    void zoomOut();
+    void zoomIn(LGraphicsView *view);
+    void zoomOut(LGraphicsView *view);
 
     void printToFile();
 
@@ -564,7 +578,9 @@ private slots:
 
     void mpdComboChanged(int index);
 
-    void clearPage();
+    void clearPage(
+	  LGraphicsView  *view,
+	  QGraphicsScene *scene);
 
     void redrawPage();
 
@@ -589,8 +605,17 @@ public:
       list.append(centralWidget()->width()/4);
     }
 
+  void    getARenderer();
+  void bestPageSizeOrientation(
+    float widthMm,
+    float heightMm,
+    QPrinter::PageSize &pageSize,
+    QPrinter::Orientation &orientation);
+	
 private:
   /* Initialization stuff */
+  QString getPreferredRenderer();
+  void    setPreferredRenderer(QString &renderer);
 
   void createActions();
   void createMenus();
@@ -682,18 +707,19 @@ public:
   LGraphicsView(QGraphicsScene *scene)
   {
     setScene(scene);
+	pageBackgroundItem = NULL;
   }
   PageBackgroundItem *pageBackgroundItem;
 
 protected:
-  void resizeEvent(QResizeEvent *event)
+    
+  void resizeEvent(QResizeEvent * /* unused */)
   {
-    event = event;
     if (pageBackgroundItem) {
       if (gui->fitMode == FitVisible) {
-        gui->fitVisible();
+        gui->fitVisible(gui->pageview());
       } else if (gui->fitMode == FitWidth) {
-        gui->fitWidth();
+        gui->fitWidth(gui->pageview());
       }
     }
   }

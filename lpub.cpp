@@ -30,6 +30,7 @@
 #include "paths.h"
 #include "globals.h"
 #include "render.h"
+#include "resolution.h"
 
 Gui *gui;
 
@@ -60,7 +61,7 @@ void Gui::open()
       this,
       tr("Open LDraw File"),
       Paths::ldrawPath + "\\MODELS",
-      tr("LDraw Files (*.DAT;*.LDR;*.MPD;*.dat;*.ldr;*.mpd"));
+      tr("LDraw Files (*.DAT;*.LDR;*.MPD;*.dat;*.ldr;*.mpd)"));
 
     if (!fileName.isEmpty()) {
         openFile(fileName);
@@ -179,7 +180,7 @@ void Gui::openRecentFile()
   QAction *action = qobject_cast<QAction *>(sender());
   if (action) {
     QString fileName = action->data().toString();
-    clearPage();
+    clearPage(KpageView,KpageScene);
     QFileInfo info(fileName);
     QDir::setCurrent(info.absolutePath());
     openFile(fileName);
@@ -192,8 +193,8 @@ void Gui::openRecentFile()
 void Gui::displayPage()
 {
   if (macroNesting == 0) {
-    clearPage();
-    drawPage();
+    clearPage(KpageView,KpageScene);
+    drawPage(KpageView,KpageScene);
   }
 }
 
@@ -257,100 +258,242 @@ void Gui::setPage()
   setPageLineEdit->setText(string);
 }
 
-void Gui::fitWidth()
+void Gui::fitWidth(
+  LGraphicsView *view)
 {
-  pageView->scale(1.0,1.0);
+  view->scale(1.0,1.0);
 
   QRectF rect(0,0,page.meta.LPub.page.size.value(0),page.meta.LPub.page.size.value(1));
 
-  QRectF unity = pageView->matrix().mapRect(QRectF(0,0,1,1));
-  pageView->scale(1/unity.width(), 1 / unity.height());
+  QRectF unity = view->matrix().mapRect(QRectF(0,0,1,1));
+  view->scale(1/unity.width(), 1 / unity.height());
 
   int margin = 2;
-  QRectF viewRect = pageView->viewport()->rect().adjusted(margin, margin, -margin, -margin);
-  QRectF sceneRect = pageView->matrix().mapRect(rect);
+  QRectF viewRect = view->viewport()->rect().adjusted(margin, margin, -margin, -margin);
+  QRectF sceneRect = view->matrix().mapRect(rect);
   qreal xratio = viewRect.width() / sceneRect.width();
 
-  pageView->scale(xratio,xratio);
-  pageView->centerOn(rect.center());
+  view->scale(xratio,xratio);
+  view->centerOn(rect.center());
   fitMode = FitWidth;
 }
 
-void Gui::fitVisible()
+void Gui::fitVisible(
+  LGraphicsView *view)
 {
-  pageView->scale(1.0,1.0);
+  view->scale(1.0,1.0);
 
   QRectF rect(0,0,page.meta.LPub.page.size.value(0),page.meta.LPub.page.size.value(1));
 
-  QRectF unity = pageView->matrix().mapRect(QRectF(0,0,1,1));
-  pageView->scale(1/unity.width(), 1 / unity.height());
+  QRectF unity = view->matrix().mapRect(QRectF(0,0,1,1));
+  view->scale(1/unity.width(), 1 / unity.height());
 
   int margin = 2;
-  QRectF viewRect = pageView->viewport()->rect().adjusted(margin, margin, -margin, -margin);
-  QRectF sceneRect = pageView->matrix().mapRect(rect);
+  QRectF viewRect = view->viewport()->rect().adjusted(margin, margin, -margin, -margin);
+  QRectF sceneRect = view->matrix().mapRect(rect);
   qreal xratio = viewRect.width() / sceneRect.width();
   qreal yratio = viewRect.height() / sceneRect.height();
 
   xratio = yratio = qMin(xratio,yratio);
-  pageView->scale(xratio,yratio);
-  pageView->centerOn(rect.center());
+  view->scale(xratio,yratio);
+  view->centerOn(rect.center());
   fitMode = FitVisible;
 }
 
-void Gui::actualSize()
+void Gui::actualSize(
+  LGraphicsView *view)
 {
-  pageView->resetMatrix();
+  view->resetMatrix();
   fitMode = FitNone;
 }
 
-void Gui::zoomIn()
+void Gui::zoomIn(
+  LGraphicsView *view)
 {
   fitMode = FitNone;
-  pageView->scale(1.1,1.1);
+  view->scale(1.1,1.1);
 }
 
-void Gui::zoomOut()
+void Gui::zoomOut(
+  LGraphicsView *view)
 {
   fitMode = FitNone;
-  pageView->scale(1.0/1.1,1.0/1.1);
+  view->scale(1.0/1.1,1.0/1.1);
+}
+
+struct PageSizes {
+  QPrinter::PageSize pageSize;
+  float              width;
+  float              height;
+} pageSizes[] = { 
+  { QPrinter::A0,         841, 1189 },
+  { QPrinter::A1,         594,  841 },
+  { QPrinter::A2,         420,  594 },
+  { QPrinter::A3,         297,  420 },
+  { QPrinter::A4,         210,  297 },
+  { QPrinter::A5,         148,  210 },
+  { QPrinter::A6,         105,  148 },
+  { QPrinter::A7,          74,  105 },
+  { QPrinter::A8,          52,   74 },
+  { QPrinter::A9,          37,   52 },
+  { QPrinter::B0,        1030, 1456 },
+  { QPrinter::B1,         728, 1030 },
+  { QPrinter::B10,         32,   45 },
+  { QPrinter::B2,         515,  728 },
+  { QPrinter::B3,         364,  515 },
+  { QPrinter::B4,         257,  364 },
+  { QPrinter::B5,         182,  257 },
+  { QPrinter::B6,         128,  182 },
+  { QPrinter::B7,          91,  128 },
+  { QPrinter::B8,          64,   91 },
+  { QPrinter::B9,          45,   64 },
+  { QPrinter::C5E,        163,  229 },
+  { QPrinter::Comm10E,    105,  241 },
+  { QPrinter::DLE,        110,  220 },
+  { QPrinter::Executive,  191,  254 },
+  { QPrinter::Folio,      210,  330 },
+  { QPrinter::Legal,      216,  356 },
+  { QPrinter::Letter,     216,  279 },
+  { QPrinter::Tabloid,    279,  432 },
+};
+
+void Gui::bestPageSizeOrientation(
+  float widthMm,
+  float heightMm,
+  QPrinter::PageSize &pageSize,
+  QPrinter::Orientation &orient)
+{
+  int   numPageSizes = sizeof(pageSizes)/sizeof(pageSizes[0]);
+  float diffWidth;
+  float diffHeight;
+  bool  fit = false;
+  
+  for (int i = 0; i < numPageSizes; i++) {
+ 
+    float widthDiff = pageSizes[i].width - widthMm;
+	float heightDiff = pageSizes[i].height - heightMm;
+	
+    if (widthDiff >= 0  && heightDiff >= 0) {
+	  if (fit) {
+		if (widthDiff < diffWidth && heightDiff < diffHeight) {
+		  pageSize = pageSizes[i].pageSize;
+		  orient = QPrinter::Portrait;
+		  diffWidth = widthDiff;
+		  diffHeight = heightDiff;
+		}
+	  } else {
+	    fit = true;
+		pageSize = pageSizes[i].pageSize;
+		orient = QPrinter::Portrait;
+		diffWidth  = widthDiff;
+		diffHeight = heightDiff;
+	  }
+	}
+ 
+    widthDiff = pageSizes[i].height - widthMm;
+	heightDiff  = pageSizes[i].width - heightMm;
+	
+    if (widthDiff >= 0  && heightDiff >= 0) {
+	  if (fit) {
+		if (widthDiff < diffWidth && heightDiff < diffHeight) {
+		  pageSize = pageSizes[i].pageSize;
+		  orient = QPrinter::Landscape;
+		  diffWidth = widthDiff;
+		  diffHeight = heightDiff;
+		}
+	  } else {
+	    fit = true;
+		pageSize = pageSizes[i].pageSize;
+		orient = QPrinter::Portrait;
+		diffWidth  = widthDiff;
+		diffHeight = heightDiff;
+	  }
+	}
+  }
 }
 
 void Gui::printToFile()
 {
   QPrinter printer(QPrinter::HighResolution);
-  printer.setPageSize(QPrinter::A4);
+#if 0
   if (page.meta.LPub.page.size.value(0) > page.meta.LPub.page.size.value(1)) {
     printer.setOrientation(QPrinter::Landscape);
   } else {
     printer.setOrientation(QPrinter::Portrait);
   }
+  printer.setPageSize(QPrinter::Letter);
+#else
+  float pageWidth = page.meta.LPub.page.size.valueUnit(0);
+  float pageHeight = page.meta.LPub.page.size.valueUnit(1);
+  if (page.meta.LPub.resolution.type() == DPI) {
+    // convert to MM
+	pageWidth = int(inches2centimeters(pageWidth)*10);
+	pageHeight = int(inches2centimeters(pageHeight)*10);
+  }
+  QPrinter::PageSize pageSize;
+  QPrinter::Orientation orientation;
+  bestPageSizeOrientation(pageWidth,pageHeight,pageSize,orientation);
+	
+  printer.setOrientation(orientation);
+  printer.setPageSize(pageSize);
+#endif  
+  printer.setFullPage(true);
+
+  QFileInfo fileInfo(curFile);
+  QString   baseName = fileInfo.baseName();
 
   QString fileName = QFileDialog::getSaveFileName(
-    this,tr("Print File Name"),QDir::currentPath(),tr("PDF (*.pdf)"));
+    this,
+	tr("Print File Name"),
+	QDir::currentPath() + "/" + baseName,
+	tr("PDF (*.pdf)\nPDF (*.PDF)"));
 
+  fileInfo.setFile(fileName);
+  QString suffix = fileInfo.suffix();
+  if (suffix == "") {
+    fileName += ".pdf";
+  } else if (suffix != ".pdf" && suffix != ".PDF") {
+    fileName = fileInfo.baseName() + ".pdf";
+  }
+  
   printer.setOutputFileName(fileName);
+
   QPainter painter;
   painter.begin(&printer);
 
   int savePageNumber = displayPageNum;
+  
+  QGraphicsScene scene;
+  LGraphicsView  view(&scene);
+  QRectF boundingRect(0.0,0.0,page.meta.LPub.page.size.value(0),page.meta.LPub.page.size.value(1));
+  QRect  bounding(0,0,page.meta.LPub.page.size.value(0),page.meta.LPub.page.size.value(1));
+  view.setMinimumSize(page.meta.LPub.page.size.value(0),page.meta.LPub.page.size.value(1));
+  view.setMaximumSize(page.meta.LPub.page.size.value(0),page.meta.LPub.page.size.value(1));
+  view.setGeometry(bounding);
+  view.setSceneRect(boundingRect);
+  view.setRenderHints(QPainter::Antialiasing | 
+					  QPainter::TextAntialiasing |
+					  QPainter::SmoothPixmapTransform);
 
+  view.scale(3.0,3.0);
+  view.centerOn(boundingRect.center());
+  clearPage(&view,&scene);
+  
   for (displayPageNum = 1; displayPageNum <= maxPages; displayPageNum++) {
 
-    clearPage();
     qApp->processEvents();
-    drawPage();
-
-    pageView->render(&painter);
+	
+    drawPage(&view,&scene);
+    view.render(&painter);
+    clearPage(&view,&scene);
 
     if (maxPages - displayPageNum > 0) {
       printer.newPage();
     }
-
   }
   painter.end();
   displayPageNum = savePageNumber;
-  clearPage();
-  drawPage();
+  drawPage(KpageView,KpageScene);
 }
 
 void Gui::fileChanged(const QString &path)
@@ -363,7 +506,7 @@ void Gui::fileChanged(const QString &path)
   if (ret == QMessageBox::Apply) {
     QString fileName = path;
     openFile(fileName);
-    drawPage();
+    drawPage(KpageView,KpageScene);
   }
 }
 
@@ -519,7 +662,7 @@ void Gui::openFile(QString &fileName)
     }
   }
 
-  clearPage();
+  clearPage(KpageView,KpageScene);
   closeFile();
   displayPageNum = 1;
   QFileInfo info(fileName);
@@ -727,22 +870,46 @@ QString const Gui::getRenderer()
   }
 }
 
+QString Gui::getPreferredRenderer()
+{
+  QSettings settings(LPUB, SETTINGS);
+  return settings.value("preferredRenderer").toString();
+}
+
+void Gui::setPreferredRenderer(QString &preferredRenderer)
+{
+  QSettings settings(LPUB, SETTINGS);
+  settings.setValue("preferredRenderer", preferredRenderer);
+}
+
+void Gui::getARenderer()
+{
+    QString preferredRenderer = getPreferredRenderer();
+	
+	if (preferredRenderer == "LDGLite" && Paths::ldgliteExe != "") {
+      renderer = &ldglite;
+	} else if (preferredRenderer == "LDView" && Paths::ldviewExe != "") {
+	  renderer = &ldview;
+	} else if (Paths::ldgliteExe != "") {
+	  renderer = &ldglite;
+	} else if (Paths::ldviewExe != "") {
+	  renderer = &ldview;
+	}
+}
+
 Gui::Gui()
 {
     displayPageNum = 1;
 
-    //renderer = &ldview;
-    renderer = &ldglite;
-
     editWindow    = new EditWindow();
-    pageScene     = new QGraphicsScene(this);
-    pageScene->setBackgroundBrush(Qt::lightGray);
-    pageView      = new LGraphicsView(pageScene);
-    pageView->pageBackgroundItem = NULL;
-    pageView->setRenderHints(QPainter::Antialiasing | 
+    KpageScene    = new QGraphicsScene(this);
+    KpageScene->setBackgroundBrush(Qt::lightGray);
+    KpageView     = new LGraphicsView(KpageScene);
+    KpageView->pageBackgroundItem = NULL;
+    KpageView->setRenderHints(QPainter::Antialiasing | 
                              QPainter::TextAntialiasing |
                              QPainter::SmoothPixmapTransform);
-    setCentralWidget(pageView);
+    setCentralWidget(KpageView);
 
     mpdCombo = new QComboBox;
     mpdCombo->setEditable(false);
@@ -809,8 +976,8 @@ Gui::Gui()
 
 Gui::~Gui()
 {
-    delete pageScene;
-    delete pageView;
+    delete KpageScene;
+    delete KpageView;
     delete editWindow;
 }
 
