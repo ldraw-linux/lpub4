@@ -37,6 +37,8 @@ int main(int argc, char *argv[])
     Paths::getLdglitePath(&ok,false,&LPubWin);
     Paths::getLdviewPath(&ok,false,&LPubWin);
     Paths::getPliPath(&ok,false,&LPubWin);
+		
+    LPubWin.getARenderer();
 
     return app.exec();
 }
