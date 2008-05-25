@@ -217,6 +217,8 @@ void endOfPage(
  */
 
 int Gui::drawPage(
+  LGraphicsView  *view,
+  QGraphicsScene *scene,
   Ranges      *ranges,
   int          stepNum,
   Where       &current,
@@ -345,6 +347,8 @@ int Gui::drawPage(
           int rc;
 
           rc = drawPage(
+		         view,
+				 scene,
                  callout,
                  1,
                  current2,
@@ -649,7 +653,7 @@ int Gui::drawPage(
           } else {
             callout = new Callout(step,
                                   calledOut ? CalloutType : ranges->relativeType,
-                                  ranges->meta,pageView);
+                                  ranges->meta,view);
             callout->meta.context.setTopOfRanges(current);
           }
         break;
@@ -733,7 +737,7 @@ int Gui::drawPage(
             /* this is a page we're supposed to process */
 
             endOfPage(current,ranges,range,pli);
-            addGraphicsPageItems(ranges, pageScene);
+            addGraphicsPageItems(ranges, view, scene);
             return HitEndOfPage;
           }
         break;
@@ -821,7 +825,7 @@ int Gui::drawPage(
               return 0;
             } else {
               endOfPage(current,ranges,range,pli);
-              addGraphicsPageItems(ranges,pageScene);
+              addGraphicsPageItems(ranges,view,scene);
               return HitEndOfPage;
             }
           }
@@ -885,7 +889,7 @@ int Gui::drawPage(
     /* this is a page we're supposed to process */
 
     endOfPage(current,ranges,range,pli);
-    addGraphicsPageItems(ranges, pageScene);
+    addGraphicsPageItems(ranges, view, scene);
     return HitEndOfPage;
   }
 
@@ -904,7 +908,7 @@ void Gui::countPages()
     displayPageNum = 1 << 31;
     maxPages       = 1;
     Meta meta;
-    findPage(maxPages,current,meta);
+    findPage(KpageView,KpageScene,maxPages,current,meta);
     maxPages--;
     if (displayPageNum > maxPages) {
       displayPageNum = maxPages;
@@ -917,7 +921,9 @@ void Gui::countPages()
   }
 }         
 
-void Gui::drawPage()
+void Gui::drawPage(
+  LGraphicsView  *view,
+  QGraphicsScene *scene)
 {
 
   QApplication::setOverrideCursor(Qt::WaitCursor);
@@ -925,7 +931,7 @@ void Gui::drawPage()
   Where       current(ldrawFile.topLevelFile(),0);
   maxPages = 1;
   Meta meta;
-  findPage(maxPages,current,meta);
+  findPage(view,scene,maxPages,current,meta);
   maxPages--;  
 
   QString string = QString("%1 of %2") .arg(displayPageNum) .arg(maxPages);
@@ -936,6 +942,8 @@ void Gui::drawPage()
 }         
 
 int Gui::findPage(
+  LGraphicsView  *view,
+  QGraphicsScene *scene,
   int         &pageNum,
   Where        current,
   Meta        &meta)
@@ -995,7 +1003,7 @@ int Gui::findPage(
             tmpMeta = meta;
             tmpMeta.submodelStack << current;
             Where current2(token[token.size()-1],0);
-            findPage(pageNum,current2,tmpMeta);
+            findPage(view,scene,pageNum,current2,tmpMeta);
           }
         }
       break;
@@ -1028,7 +1036,7 @@ int Gui::findPage(
               csiParts.clear();
               ldrawFile.setNumSteps(current.modelName,stepNumber);
               page.meta      = saveMeta;
-              (void) drawPage(&page,saveStepNumber,saveCurrent,saveCsiParts,pli,saveBfx);
+              (void) drawPage(view,scene,&page,saveStepNumber,saveCurrent,saveCsiParts,pli,saveBfx);
               saveCurrent.modelName.clear();
               saveCsiParts.clear();
             } 
@@ -1050,7 +1058,7 @@ int Gui::findPage(
                   csiParts.clear();
                   ldrawFile.setNumSteps(current.modelName,stepNumber);
                   page.meta      = saveMeta;
-                  (void) drawPage(&page,saveStepNumber,saveCurrent,saveCsiParts,pli,saveBfx);
+                  (void) drawPage(view,scene,&page,saveStepNumber,saveCurrent,saveCsiParts,pli,saveBfx);
                   saveCurrent.modelName.clear();
                   saveCsiParts.clear();
                 } 
@@ -1142,7 +1150,7 @@ int Gui::findPage(
     ldrawFile.setNumSteps(current.modelName,stepNumber);
     if (pageNum == displayPageNum) {
       page.meta = saveMeta;
-      (void) drawPage(&page,saveStepNumber,saveCurrent,saveCsiParts,pli,bfx);
+      (void) drawPage(view, scene, &page,saveStepNumber,saveCurrent,saveCsiParts,pli,bfx);
     }
     pageNum++;  
   } else {
