@@ -21,7 +21,7 @@
 #include <QFile>
 #include <QTextStream>
 #include <QRegExp>
-#include "paths.h"
+#include "lpub_preferences.h"
 
 QHash<QString, QColor>  LDrawColor::name2color;
 QHash<QString, QString> LDrawColor::color2name;
@@ -35,7 +35,7 @@ LDrawColor::LDrawColor ()
 {
   name2color.clear();
   color2name.clear();
-  QString fileName(Paths::ldrawPath + "/ldconfig.ldr");
+  QString fileName(Preferences::ldrawPath + "/ldconfig.ldr");
   QFile file(fileName);
   if (! file.open(QFile::ReadOnly | QFile::Text)) {
     QMessageBox::warning(NULL,QMessageBox::tr("LDrawColor"),

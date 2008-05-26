@@ -53,7 +53,8 @@
 #include "color.h"
 
 #include "lpub.h"
-#include "paths.h"
+#include "lpub_preferences.h"
+#include "render.h"
 
 /***********************************************************************
  *
@@ -1265,13 +1266,13 @@ RendererGui::RendererGui(
   }
 
   combo = new QComboBox(this);
-  if (Paths::ldgliteExe != "") {
+  if (Preferences::ldgliteExe != "") {
     combo->addItem("LDGLite");
   }
-  if (Paths::ldviewExe != "") {
+  if (Preferences::ldviewExe != "") {
     combo->addItem("LDView");
   }
-  QString renderer = gui->getRenderer();
+  QString renderer = Render::getRenderer();
 
   int currentIndex = renderer == "LDView";
 
@@ -1290,6 +1291,6 @@ void RendererGui::typeChange(QString const &type)
 void RendererGui::apply(QString & /* unused */)
 {
   if (modified) {
-    gui->setRenderer(pick);
+    Render::setRenderer(pick);
   }
 }

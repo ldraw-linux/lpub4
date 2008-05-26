@@ -62,11 +62,15 @@ GlobalProjectDialog::GlobalProjectDialog(
   layout->addWidget(box);
   MetaGui *child = new ResolutionGui(&data->meta.LPub.resolution,box);
   data->children.append(child);
+  
+#if 0
 
   box = new QGroupBox("Renderer");
   layout->addWidget(box);
   child = new RendererGui(box);
   data->children.append(child);
+
+#endif
 
   QDialogButtonBox *buttonBox;
 

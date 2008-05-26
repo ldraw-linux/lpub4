@@ -1,4 +1,3 @@
-
 /****************************************************************************
 **
 ** Copyright (C) 2007-2008 Kevin Clague. All rights reserved.
@@ -14,20 +13,31 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************/
+#ifndef LPUB_PREFERENCES_H
+#define LPUB_PREFERENCES_H
 
-#ifndef PATHS_H
-#define PATHS_H
+class QString;
 
-#include <QString>
+class Preferences
+{
 
-class Paths {
-public:
+  public:
+    Preferences();
+    static void lpubPreferences();
+    static void ldrawPreferences();
+	static void renderPreferences();
+	static void pliPreferences();
+	static bool getRequireds();
+	static bool getPreferences();
 
-    static void mkdirs();
-    static QString lpubDir;
-    static QString tmpDir;
-    static QString outputDir;
-    static QString assemDir;
-    static QString partsDir;
+    static QString ldrawPath;
+    static QString ldgliteExe;
+    static QString ldviewExe;
+	static QString preferredRenderer;
+    static QString pliFile;
+    static QString lpubPath;
+
+    virtual ~Preferences() {}
 };
+
 #endif

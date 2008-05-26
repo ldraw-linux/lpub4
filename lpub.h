@@ -343,7 +343,6 @@
 #include <QDockWidget>
 #include <QSettings>
 #include <QGraphicsView>
-#include <QUndoStack>
 #include <QDateTime>
 #include <QFileSystemWatcher>
 #include <QComboBox>
@@ -362,6 +361,8 @@ class QFrame;
 class QFileDialog;
 class QResizeEvent;
 class QLineEdit;
+class QUndoStack;
+class QUndoCommand;
 
 class EditWindow;
 
@@ -405,8 +406,6 @@ public:
     displayPageNum += offset;
   }
   void    displayPage();
-  void    setRenderer(QString const &);
-  QString const getRenderer();
 
   /* We need to send ourselved these, to eliminate resursion and the model
    * changing under foot */
@@ -476,10 +475,7 @@ public slots:
     displayFileSig(&ldrawFile, here.modelName);
     showLineSig(here.lineNumber);
   }
-  void findLDraw();
-  void findLDGLite();
-  void findLDView();
-  void findPliFile();
+  void preferences();
 
   void pageSetup();
   void assemSetup();
@@ -605,7 +601,6 @@ public:
       list.append(centralWidget()->width()/4);
     }
 
-  void    getARenderer();
   void bestPageSizeOrientation(
     float widthMm,
     float heightMm,
@@ -614,8 +609,6 @@ public:
 	
 private:
   /* Initialization stuff */
-  QString getPreferredRenderer();
-  void    setPreferredRenderer(QString &renderer);
 
   void createActions();
   void createMenus();
@@ -685,10 +678,7 @@ private:
   QAction *multiStepSetupAct;
   QAction *projectSetupAct;
 
-  QAction *pliAct;
-  QAction *ldgliteAct;
-  QAction *ldviewAct;
-  QAction *ldrawPathAct;
+  QAction *preferencesAct;
 
   // help
 

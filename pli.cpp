@@ -28,6 +28,9 @@
  ***************************************************************************/
 #include <QMenu>
 #include <QGraphicsSceneContextMenuEvent>
+#include <QDir>
+#include <QFileInfo>
+#include <QFile>
 #include "pli.h"
 #include "resolution.h"
 #include "render.h"
@@ -41,6 +44,7 @@
 #include "partslist.h"
 #include "lpub.h"
 #include "commonmenus.h"
+#include "lpub_preferences.h"
 
 QCache<QString,QString> Pli::orientation;
 
@@ -189,7 +193,7 @@ QString Pli::orient(QString &color, QString type)
   QString *cached = orientation[type];
 
   if ( ! cached) {
-    QString name(Paths::pliFile);
+    QString name(Preferences::pliFile);
     QFile file(name);
   
     if (file.open(QFile::ReadOnly | QFile::Text)) {      

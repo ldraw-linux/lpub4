@@ -15,27 +15,23 @@
 ****************************************************************************/
 
 #include <QSizePolicy>
-#include <QPainter>
-#include <QPrinter>
 #include <QFileDialog>
 #include <QComboBox>
 #include <QLineEdit>
 #include <QTextEdit>
 #include <QCloseEvent>
+#include <QUndoStack>
 
 #include "lpub.h"
 #include "editwindow.h"
-#include "commands.h"
 #include "name.h"
 #include "paths.h"
 #include "globals.h"
-#include "render.h"
 #include "resolution.h"
+#include "lpub_preferences.h"
+#include "render.h"
 
 Gui *gui;
-
-LDGLite ldglite;
-LDView  ldview;
 
 void clearPliCache()
 {
@@ -53,142 +49,6 @@ void clearCsiCache()
  * the code that creates the basic GUI framekwork 
  *
  ***************************************************************************/
-
-void Gui::open()
-{
-  if (maybeSave()) {
-    QString fileName = QFileDialog::getOpenFileName(
-      this,
-      tr("Open LDraw File"),
-      Paths::ldrawPath + "\\MODELS",
-      tr("LDraw Files (*.DAT;*.LDR;*.MPD;*.dat;*.ldr;*.mpd)"));
-
-    if (!fileName.isEmpty()) {
-        openFile(fileName);
-        displayPage();
-        return;
-      }
-    }
-  return;
-}
-
-void Gui::save()
-{
-  if (isMpd()) {
-    watcher.removePath(curFile);
-  } else {
-    QStringList list = ldrawFile.subFileOrder();
-    QString foo;
-    foreach (foo,list) {
-      QString bar = QDir::currentPath() + "/" + foo;
-      watcher.removePath(bar);
-    }
-  }
-  if (curFile.isEmpty()) {
-    saveAs();
-  } else {
-    saveFile(curFile);
-  }
-
-  if (isMpd()) {
-    watcher.addPath(curFile);
-  } else {
-    QStringList list = ldrawFile.subFileOrder();
-    QString foo;
-    foreach (foo,list) {
-      QString bar = QDir::currentPath() + "/" + foo;
-      watcher.addPath(bar);
-    }
-  }
-}
-
-void Gui::saveAs()
-{
-  if (curFile != "") {
-    if (isMpd()) {
-      watcher.removePath(curFile);
-    } else {
-      QStringList list = ldrawFile.subFileOrder();
-      QString foo; 
-      foreach (foo,list) {
-        QString bar = QDir::currentPath() + "/" + foo;
-        watcher.removePath(bar);
-      }
-    }
-  }
-  QString fileName = QFileDialog::getSaveFileName(this);
-  if (fileName.isEmpty()) {
-    return;
-  }
-  saveFile(fileName); 
-  if (curFile != "") {
-    if (isMpd()) {
-      watcher.addPath(curFile);
-    } else {
-      QStringList list = ldrawFile.subFileOrder();
-      QString foo;
-      foreach (foo,list) {
-        QString bar = QDir::currentPath() + "/" + foo;
-        watcher.addPath(bar);
-      }
-    }
-  }
-} 
-
-bool Gui::maybeSave()
-{
-  if ( ! undoStack->isClean() ) {
-    QMessageBox::StandardButton ret;
-    ret = QMessageBox::warning(this, tr(LPUB),
-            tr("The document has been modified.\n"
-                "Do you want to save your changes?"),
-            QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
-    if (ret == QMessageBox::Save) {
-      save();
-      return true;
-    } else if (ret == QMessageBox::Cancel) {
-      return false;
-    }
-  }
-  return true;
-}
-
-bool Gui::saveFile(const QString &fileName)
-{
-  bool rc;
-  rc = ldrawFile.saveFile(fileName);
-  setCurrentFile(fileName);
-  undoStack->setClean();
-  if (rc) {
-    statusBar()->showMessage(tr("File saved"), 2000);
-  }
-  return rc;
-}
-
-void Gui::closeFile()
-{
-  ldrawFile.empty();
-  undoStack->clear();
-  editWindow->textEdit()->document()->clear();
-  editWindow->textEdit()->document()->setModified(false);
-  mpdCombo->setMaxCount(0);
-  mpdCombo->setMaxCount(1000);
-}
-
-void Gui::openRecentFile()
-{
-  QAction *action = qobject_cast<QAction *>(sender());
-  if (action) {
-    QString fileName = action->data().toString();
-    clearPage(KpageView,KpageScene);
-    QFileInfo info(fileName);
-    QDir::setCurrent(info.absolutePath());
-    openFile(fileName);
-    setCurrentFile(fileName);
-    Paths::mkdirs();
-    displayPage();
-  }
-}
    
 void Gui::displayPage()
 {
@@ -321,195 +181,6 @@ void Gui::zoomOut(
   view->scale(1.0/1.1,1.0/1.1);
 }
 
-struct PageSizes {
-  QPrinter::PageSize pageSize;
-  float              width;
-  float              height;
-} pageSizes[] = { 
-  { QPrinter::A0,         841, 1189 },
-  { QPrinter::A1,         594,  841 },
-  { QPrinter::A2,         420,  594 },
-  { QPrinter::A3,         297,  420 },
-  { QPrinter::A4,         210,  297 },
-  { QPrinter::A5,         148,  210 },
-  { QPrinter::A6,         105,  148 },
-  { QPrinter::A7,          74,  105 },
-  { QPrinter::A8,          52,   74 },
-  { QPrinter::A9,          37,   52 },
-  { QPrinter::B0,        1030, 1456 },
-  { QPrinter::B1,         728, 1030 },
-  { QPrinter::B10,         32,   45 },
-  { QPrinter::B2,         515,  728 },
-  { QPrinter::B3,         364,  515 },
-  { QPrinter::B4,         257,  364 },
-  { QPrinter::B5,         182,  257 },
-  { QPrinter::B6,         128,  182 },
-  { QPrinter::B7,          91,  128 },
-  { QPrinter::B8,          64,   91 },
-  { QPrinter::B9,          45,   64 },
-  { QPrinter::C5E,        163,  229 },
-  { QPrinter::Comm10E,    105,  241 },
-  { QPrinter::DLE,        110,  220 },
-  { QPrinter::Executive,  191,  254 },
-  { QPrinter::Folio,      210,  330 },
-  { QPrinter::Legal,      216,  356 },
-  { QPrinter::Letter,     216,  279 },
-  { QPrinter::Tabloid,    279,  432 },
-};
-
-void Gui::bestPageSizeOrientation(
-  float widthMm,
-  float heightMm,
-  QPrinter::PageSize &pageSize,
-  QPrinter::Orientation &orient)
-{
-  int   numPageSizes = sizeof(pageSizes)/sizeof(pageSizes[0]);
-  float diffWidth;
-  float diffHeight;
-  bool  fit = false;
-  
-  for (int i = 0; i < numPageSizes; i++) {
- 
-    float widthDiff = pageSizes[i].width - widthMm;
-	float heightDiff = pageSizes[i].height - heightMm;
-	
-    if (widthDiff >= 0  && heightDiff >= 0) {
-	  if (fit) {
-		if (widthDiff < diffWidth && heightDiff < diffHeight) {
-		  pageSize = pageSizes[i].pageSize;
-		  orient = QPrinter::Portrait;
-		  diffWidth = widthDiff;
-		  diffHeight = heightDiff;
-		}
-	  } else {
-	    fit = true;
-		pageSize = pageSizes[i].pageSize;
-		orient = QPrinter::Portrait;
-		diffWidth  = widthDiff;
-		diffHeight = heightDiff;
-	  }
-	}
- 
-    widthDiff = pageSizes[i].height - widthMm;
-	heightDiff  = pageSizes[i].width - heightMm;
-	
-    if (widthDiff >= 0  && heightDiff >= 0) {
-	  if (fit) {
-		if (widthDiff < diffWidth && heightDiff < diffHeight) {
-		  pageSize = pageSizes[i].pageSize;
-		  orient = QPrinter::Landscape;
-		  diffWidth = widthDiff;
-		  diffHeight = heightDiff;
-		}
-	  } else {
-	    fit = true;
-		pageSize = pageSizes[i].pageSize;
-		orient = QPrinter::Portrait;
-		diffWidth  = widthDiff;
-		diffHeight = heightDiff;
-	  }
-	}
-  }
-}
-
-void Gui::printToFile()
-{
-  QPrinter printer(QPrinter::HighResolution);
-#if 0
-  if (page.meta.LPub.page.size.value(0) > page.meta.LPub.page.size.value(1)) {
-    printer.setOrientation(QPrinter::Landscape);
-  } else {
-    printer.setOrientation(QPrinter::Portrait);
-  }
-  printer.setPageSize(QPrinter::Letter);
-#else
-  float pageWidth = page.meta.LPub.page.size.valueUnit(0);
-  float pageHeight = page.meta.LPub.page.size.valueUnit(1);
-  if (page.meta.LPub.resolution.type() == DPI) {
-    // convert to MM
-	pageWidth = int(inches2centimeters(pageWidth)*10);
-	pageHeight = int(inches2centimeters(pageHeight)*10);
-  }
-  QPrinter::PageSize pageSize;
-  QPrinter::Orientation orientation;
-  bestPageSizeOrientation(pageWidth,pageHeight,pageSize,orientation);
-	
-  printer.setOrientation(orientation);
-  printer.setPageSize(pageSize);
-#endif  
-  printer.setFullPage(true);
-
-  QFileInfo fileInfo(curFile);
-  QString   baseName = fileInfo.baseName();
-
-  QString fileName = QFileDialog::getSaveFileName(
-    this,
-	tr("Print File Name"),
-	QDir::currentPath() + "/" + baseName,
-	tr("PDF (*.pdf)\nPDF (*.PDF)"));
-
-  fileInfo.setFile(fileName);
-  QString suffix = fileInfo.suffix();
-  if (suffix == "") {
-    fileName += ".pdf";
-  } else if (suffix != ".pdf" && suffix != ".PDF") {
-    fileName = fileInfo.baseName() + ".pdf";
-  }
-  
-  printer.setOutputFileName(fileName);
-
-  QPainter painter;
-  painter.begin(&printer);
-
-  int savePageNumber = displayPageNum;
-  
-  QGraphicsScene scene;
-  LGraphicsView  view(&scene);
-  QRectF boundingRect(0.0,0.0,page.meta.LPub.page.size.value(0),page.meta.LPub.page.size.value(1));
-  QRect  bounding(0,0,page.meta.LPub.page.size.value(0),page.meta.LPub.page.size.value(1));
-  view.setMinimumSize(page.meta.LPub.page.size.value(0),page.meta.LPub.page.size.value(1));
-  view.setMaximumSize(page.meta.LPub.page.size.value(0),page.meta.LPub.page.size.value(1));
-  view.setGeometry(bounding);
-  view.setSceneRect(boundingRect);
-  view.setRenderHints(QPainter::Antialiasing | 
-					  QPainter::TextAntialiasing |
-					  QPainter::SmoothPixmapTransform);
-
-  view.scale(3.0,3.0);
-  view.centerOn(boundingRect.center());
-  clearPage(&view,&scene);
-  
-  for (displayPageNum = 1; displayPageNum <= maxPages; displayPageNum++) {
-
-    qApp->processEvents();
-	
-    drawPage(&view,&scene);
-    view.render(&painter);
-    clearPage(&view,&scene);
-
-    if (maxPages - displayPageNum > 0) {
-      printer.newPage();
-    }
-  }
-  painter.end();
-  displayPageNum = savePageNumber;
-  drawPage(KpageView,KpageScene);
-}
-
-void Gui::fileChanged(const QString &path)
-{
-  QString msg = QString(tr("The file \"%1\" contents have changed.  Reload?"))
-                        .arg(path);
-  int ret = QMessageBox::warning(this,tr(LPUB),msg,
-              QMessageBox::Apply | QMessageBox::No,
-              QMessageBox::Apply);
-  if (ret == QMessageBox::Apply) {
-    QString fileName = path;
-    openFile(fileName);
-    drawPage(KpageView,KpageScene);
-  }
-}
-
 void Gui::statusBarMsg(QString msg)
 {
   statusBar()->showMessage(msg);
@@ -534,210 +205,6 @@ void Gui::displayFile(
 
 
 /*-----------------------------------------------------------------------------*/
-
-void Gui::insertLine(const Where &here, const QString &line, QUndoCommand *parent)
-{
-  if (ldrawFile.contains(here.modelName)) {
-    undoStack->push(new InsertLineCommand(&ldrawFile,here,line,parent));
-  }
-}
-
-void Gui::appendLine(const Where &here, const QString &line, QUndoCommand *parent)
-{
-  if (ldrawFile.contains(here.modelName)) {
-    undoStack->push(new AppendLineCommand(&ldrawFile,here,line,parent));
-  }
-}
-      
-void Gui::replaceLine(const Where &here, const QString &line, QUndoCommand *parent)
-{
-  if (ldrawFile.contains(here.modelName) && 
-      here.lineNumber < ldrawFile.size(here.modelName)) {
-
-    undoStack->push(new ReplaceLineCommand(&ldrawFile,here,line,parent));
-  }
-}
-
-void Gui::deleteLine(const Where &here, QUndoCommand *parent)
-{
-  if (ldrawFile.contains(here.modelName) && 
-      here.lineNumber < ldrawFile.size(here.modelName)) {
-    undoStack->push(new DeleteLineCommand(&ldrawFile,here,parent));
-  }
-}
-QString Gui::readLine(const Where &here)
-{
-  return ldrawFile.readLine(here.modelName,here.lineNumber);
-}
-bool Gui::isSubmodel(const QString &modelName)
-{
-  return ldrawFile.contains(modelName);
-}
-
-void Gui::beginMacro(QString name)
-{
-  ++macroNesting;
-  undoStack->beginMacro(name);
-}
-
-void Gui::endMacro()
-{
-  undoStack->endMacro();
-  --macroNesting;
-  displayPage();
-  displayFile(&ldrawFile,curSubFile,true);
-}
-
-void Gui::contentsChange(
-  int      position,
-  int      _charsRemoved,
-  const QString &charsAdded)
-{
-  QString  charsRemoved;
-
-  /* Calculate the characters removed from the LDrawFile */
-
-  if (_charsRemoved && ldrawFile.contains(curSubFile)) {
-
-    QString contents = ldrawFile.contents(curSubFile).join("\n");
-
-    charsRemoved = contents.mid(position,_charsRemoved);
-  }
-  
-  undoStack->push(new ContentsChangeCommand(&ldrawFile,
-                                            curSubFile,
-                                            position,
-                                            charsRemoved,
-                                            charsAdded));
-}
-
-void Gui::undo()
-{
-  macroNesting++;
-  undoStack->undo();
-  macroNesting--;
-  displayPage();
-  displayFile(&ldrawFile,curSubFile,true);
-}
-
-void Gui::redo()
-{
-  macroNesting++;
-  undoStack->redo();
-  macroNesting--;
-  displayPage();
-  displayFile(&ldrawFile,curSubFile,true);
-}
-
-void Gui::canRedoChanged(bool enabled)
-{
-  redoAct->setEnabled(enabled);
-}
-
-void Gui::canUndoChanged(bool enabled)
-{
-  undoAct->setEnabled(enabled);
-}
-void Gui::cleanChanged(bool cleanState)
-{
-  saveAct->setDisabled( cleanState);
-}
-
-/***************************************************************************
- * File opening closing stuff
- **************************************************************************/
-
-void Gui::openFile(QString &fileName)
-{
-  if (curFile != "") {
-    if (isMpd()) {
-      watcher.removePath(curFile);
-    } else { 
-      QStringList list = ldrawFile.subFileOrder();
-      QString foo;
-      foreach (foo,list) {
-        QString bar = QDir::currentPath() + "/" + foo;
-        watcher.removePath(bar);
-      }
-    }
-  }
-
-  clearPage(KpageView,KpageScene);
-  closeFile();
-  displayPageNum = 1;
-  QFileInfo info(fileName);
-  QDir::setCurrent(info.absolutePath());
-  Paths::mkdirs();
-  ldrawFile.loadFile(fileName);
-  mpdCombo->setMaxCount(0);
-  mpdCombo->setMaxCount(1000);
-  mpdCombo->addItems(ldrawFile.subFileOrder());
-  setCurrentFile(fileName);
-  displayFile(&ldrawFile,ldrawFile.topLevelFile());
-  undoStack->setClean();
-  curFile = fileName;
-  QStringList list = ldrawFile.subFileOrder();
-  QString foo;
-
-  if (isMpd()) {
-    watcher.addPath(curFile);
-  } else {
-    QStringList list = ldrawFile.subFileOrder();
-    QString foo;
-    foreach (foo,list) {
-      QString bar = QDir::currentPath() + "/" + foo;
-      watcher.addPath(bar);
-    }
-  }
-}
-
-void Gui::updateRecentFileActions()
-{
-  QSettings settings(LPUB,SETTINGS);
-  QStringList files = settings.value("recentFileList").toStringList();
-
-  int numRecentFiles = qMin(files.size(), (int)MaxRecentFiles);
-
-  for (int i = 0; i < numRecentFiles; i++) {
-    QString text = tr("&%1 %2").arg(i + 1).arg(strippedName(files[i]));
-    recentFilesActs[i]->setText(text);
-    recentFilesActs[i]->setData(files[i]);
-    recentFilesActs[i]->setVisible(true);
-  }
-  for (int j = numRecentFiles; j < MaxRecentFiles; j++) {
-    recentFilesActs[j]->setVisible(false);
-  }
-  separatorAct->setVisible(numRecentFiles > 0);
-}
-
-QString Gui::strippedName(const QString &fullFileName)
-{
-  return QFileInfo(fullFileName).fileName();
-}
-
-void Gui::setCurrentFile(const QString &fileName)
-{
-  QString shownName;
-  if (fileName.size() == 0)
-      shownName = "An LDraw Building Instruction Editor";
-  else
-      shownName = strippedName(fileName);
-
-  setWindowTitle(tr("%1[*] - %2").arg(shownName).arg(tr(LPUB)));
-
-  if (fileName.size() > 0) {
-    QSettings settings(LPUB, SETTINGS);
-    QStringList files = settings.value("recentFileList").toStringList();
-    files.removeAll("");
-    files.removeAll(fileName);
-    files.prepend(fileName);
-    while (files.size() > MaxRecentFiles) {
-      files.removeLast();
-    }
-    settings.setValue("recentFileList", files);
-  }
-  updateRecentFileActions();
-}
 
 void Gui::mpdComboChanged(int index)
 {
@@ -814,30 +281,14 @@ void Gui::projectSetup()
   GlobalProjectDialog::getProjectGlobals(ldrawFile.topLevelFile());
 }
 
-void Gui::findLDraw()
+void Gui::preferences()
 {
-  Paths::getLDrawPath(true,this);
-}
-
-void Gui::findLDGLite()
-{
-  bool ok;
-
-  Paths::getLdglitePath(&ok, true, this);
-}
-
-void Gui::findLDView()
-{
-  bool ok;
-
-  Paths::getLdviewPath(&ok, true, this);
-}
-
-void Gui::findPliFile()
-{
-  bool ok;
-
-  Paths::getPliPath(&ok, true, this);
+  if (Preferences::getPreferences()) {
+    Render::setRenderer(Preferences::preferredRenderer);
+	gui->clearCSICache();
+	gui->clearPLICache();
+	redrawPage();
+  }
 }
 
 /*******************************************************************************
@@ -847,58 +298,12 @@ void Gui::findPliFile()
  *
  ******************************************************************************/
 
-void Gui::setRenderer(
-  QString const &pick)
-{
-  if (pick == "LDGLite") {
-    renderer = &ldglite;
-    clearPLICache();
-    clearCSICache();
-  } else if (pick == "LDView") {
-    renderer = &ldview;
-    clearPLICache();
-    clearCSICache();
-  }
-}
-
-QString const Gui::getRenderer()
-{
-  if (renderer == &ldglite) {
-    return "LDGLite";
-  } else {
-    return "LDView";
-  }
-}
-
-QString Gui::getPreferredRenderer()
-{
-  QSettings settings(LPUB, SETTINGS);
-  return settings.value("preferredRenderer").toString();
-}
-
-void Gui::setPreferredRenderer(QString &preferredRenderer)
-{
-  QSettings settings(LPUB, SETTINGS);
-  settings.setValue("preferredRenderer", preferredRenderer);
-}
-
-void Gui::getARenderer()
-{
-    QString preferredRenderer = getPreferredRenderer();
-	
-	if (preferredRenderer == "LDGLite" && Paths::ldgliteExe != "") {
-      renderer = &ldglite;
-	} else if (preferredRenderer == "LDView" && Paths::ldviewExe != "") {
-	  renderer = &ldview;
-	} else if (Paths::ldgliteExe != "") {
-	  renderer = &ldglite;
-	} else if (Paths::ldviewExe != "") {
-	  renderer = &ldview;
-	}
-}
-
 Gui::Gui()
 {
+	Preferences::lpubPreferences();
+	Preferences::renderPreferences();
+	Preferences::pliPreferences();
+
     displayPageNum = 1;
 
     editWindow    = new EditWindow();
@@ -966,12 +371,8 @@ Gui::Gui()
     qt_mac_set_native_menubar(true);
 #endif
 
-#if 0
-  QDialog *preferences = new QDialog;
-  Ui::Dialog preferencesForm;
-  preferencesForm.setupUi(preferences);
-  preferences->show();
-#endif
+    Preferences::getRequireds();
+	Render::setRenderer(Preferences::preferredRenderer);
 }
 
 Gui::~Gui()
@@ -1138,21 +539,9 @@ void Gui::createActions()
     projectSetupAct->setStatusTip(tr("Default values for your project"));
     connect(projectSetupAct, SIGNAL(triggered()), this, SLOT(projectSetup()));
 
-    ldrawPathAct = new QAction(tr("Find LDraw"), this);
-    ldrawPathAct->setStatusTip(tr("Find the LDraw directory on this computer"));
-    connect(ldrawPathAct, SIGNAL(triggered()), this, SLOT(findLDraw()));
-
-    ldgliteAct = new QAction(tr("Find LDGLite"), this);
-    ldgliteAct->setStatusTip(tr("Find LDGLite program on this computer"));
-    connect(ldgliteAct, SIGNAL(triggered()), this, SLOT(findLDGLite()));
-
-    ldviewAct = new QAction(tr("Find LDView"), this);
-    ldviewAct->setStatusTip(tr("Find LDView program on this computer"));
-    connect(ldviewAct, SIGNAL(triggered()), this, SLOT(findLDView()));
-
-    pliAct = new QAction(tr("Find Parts List LDraw file\n"), this);
-    pliAct->setStatusTip(tr("This defines orientation and soze of parts in Parts List Image"));
-    connect(pliAct,SIGNAL(triggered()), this, SLOT(findPliFile()));
+    preferencesAct = new QAction(tr("Preferences"), this);
+    preferencesAct->setStatusTip(tr("Set your preferences for LPub"));
+    connect(preferencesAct, SIGNAL(triggered()), this, SLOT(preferences()));
 
     // Help
 
@@ -1208,10 +597,7 @@ void Gui::createMenus()
 
     configMenu->addSeparator();
 
-    configMenu->addAction(ldrawPathAct);
-    configMenu->addAction(ldgliteAct);
-    configMenu->addAction(ldviewAct);
-    configMenu->addAction(pliAct);
+    configMenu->addAction(preferencesAct);
 
     helpMenu = menuBar()->addMenu(tr("&Help"));
     helpMenu->addAction(aboutAct);

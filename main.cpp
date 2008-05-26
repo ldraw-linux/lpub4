@@ -16,7 +16,7 @@
 
 #include <QApplication>
 
-#include "paths.h"
+#include "lpub_preferences.h"
 #include "lpub.h"
 
 int main(int argc, char *argv[])
@@ -24,21 +24,12 @@ int main(int argc, char *argv[])
     Q_INIT_RESOURCE(lpub);
 
     QApplication app(argc, argv);
-
-    Paths::getLPubPath();
-    Paths::getLDrawPath(false);
+	
+    Preferences::ldrawPreferences();
 
     Gui     LPubWin;
     LPubWin.show();
     LPubWin.sizeit();
-
-    bool ok;
-
-    Paths::getLdglitePath(&ok,false,&LPubWin);
-    Paths::getLdviewPath(&ok,false,&LPubWin);
-    Paths::getPliPath(&ok,false,&LPubWin);
-		
-    LPubWin.getARenderer();
 
     return app.exec();
 }

@@ -25,6 +25,10 @@
  * make up the LPub program.
  *
  ***************************************************************************/
+ 
+#include <QFileInfo>
+#include <QDir>
+#include <QFile>
 
 #include "step.h"
 #include "ranges.h"

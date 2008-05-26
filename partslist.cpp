@@ -31,7 +31,7 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QTextStream>
-#include "paths.h"
+#include "lpub_preferences.h"
 
 QHash<QString, QString> PartsList::list;
 QString                 PartsList::empty;
@@ -40,7 +40,7 @@ QStringList             PartsList::partialPaths;
 PartsList::PartsList()
 {
   if (list.size() == 0) {
-    QString partsname = Paths::ldrawPath+"/parts.lst";
+    QString partsname = Preferences::ldrawPath+"/parts.lst";
     QFile file(partsname);
     if ( ! file.open(QFile::ReadOnly | QFile::Text)) {
       QMessageBox::warning(NULL,QMessageBox::tr("LPub"),
@@ -78,7 +78,7 @@ bool PartsList::isKnownPart(QString &part)
     QString testName;
     QFileInfo info;
     for (int i = 0; i < partialPaths.size(); i++) {
-      testName = Paths::ldrawPath + partialPaths[i] + part;
+      testName = Preferences::ldrawPath + partialPaths[i] + part;
       info.setFile(testName);
 	  
       if (info.exists()) {

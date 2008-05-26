@@ -35,12 +35,34 @@
 #include "render.h"
 #include "resolution.h"
 #include "meta.h"
-#include "paths.h"
 #include "math.h"
 #include "rx.h"
 #include "lpub.h"
+#include "lpub_preferences.h"
+#include "paths.h"
 
 Render *renderer;
+
+LDGLite ldglite;
+LDView  ldview;
+
+QString const Render::getRenderer()
+{
+  if (renderer == &ldglite) {
+    return "LDGLite";
+  } else {
+    return "LDView";
+  }
+}
+
+void Render::setRenderer(QString const &name)
+{
+  if (name == "LDGLite") {
+    renderer = &ldglite;
+  } else {
+    renderer = &ldview;
+  }
+}
 
 /***************************************************************************
  *
@@ -146,12 +168,12 @@ int LDGLite::renderCsi(
   
   QProcess    ldglite;
   QStringList env = QProcess::systemEnvironment();
-  env << "LDRAWDIR=" + Paths::ldrawPath;
+  env << "LDRAWDIR=" + Preferences::ldrawPath;
   ldglite.setEnvironment(env);
   ldglite.setWorkingDirectory(QDir::currentPath()+"/"+Paths::tmpDir);
   ldglite.setStandardErrorFile(QDir::currentPath() + "/stderr");
   ldglite.setStandardOutputFile(QDir::currentPath() + "/stdout");
-  ldglite.start(Paths::ldgliteExe,arguments);
+  ldglite.start(Preferences::ldgliteExe,arguments);
   if ( ! ldglite.waitForFinished()) {
     if (ldglite.exitCode() != 0) {
       QByteArray status = ldglite.readAll();
@@ -214,12 +236,12 @@ int LDGLite::renderPli(
   
   QProcess    ldglite;
   QStringList env = QProcess::systemEnvironment();
-  env << "LDRAWDIR=" + Paths::ldrawPath;
+  env << "LDRAWDIR=" + Preferences::ldrawPath;
   ldglite.setEnvironment(env);  
   ldglite.setWorkingDirectory(QDir::currentPath());
   ldglite.setStandardErrorFile(QDir::currentPath() + "/stderr");
   ldglite.setStandardOutputFile(QDir::currentPath() + "/stdout");
-  ldglite.start(Paths::ldgliteExe,arguments);
+  ldglite.start(Preferences::ldgliteExe,arguments);
   if (! ldglite.waitForFinished()) {
     if (ldglite.exitCode()) {
       QByteArray status = ldglite.readAll();
@@ -298,7 +320,7 @@ int LDView::renderCsi(
   QProcess    ldview;
   ldview.setEnvironment(QProcess::systemEnvironment());
   ldview.setWorkingDirectory(QDir::currentPath()+"/"+Paths::tmpDir);
-  ldview.start(Paths::ldviewExe,arguments);
+  ldview.start(Preferences::ldviewExe,arguments);
 
   if ( ! ldview.waitForFinished()) {
     if (ldview.exitCode() != 0 || 1) {
@@ -362,7 +384,7 @@ int LDView::renderPli(
   QProcess    ldview;
   ldview.setEnvironment(QProcess::systemEnvironment());
   ldview.setWorkingDirectory(QDir::currentPath());
-  ldview.start(Paths::ldviewExe,arguments);
+  ldview.start(Preferences::ldviewExe,arguments);
   if ( ! ldview.waitForFinished()) {
     if (ldview.exitCode() != 0) {
       QByteArray status = ldview.readAll();

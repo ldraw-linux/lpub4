@@ -38,6 +38,8 @@ class Render
   public:
     Render() {}
     virtual ~Render() {};
+	static QString const getRenderer();
+	static void          setRenderer(QString const &name);
     virtual int renderCsi(const QStringList &, const QString &, Meta &) = 0;
     virtual int renderPli(const QString &,     const QString &, Meta &) = 0;
   protected:

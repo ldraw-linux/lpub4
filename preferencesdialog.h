@@ -1,4 +1,3 @@
-
 /****************************************************************************
 **
 ** Copyright (C) 2007-2008 Kevin Clague. All rights reserved.
@@ -14,20 +13,33 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************/
+#ifndef PREFERENCES_DIALOG_H
+#define PREFERENCES_DIALOG_H
 
-#ifndef PATHS_H
-#define PATHS_H
+#include "ui_preferences.h"
 
-#include <QString>
-
-class Paths {
-public:
-
-    static void mkdirs();
-    static QString lpubDir;
-    static QString tmpDir;
-    static QString outputDir;
-    static QString assemDir;
-    static QString partsDir;
+class PreferencesDialog : public QDialog
+{
+  Q_OBJECT
+  
+  public:
+    PreferencesDialog(QWidget *parent = 0);
+	
+	QString const ldrawPath();
+	QString const pliFile();
+	QString const ldgliteExe();
+	QString const ldviewExe();
+	QString const preferredRenderer();
+	
+  private slots:
+    void on_browseLDraw_clicked();
+	void on_browsePli_clicked();
+	void on_browseLDView_clicked();
+	void on_browseLDGLite_clicked();
+		
+  private:
+    QWidget *parent;
+    Ui::PreferencesDialog ui;
 };
+
 #endif
