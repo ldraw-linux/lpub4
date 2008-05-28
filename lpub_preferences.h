@@ -27,7 +27,7 @@ class Preferences
     static void ldrawPreferences();
 	static void renderPreferences();
 	static void pliPreferences();
-	static bool getRequireds();
+	static void getRequireds();
 	static bool getPreferences();
 
     static QString ldrawPath;

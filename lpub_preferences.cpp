@@ -185,7 +185,6 @@ bool Preferences::getPreferences()
 {
   PreferencesDialog *dialog = new PreferencesDialog();
   QSettings settings(LPUB,SETTINGS);
-  bool rc = false;
 
   if (dialog->exec() == QDialog::Accepted) {
     if (ldrawPath != dialog->ldrawPath()) {
@@ -203,7 +202,6 @@ bool Preferences::getPreferences()
 	  } else {
 	    settings.setValue("PliControl",pliFile);
 	  }
-	  rc = true;
 	}
 	if (ldgliteExe != dialog->ldgliteExe()) {
 	  ldgliteExe = dialog->ldgliteExe();
@@ -229,18 +227,18 @@ bool Preferences::getPreferences()
 	  } else {
         settings.setValue("PreferredRenderer",preferredRenderer);
 	  }
-	  rc = true;
 	}
+	return true;
+  } else {
+    return false;
   }
-  return rc;
 }
 
-bool Preferences::getRequireds()
+void Preferences::getRequireds()
 {
-  while (preferredRenderer == "") {
-    getPreferences();
+  if (! getPreferences() || preferredRenderer == "") {
+    exit (-1);
   }
-  return true;
 }
 
 

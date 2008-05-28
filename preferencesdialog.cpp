@@ -85,10 +85,10 @@ void PreferencesDialog::on_browseLDView_clicked()
 	
 	if (selectedFiles.size() == 1) {
       ui.ldviewPath->setText(selectedFiles[0]);
-	  QFileInfo  fileInfo(ui.ldglitePath->displayText());
+	  QFileInfo  fileInfo(selectedFiles[0]);
 	  if (fileInfo.exists()) {
  	    if ( ! ui.preferredRenderer->isEnabled()) {
-	      ui.preferredRenderer->setCurrentIndex(0);
+	      ui.preferredRenderer->setCurrentIndex(1);
           ui.preferredRenderer->setEnabled(true);
 		}
 	  } 
@@ -113,11 +113,11 @@ void PreferencesDialog::on_browseLDGLite_clicked()
     QStringList selectedFiles = dialog.selectedFiles();
 	
 	if (selectedFiles.size() == 1) {
-      ui.ldglitePath->setText(selectedFiles[0]);	  
-	  QFileInfo  fileInfo(ui.ldviewPath->displayText());
+      ui.ldglitePath->setText(selectedFiles[0]);
+	  QFileInfo  fileInfo(selectedFiles[0]);
 	  if (fileInfo.exists()) {
  	    if ( ! ui.preferredRenderer->isEnabled()) {
-	      ui.preferredRenderer->setCurrentIndex(1);
+	      ui.preferredRenderer->setCurrentIndex(0);
           ui.preferredRenderer->setEnabled(true);
 		}
 	  } 
