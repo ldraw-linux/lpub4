@@ -89,7 +89,7 @@ void Preferences::renderPreferences()
   /* Find LDGLite's installation status */
   
   bool    ldgliteInstalled;
-  QString const ldglitePathKey("LDGLitePath");
+  QString const ldglitePathKey("LDGLite");
   QString ldglitePath;
   
   if (settings.contains(ldglitePathKey)) {
@@ -109,7 +109,7 @@ void Preferences::renderPreferences()
   /* Find LDView's installation status */
   
   bool    ldviewInstalled;
-  QString const ldviewPathKey("LDViewPath");
+  QString const ldviewPathKey("LDView");
   QString ldviewPath;
   
   if (settings.contains(ldviewPathKey)) {
@@ -236,7 +236,7 @@ bool Preferences::getPreferences()
 
 void Preferences::getRequireds()
 {
-  if (! getPreferences() || preferredRenderer == "") {
+  if (preferredRenderer == "" && ! getPreferences()) {
     exit (-1);
   }
 }
