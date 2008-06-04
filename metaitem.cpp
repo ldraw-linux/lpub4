@@ -1367,7 +1367,7 @@ Where MetaItem::sortedGlobalWhere(
         break;
       }
     }
-    if (i == LDrawHeaderRx.size()) {
+    if (i == LDrawHeaderRx.size() && walk > 0) {
       break;
     }
   }
