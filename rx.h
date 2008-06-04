@@ -20,7 +20,7 @@
 class QString;
 class QStringList;
 
-void split(QString &line,QStringList &argv);
+void split(const QString &line,QStringList &argv);
 
 extern QStringList LDrawHeaderRx;
 

@@ -65,6 +65,7 @@ class AbstractRangeElement : public Placement {
     const Where &bottomOfRanges();
 
     QString path();
+	QString csiName();
     QStringList submodelStack();
 };
 

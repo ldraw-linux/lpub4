@@ -57,6 +57,7 @@ public:
   QString modelName();
 
   QString path();
+  QString csiName();
 
   QStringList submodelStack();
   Context      &getContext();

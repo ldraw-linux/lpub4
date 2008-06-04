@@ -110,6 +110,7 @@ float Render::cameraDistance(
 }
 
 int LDGLite::renderCsi(
+  const QString     &addLine,
   const QStringList &csiParts,
   const QString     &pngName,
         Meta        &meta)
@@ -120,7 +121,7 @@ int LDGLite::renderCsi(
 
   QString ldrName = QDir::currentPath() + "/" + Paths::tmpDir + "/csi.ldr";
 
-  rc = rotateParts(meta.rotStep, csiParts, ldrName);
+  rc = rotateParts(addLine, meta.rotStep, csiParts, ldrName);
   if (rc < 0) {
     return rc;
   }
@@ -264,6 +265,7 @@ int LDGLite::renderPli(
  **************************************************************************/
 
 int LDView::renderCsi(
+  const QString     &addLine,
   const QStringList &csiParts,
   const QString     &pngName,
         Meta        &meta)
@@ -274,7 +276,7 @@ int LDView::renderCsi(
 
   QString ldrName = QDir::currentPath() + "/" + Paths::tmpDir + "/csi.ldr";
 
-  rc = rotateParts(meta.rotStep, csiParts, ldrName);
+  rc = rotateParts(addLine,meta.rotStep, csiParts, ldrName);
 
   if (rc < 0) {
     return rc;

@@ -70,6 +70,19 @@ QString Ranges::path()
   return thePath;
 }
 
+QString Ranges::csiName()
+{
+  QString thePath;
+  
+  thePath = QFileInfo(modelName()).baseName();
+
+  for (int i = 0; i < meta.submodelStack.size(); i++) {
+    QString lineNum = QString("%1") .arg(meta.submodelStack[i].lineNumber);
+    thePath += "_" + QFileInfo(meta.submodelStack[i].modelName).baseName() + "_" + lineNum;
+  }
+  return thePath;
+}
+
 QStringList Ranges::submodelStack()
 {
   QStringList submodelStack;

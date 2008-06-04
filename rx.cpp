@@ -18,24 +18,24 @@
 #include <QString>
 #include <QStringList>
 
-void split(QString &line, QStringList &argv)
+void split(const QString &line, QStringList &argv)
 {
   QString     chopped = line;
 
-  while (line[0] == ' ') {
-    line.remove(0,1);
+  while (chopped[0] == ' ') {
+    chopped.remove(0,1);
   }
   argv << chopped.split(" ",QString::SkipEmptyParts);
 
   if (argv.size() >= 2 && argv[0] == "0" && argv[1] == "GHOST") {
-    line.remove(0,2);
-    while (line[0] == ' ') {
-      line.remove(0,1);
+    chopped.remove(0,2);
+    while (chopped[0] == ' ') {
+      chopped.remove(0,1);
     }
     argv.removeFirst();
-    line.remove(0,6);
-    while (line[0] == ' ') {
-      line.remove(0,1);
+    chopped.remove(0,6);
+    while (chopped[0] == ' ') {
+      chopped.remove(0,1);
     }
     argv.removeFirst();
   }

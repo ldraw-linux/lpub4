@@ -59,6 +59,7 @@ class Ranges : public Placement {
     QString modelName();
 
     QString path();
+	QString csiName();
 
     QStringList submodelStack();
 

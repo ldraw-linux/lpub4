@@ -148,10 +148,12 @@ void rotateMatrix(
 
 
 int Render::rotateParts(
+  const QString     &addLine,
         RotStepMeta &rotStep,
   const QStringList &parts,
         QString     &ldrName)
 {
+//  QMessageBox::information(NULL,"rotate",addLine);
   double min[3], max[3];
 
   min[0] = 1e23, max[0] = -1e23,
@@ -159,7 +161,6 @@ int Render::rotateParts(
   min[2] = 1e23, max[2] = -1e23;
 
   double defaultViewMatrix[3][3], defaultViewRots[3];
-  double rm[3][3];
 
   defaultViewRots[0] = 23;
   defaultViewRots[1] = 45;
@@ -168,6 +169,8 @@ int Render::rotateParts(
   matrixMakeRot(defaultViewMatrix,defaultViewRots);
 
   RotStepData rotStepData = rotStep.value();
+
+  double rm[3][3];
 
   if (rotStepData.type.size() == 0) {
     matrixCp(rm,defaultViewMatrix);
@@ -180,7 +183,27 @@ int Render::rotateParts(
       matrixMult3(rm,defaultViewMatrix,rotStepMatrix);
     }
   }
-
+  
+  if (addLine.size()) {
+    QStringList tokens;
+	
+    split(addLine,tokens);
+	
+	double alm[3][3];
+	bool   mirror = false;
+	
+	for (int token = 5; token < 14; token++) {
+	  double value = tokens[token].toFloat();
+	  if (value < 0) {
+	    mirror = true;
+	  }
+	  alm[(token-5) / 3][(token-5) % 3] = value;
+	}
+	if (mirror) {
+      matrixMult(rm,alm);
+	}
+  }
+  
   // rotate all the parts
 
   QString processed_parts;

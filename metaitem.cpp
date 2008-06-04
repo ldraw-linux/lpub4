@@ -496,10 +496,27 @@ void MetaItem::deleteMultiStepDivider(Where divider)
  * Callout tools
  *
  **********************************************************************/
+ 
+bool equivalentAdds(
+  QString const &first,
+  QString const &second)
+{
+  QStringList firstTokens, secondTokens;
+  
+  split(first,firstTokens);
+  split(second,secondTokens);
+  
+  for (int i = 5; i < 14; i++) {
+    if (firstTokens[i].toFloat() != secondTokens[i].toFloat()) {
+	  return false;
+	}
+  }
+  
+  return firstTokens[14] == secondTokens[14];
+}
 
 void MetaItem::convertToCallout(Meta *meta)
 {
-
   gui->maxPages = -1;
 
   beginMacro("convertToCallout");
@@ -523,9 +540,9 @@ void MetaItem::convertToCallout(Meta *meta)
    * multiplier */
 
   Where calledOut = meta->submodelStack[meta->submodelStack.size() - 1];
+  QString firstLine = gui->readLine(calledOut);
   walk = calledOut+1;
   numLines = gui->subFileSize(walk.modelName);
-  modelName = meta->context.topOfFile().modelName;
   for ( ; walk.lineNumber < numLines; walk++) {
     QString line = gui->readLine(walk);
     QStringList argv;
@@ -541,7 +558,7 @@ void MetaItem::convertToCallout(Meta *meta)
       break;
     } else if (argv.size() == 15 && argv[0] == "1") {
       if (gui->isSubmodel(argv[14])) {
-        if (argv[14] == modelName) {
+        if (equivalentAdds(firstLine,line)) {
         } else {
           break;
         }

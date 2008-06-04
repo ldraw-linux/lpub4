@@ -528,20 +528,22 @@ private:
   int findPage(                    // traverse the hierarchy until we get to the
     LGraphicsView  *view,          // page of interest, let traverse process the
 	QGraphicsScene *scene,         // page, and then finish by counting the rest
-    int         &pageNum,          // of the pages
-    Where        current,    
-	Meta        &meta);
+    int           &pageNum,        // of the pages
+	QString const &addLine,
+    Where          current,    
+	Meta          &meta);
 
   int drawPage(                    // process the page of interest and any callouts
     LGraphicsView  *view,
 	QGraphicsScene *scene,
-    Ranges      *ranges,
-    int          stepNum,
-    Where       &current,
-    QStringList  csiParts,
-    Pli         &pli,
+    Ranges        *ranges,
+    int            stepNum,
+	QString const &addLine,
+    Where         &current,
+    QStringList    csiParts,
+    Pli           &pli,
     QHash<QString, QStringList> &bfx,
-    bool         calledOut = false);
+    bool           calledOut = false);
 
   int addGraphicsPageItems(        // this converts the abstract page into
     Ranges         *ranges,        // a graphics view

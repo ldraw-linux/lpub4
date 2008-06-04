@@ -126,21 +126,18 @@ Step::~Step() {
  */
 
 int Step::createCsi(
-  QString     &topLevelFile,
-  QStringList &csiParts,  // the partially assembles model
-  QPixmap     *pixmap,
-  Meta        &meta)
+  QString const     &topLevelFile,
+  QString const     &addLine,
+  QStringList const &csiParts,  // the partially assembles model
+  QPixmap           *pixmap,
+  Meta              &meta)
 {
-  QString     path2 = path();
-  QStringList list  = path2.split("/");
-  list.removeFirst();
-  QString     path3 = list.join("_");
   int         modelScale = meta.LPub.assem.modelScale.value();
   int         sn = stepNumber.number;
   QFileInfo   topInfo(topLevelFile);
   QString key = QString("%1_%2_%3_%4_%5_%6_%7")
                         .arg(topInfo.baseName())
-                        .arg(path3)
+                        .arg(csiName())
                         .arg(sn)
                         .arg(meta.LPub.page.size.value(0))
                         .arg(resolution)
@@ -167,7 +164,7 @@ int Step::createCsi(
 
     // render the partially assembled model
 
-    rc = renderer->renderCsi(csiParts, fileName, meta);
+    rc = renderer->renderCsi(addLine,csiParts, fileName, meta);
 
     if (rc < 0) {
       return rc;

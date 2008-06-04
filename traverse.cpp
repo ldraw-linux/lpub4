@@ -219,13 +219,14 @@ void endOfPage(
 int Gui::drawPage(
   LGraphicsView  *view,
   QGraphicsScene *scene,
-  Ranges      *ranges,
-  int          stepNum,
-  Where       &current,
-  QStringList  csiParts,
-  Pli         &pli,
+  Ranges         *ranges,
+  int             stepNum,
+  QString const  &addLine,
+  Where          &current,
+  QStringList     csiParts,
+  Pli            &pli,
   QHash<QString, QStringList> &bfx,
-  bool         calledOut)
+  bool            calledOut)
 {
   int         numLines = ldrawFile.size(current.modelName);
 
@@ -351,6 +352,7 @@ int Gui::drawPage(
 				 scene,
                  callout,
                  1,
+				 line,
                  current2,
                  csiParts2,
                  callout->pli,
@@ -801,6 +803,7 @@ int Gui::drawPage(
 
             int rc = step->createCsi(
               curFile,
+			  addLine,
               csiParts,
               step->csiPixmap.pixmap,
               ranges->meta);
@@ -908,7 +911,8 @@ void Gui::countPages()
     displayPageNum = 1 << 31;
     maxPages       = 1;
     Meta meta;
-    findPage(KpageView,KpageScene,maxPages,current,meta);
+	QString empty;
+    findPage(KpageView,KpageScene,maxPages,empty,current,meta);
     maxPages--;
     if (displayPageNum > maxPages) {
       displayPageNum = maxPages;
@@ -931,7 +935,8 @@ void Gui::drawPage(
   Where       current(ldrawFile.topLevelFile(),0);
   maxPages = 1;
   Meta meta;
-  findPage(view,scene,maxPages,current,meta);
+  QString empty;
+  findPage(view,scene,maxPages,empty,current,meta);
   maxPages--;  
 
   QString string = QString("%1 of %2") .arg(displayPageNum) .arg(maxPages);
@@ -944,9 +949,10 @@ void Gui::drawPage(
 int Gui::findPage(
   LGraphicsView  *view,
   QGraphicsScene *scene,
-  int         &pageNum,
-  Where        current,
-  Meta        &meta)
+  int            &pageNum,
+  QString const  &addLine,
+  Where           current,
+  Meta           &meta)
 {
   meta.context.setTopOfFile(current);
 
@@ -1003,7 +1009,7 @@ int Gui::findPage(
             tmpMeta = meta;
             tmpMeta.submodelStack << current;
             Where current2(token[token.size()-1],0);
-            findPage(view,scene,pageNum,current2,tmpMeta);
+            findPage(view,scene,pageNum,line,current2,tmpMeta);
           }
         }
       break;
@@ -1036,7 +1042,7 @@ int Gui::findPage(
               csiParts.clear();
               ldrawFile.setNumSteps(current.modelName,stepNumber);
               page.meta      = saveMeta;
-              (void) drawPage(view,scene,&page,saveStepNumber,saveCurrent,saveCsiParts,pli,saveBfx);
+              (void) drawPage(view,scene,&page,saveStepNumber,addLine,saveCurrent,saveCsiParts,pli,saveBfx);
               saveCurrent.modelName.clear();
               saveCsiParts.clear();
             } 
@@ -1058,7 +1064,7 @@ int Gui::findPage(
                   csiParts.clear();
                   ldrawFile.setNumSteps(current.modelName,stepNumber);
                   page.meta      = saveMeta;
-                  (void) drawPage(view,scene,&page,saveStepNumber,saveCurrent,saveCsiParts,pli,saveBfx);
+                  (void) drawPage(view,scene,&page,saveStepNumber,addLine,saveCurrent,saveCsiParts,pli,saveBfx);
                   saveCurrent.modelName.clear();
                   saveCsiParts.clear();
                 } 
@@ -1150,7 +1156,7 @@ int Gui::findPage(
     ldrawFile.setNumSteps(current.modelName,stepNumber);
     if (pageNum == displayPageNum) {
       page.meta = saveMeta;
-      (void) drawPage(view, scene, &page,saveStepNumber,saveCurrent,saveCsiParts,pli,bfx);
+      (void) drawPage(view, scene, &page,saveStepNumber,addLine,saveCurrent,saveCsiParts,pli,bfx);
     }
     pageNum++;  
   } else {

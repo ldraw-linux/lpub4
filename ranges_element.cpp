@@ -58,6 +58,11 @@ QString AbstractRangesElement::path()
   return parent->path();
 }
 
+QString AbstractRangesElement::csiName()
+{
+  return parent->csiName();
+}
+
 QStringList AbstractRangesElement::submodelStack()
 {
   return parent->submodelStack();

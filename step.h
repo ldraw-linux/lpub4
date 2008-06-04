@@ -67,17 +67,11 @@ class Step : public AbstractRangeElement
     }
 
     int  createCsi(
-	       QString     &fileName,
-           QStringList &csiParts,
-           QPixmap     *pixmap,
-           Meta        &meta);
-
-    int  rotateParts(
-            bool       rotstep,
-            bool       abs,
-            double     rots[],
-            QString   &csiParts,
-            QString   &datName);
+	       QString const     &fileName,
+		   QString const     &addLine,
+           QStringList const &csiParts,
+           QPixmap          *pixmap,
+           Meta             &meta);
 
     int  sizeitVert(int  rows[],
                 int  cols[],
