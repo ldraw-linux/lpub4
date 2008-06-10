@@ -113,6 +113,6 @@ SOURCES += assemglobals.cpp \
            rx.cpp \
            scaledialog.cpp \
            step.cpp \
-           undoredo.cpp \
-           traverse.cpp
+           traverse.cpp \
+           undoredo.cpp
 RESOURCES += lpub.qrc
