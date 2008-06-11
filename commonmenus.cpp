@@ -309,7 +309,7 @@ QAction* CommonMenus::scaleMenu(
         QMenu   &menu, 
   const QString  name)
 {
-  QString formatted = QString("Change %1Scalee") .arg(name);
+  QString formatted = QString("Change %1Scale") .arg(name);
 
   QAction *action;
   action = menu.addAction(formatted);

@@ -118,6 +118,11 @@ void Gui::setPage()
   setPageLineEdit->setText(string);
 }
 
+void Gui::fitWidth()
+{
+  fitWidth(pageview());
+}
+
 void Gui::fitWidth(
   LGraphicsView *view)
 {
@@ -136,6 +141,11 @@ void Gui::fitWidth(
   view->scale(xratio,xratio);
   view->centerOn(rect.center());
   fitMode = FitWidth;
+}
+
+void Gui::fitVisible()
+{
+  fitVisible(pageview());
 }
 
 void Gui::fitVisible(
@@ -160,6 +170,11 @@ void Gui::fitVisible(
   fitMode = FitVisible;
 }
 
+void Gui::actualSize()
+{
+  actualSize(pageview());
+}
+
 void Gui::actualSize(
   LGraphicsView *view)
 {
@@ -167,11 +182,21 @@ void Gui::actualSize(
   fitMode = FitNone;
 }
 
+void Gui::zoomIn()
+{
+  zoomIn(pageview());
+}
+
 void Gui::zoomIn(
   LGraphicsView *view)
 {
   fitMode = FitNone;
   view->scale(1.1,1.1);
+}
+
+void Gui::zoomOut()
+{
+  zoomOut(pageview());
 }
 
 void Gui::zoomOut(

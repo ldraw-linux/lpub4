@@ -69,7 +69,7 @@ CheckBoxGui::CheckBoxGui(
 {
   meta = _meta;
     
-  QHBoxLayout *layout = new QHBoxLayout(this);
+  QHBoxLayout *layout = new QHBoxLayout(parent);
   
   if (parent) {
     parent->setLayout(layout);
@@ -77,7 +77,7 @@ CheckBoxGui::CheckBoxGui(
     setLayout(layout);
   }
 
-  check = new QCheckBox(heading,this);
+  check = new QCheckBox(heading,parent);
   check->setChecked(meta->value());
   layout->addWidget(check);
   connect(check,SIGNAL(stateChanged(int)),
@@ -119,17 +119,17 @@ BoolRadioGui::BoolRadioGui(
 {
   meta = _meta;
     
-  QVBoxLayout *layout = new QVBoxLayout(this);
+  QVBoxLayout *layout = new QVBoxLayout(parent);
   
   parent->setLayout(layout);
 
-  trueRadio = new QRadioButton(trueHeading,this);
+  trueRadio = new QRadioButton(trueHeading,parent);
   connect(trueRadio,SIGNAL(clicked(bool)),
           this,     SLOT(  trueClicked(bool)));
   layout->addWidget(trueRadio); 
   trueRadio->setChecked(meta->value());
 
-  falseRadio = new QRadioButton(falseHeading,this);
+  falseRadio = new QRadioButton(falseHeading,parent);
   connect(falseRadio,SIGNAL(clicked(bool)),
           this,      SLOT(  falseClicked(bool)));
   layout->addWidget(falseRadio);
@@ -171,7 +171,7 @@ UnitsGui::UnitsGui(
 {
   meta = _meta;
     
-  QHBoxLayout *layout = new QHBoxLayout(this);
+  QHBoxLayout *layout = new QHBoxLayout(parent);
   
   if (parent) {
     parent->setLayout(layout);
@@ -180,7 +180,7 @@ UnitsGui::UnitsGui(
   }
 
   if (heading != "") {
-    label = new QLabel(heading,this);
+    label = new QLabel(heading,parent);
     layout->addWidget(label);
   } else {
     label = NULL;
@@ -192,7 +192,7 @@ UnitsGui::UnitsGui(
                               meta->_fieldWidth,
                               'f',
                               meta->_precision);
-  value0 = new QLineEdit(string,this);
+  value0 = new QLineEdit(string,parent);
   connect(value0,SIGNAL(textEdited(  QString const &)),
           this,  SLOT(  value0Change(QString const &)));
   layout->addWidget(value0);
@@ -201,7 +201,7 @@ UnitsGui::UnitsGui(
                               meta->_fieldWidth,
                               'f',
                               meta->_precision);
-  value1 = new QLineEdit(string,this);
+  value1 = new QLineEdit(string,parent);
   connect(value1,SIGNAL(textEdited(  QString const &)),
           this,  SLOT(  value1Change(QString const &)));
   layout->addWidget(value1);
@@ -250,7 +250,7 @@ FloatsGui::FloatsGui(
 {
   meta = _meta;
     
-  QHBoxLayout *layout = new QHBoxLayout(this);
+  QHBoxLayout *layout = new QHBoxLayout(parent);
   
   if (parent) {
     parent->setLayout(layout);
@@ -261,7 +261,7 @@ FloatsGui::FloatsGui(
   if (heading0 == "") {
     label0 = NULL;
   } else {
-    label0 = new QLabel(heading0,this);
+    label0 = new QLabel(heading0,parent);
     layout->addWidget(label0);
   }
 
@@ -271,7 +271,7 @@ FloatsGui::FloatsGui(
                               meta->_fieldWidth,
                               'f',
                               meta->_precision);
-  value0 = new QLineEdit(string,this);
+  value0 = new QLineEdit(string,parent);
   value0->setInputMask(meta->_inputMask);
   connect(value0,SIGNAL(textEdited(  QString const &)),
           this,  SLOT(  value0Change(QString const &)));
@@ -280,7 +280,7 @@ FloatsGui::FloatsGui(
   if (heading1 == "") {
     label1 = NULL;
   } else {
-    label1 = new QLabel(heading1,this);
+    label1 = new QLabel(heading1,parent);
     layout->addWidget(label1);
   }
 
@@ -288,7 +288,7 @@ FloatsGui::FloatsGui(
                               meta->_fieldWidth,
                               'f',
                               meta->_precision);
-  value1 = new QLineEdit(string,this);
+  value1 = new QLineEdit(string,parent);
   value1->setInputMask(meta->_inputMask);
   connect(value1,SIGNAL(textEdited(  QString const &)),
           this,  SLOT(  value1Change(QString const &)));
@@ -343,7 +343,7 @@ DoubleSpinGui::DoubleSpinGui(
 {
   meta = _meta;
     
-  QHBoxLayout *layout = new QHBoxLayout(this);
+  QHBoxLayout *layout = new QHBoxLayout(parent);
   
   if (parent) {
     parent->setLayout(layout);
@@ -354,11 +354,11 @@ DoubleSpinGui::DoubleSpinGui(
   if (heading == "") {
     label = NULL;
   } else {
-    label = new QLabel(heading,this);
+    label = new QLabel(heading,parent);
     layout->addWidget(label);
   }
 
-  spin = new QDoubleSpinBox(this);
+  spin = new QDoubleSpinBox(parent);
   layout->addWidget(spin);
   spin->setRange(min,max);
   spin->setSingleStep(step);
@@ -404,7 +404,7 @@ ConstrainGui::ConstrainGui(
 
   QHBoxLayout *layout;
 
-  layout = new QHBoxLayout(this);
+  layout = new QHBoxLayout(parent);
   
   if (parent) {
     parent->setLayout(layout);
@@ -413,7 +413,7 @@ ConstrainGui::ConstrainGui(
   }
 
   if (heading != "") {
-    headingLabel = new QLabel(heading,this);
+    headingLabel = new QLabel(heading,parent);
     layout->addWidget(headingLabel);
   } else {
     headingLabel = NULL;
@@ -452,7 +452,7 @@ ConstrainGui::ConstrainGui(
 
   /* Constraint */
 
-  value = new QLineEdit(string,this);
+  value = new QLineEdit(string,parent);
   value->setInputMask("009.9");
   connect(value,SIGNAL(textEdited( QString const &)),
           this, SLOT(  valueChange(QString const &)));
@@ -541,30 +541,30 @@ NumberGui::NumberGui(
 
   QGridLayout *grid;
 
-  grid = new QGridLayout(this);
+  grid = new QGridLayout(parent);
 
   if (parent) {
     parent->setLayout(grid);
   }
 
-  fontLabel = new QLabel("Font",this);
+  fontLabel = new QLabel("Font",parent);
   grid->addWidget(fontLabel,0,0);
   
-  fontExample = new QLabel("1234",this);
+  fontExample = new QLabel("1234",parent);
   QFont font;
   font.fromString(meta->font.valueUnit());
   fontExample->setFont(font);
   grid->addWidget(fontExample,0,1);
 
-  fontButton = new QPushButton("Change",this);
+  fontButton = new QPushButton("Change",parent);
   connect(fontButton,SIGNAL(clicked(   bool)),
           this,      SLOT(  browseFont(bool)));
   grid->addWidget(fontButton,0,2);
 
-  colorLabel = new QLabel("Color",this);
+  colorLabel = new QLabel("Color",parent);
   grid->addWidget(colorLabel,1,0);
   
-  colorExample = new QLabel(this);
+  colorExample = new QLabel(parent);
   colorExample->setFrameStyle(QFrame::Sunken|QFrame::Panel);
   colorExample->setPalette(QPalette(meta->color.value()));
   colorExample->setAutoFillBackground(true);
@@ -575,21 +575,21 @@ NumberGui::NumberGui(
           this,       SLOT(  browseColor(bool)));
   grid->addWidget(colorButton,1,2);
 
-  marginsLabel = new QLabel("Margins",this);
+  marginsLabel = new QLabel("Margins",parent);
   grid->addWidget(marginsLabel,2,0);
   
   QString string;
 
   string = QString("%1") .arg(meta->margin.valueUnit(0),
                               5,'f',4);
-  value0 = new QLineEdit(string,this);
+  value0 = new QLineEdit(string,parent);
   connect(value0,SIGNAL(textEdited(   QString const &)),
           this,  SLOT(  value0Changed(QString const &)));
   grid->addWidget(value0,2,1);
   
   string = QString("%1") .arg(meta->margin.valueUnit(1),
                               5,'f',4);
-  value1 = new QLineEdit(string,this);
+  value1 = new QLineEdit(string,parent);
   connect(value1,SIGNAL(textEdited(   QString const &)),
           this,  SLOT(  value1Changed(QString const &)));
   grid->addWidget(value1,2,2);
@@ -687,10 +687,10 @@ BackgroundGui::BackgroundGui(
     break;
   }
 
-  grid = new QGridLayout(this);
+  grid = new QGridLayout(parent);
   parent->setLayout(grid);
 
-  combo = new QComboBox(this);
+  combo = new QComboBox(parent);
   combo->addItem("None");
   combo->addItem("Picture");
   combo->addItem("Solid Color");
@@ -702,42 +702,42 @@ BackgroundGui::BackgroundGui(
 
   /* Color */
 
-  colorLabel = new QLabel(this);
+  colorLabel = new QLabel(parent);
   colorLabel->setFrameStyle(QFrame::Sunken|QFrame::Panel);
   colorLabel->setPalette(QPalette(color));
   colorLabel->setAutoFillBackground(true);
   grid->addWidget(colorLabel,0,1);
   
-  colorButton = new QPushButton("Change",this);
+  colorButton = new QPushButton("Change",parent);
   connect(colorButton,SIGNAL(clicked(    bool)),
           this,       SLOT(  browseColor(bool)));
   grid->addWidget(colorButton,0,2);
 
   /* Image */
 
-  pictureEdit = new QLineEdit(picture,this);
+  pictureEdit = new QLineEdit(picture,parent);
   connect(pictureEdit,SIGNAL(textEdited(   QString const &)),
           this,       SLOT(  pictureChange(QString const &)));
   grid->addWidget(pictureEdit,1,0);
 
-  pictureButton = new QPushButton("Browse",this);
+  pictureButton = new QPushButton("Browse",parent);
   connect(pictureButton,SIGNAL(clicked(     bool)),
           this,         SLOT(  browsePicture(bool)));
   grid->addWidget(pictureButton,1,1);
 
   /* Fill */
 
-  fill = new QGroupBox("Fill",this);
+  fill = new QGroupBox("Fill",parent);
 
-  vert = new QVBoxLayout(this);
+  vert = new QVBoxLayout(parent);
   fill->setLayout(vert);
   grid->addWidget(fill,2,0,1,3);
 
-  stretchRadio = new QRadioButton("Stretch Picture");
+  stretchRadio = new QRadioButton("Stretch Picture",parent);
   connect(stretchRadio,SIGNAL(clicked(bool)),
           this,        SLOT(  stretch(bool)));
   vert->addWidget(stretchRadio);
-  tileRadio    = new QRadioButton("Tile Picture");
+  tileRadio    = new QRadioButton("Tile Picture",parent);
   connect(tileRadio,SIGNAL(clicked(bool)),
           this,     SLOT(  stretch(bool)));
   vert->addWidget(tileRadio);
@@ -874,12 +874,12 @@ BorderGui::BorderGui(
   QComboBox     *combo;
   QGridLayout   *grid;
 
-  grid = new QGridLayout(this);
+  grid = new QGridLayout(parent);
   parent->setLayout(grid);
 
   /* Combo */
 
-  combo = new QComboBox(this);
+  combo = new QComboBox(parent);
   combo->addItem("Borderless");
   combo->addItem("Square Corners");
   combo->addItem("Round Corners");
@@ -890,11 +890,11 @@ BorderGui::BorderGui(
 
   /* Thickness */
 
-  thicknessLabel = new QLabel("Width",this);
+  thicknessLabel = new QLabel("Width",parent);
   grid->addWidget(thicknessLabel,0,1);
 
   string = QString("%1") .arg(border.thickness,5,'f',4);
-  thicknessEdit = new QLineEdit(string,this);
+  thicknessEdit = new QLineEdit(string,parent);
   thicknessEdit->setInputMask("9.9000");
   connect(thicknessEdit,SIGNAL(textEdited(     QString const &)),
           this,         SLOT(  thicknessChange(QString const &)));
@@ -902,23 +902,23 @@ BorderGui::BorderGui(
 
   /* Color */
 
-  colorLabel = new QLabel(this);
+  colorLabel = new QLabel(parent);
   colorLabel->setFrameStyle(QFrame::Sunken|QFrame::Panel);
   colorLabel->setPalette(QPalette(border.color));
   colorLabel->setAutoFillBackground(true);
   grid->addWidget(colorLabel,1,0);
   
-  colorButton = new QPushButton("Change",this);
+  colorButton = new QPushButton("Change",parent);
   connect(colorButton,SIGNAL(clicked(    bool)),
           this,       SLOT(  browseColor(bool)));
   grid->addWidget(colorButton,1,1);
 
   /* Radius */
 
-  spinLabel = new QLabel("Radius",this);
+  spinLabel = new QLabel("Radius",parent);
   grid->addWidget(spinLabel,2,0);
 
-  spin = new QSpinBox(this);
+  spin = new QSpinBox(parent);
   spin->setRange(0,100);
   spin->setSingleStep(5);
   spin->setValue(border.radius);
@@ -930,19 +930,19 @@ BorderGui::BorderGui(
 
   QLabel *label;
   
-  label = new QLabel("Margins",this);
+  label = new QLabel("Margins",parent);
   grid->addWidget(label,3,0);
 
   QLineEdit *lineEdit;
 
   string = QString("%1") .arg(border.margin[0],5,'f',4);
-  lineEdit = new QLineEdit(string,this);
+  lineEdit = new QLineEdit(string,parent);
   grid->addWidget(lineEdit,3,1);
   connect(lineEdit,SIGNAL(textEdited(QString const &)),
           this,    SLOT(marginXChange(QString const &)));
 
   string = QString("%1") .arg(border.margin[1],5,'f',4);
-  lineEdit = new QLineEdit(string,this);
+  lineEdit = new QLineEdit(string,parent);
   grid->addWidget(lineEdit,3,2);
   connect(lineEdit,SIGNAL(textEdited(QString const &)),
           this,    SLOT(marginYChange(QString const &)));  
@@ -1056,14 +1056,14 @@ SepGui::SepGui(
 {
   meta = _meta;
 
-  QGridLayout *grid = new QGridLayout(this);
+  QGridLayout *grid = new QGridLayout(parent);
   parent->setLayout(grid);
 
   QLabel    *label;
   QLineEdit *lineEdit;
   QPushButton *button;
 
-  label = new QLabel("Width",this);
+  label = new QLabel("Width",parent);
   grid->addWidget(label,0,0);
 
   QString string;
@@ -1072,33 +1072,36 @@ SepGui::SepGui(
 
   string = QString("%1") .arg(sep.thickness,
                               5,'f',4);
-  lineEdit = new QLineEdit(string,this);
+  lineEdit = new QLineEdit(string,parent);
   connect(lineEdit,SIGNAL(textEdited(QString const &)),
           this,    SLOT(  thicknessChange(QString const &)));
   grid->addWidget(lineEdit,0,1);
 
-  colorExample = new QLabel(this);
+  label = new QLabel("Color",parent);
+  grid->addWidget(label,1,0);
+
+  colorExample = new QLabel(parent);
   colorExample->setFrameStyle(QFrame::Sunken|QFrame::Panel);
   colorExample->setPalette(QPalette(sep.color));
   colorExample->setAutoFillBackground(true);
-  grid->addWidget(colorExample,1,0);
+  grid->addWidget(colorExample,1,1);
   
-  button = new QPushButton("Change");
+  button = new QPushButton("Change",parent);
   connect(button,SIGNAL(clicked(bool)),
           this,  SLOT(  browseColor(bool)));
-  grid->addWidget(button,1,1);
+  grid->addWidget(button,1,2);
   
-  label = new QLabel("Margins",this);
+  label = new QLabel("Margins",parent);
   grid->addWidget(label,2,0);
 
   string = QString("%1") .arg(sep.margin[0],5,'f',4);
-  lineEdit = new QLineEdit(string,this);
+  lineEdit = new QLineEdit(string,parent);
   grid->addWidget(lineEdit,2,1);
   connect(lineEdit,SIGNAL(textEdited(QString const &)),
           this,    SLOT(marginXChange(QString const &)));
 
   string = QString("%1") .arg(sep.margin[1],5,'f',4);
-  lineEdit = new QLineEdit(string,this);
+  lineEdit = new QLineEdit(string,parent);
   grid->addWidget(lineEdit,2,2);
   connect(lineEdit,SIGNAL(textEdited(QString const &)),
           this,    SLOT(marginYChange(QString const &)));  
@@ -1163,12 +1166,11 @@ ResolutionGui::ResolutionGui(
 {
   meta = _meta;
 
-  QGridLayout *grid = new QGridLayout(this);
-  parent->setLayout(grid);
+  QGridLayout *grid = new QGridLayout(parent);
 
   QLabel    *label;
 
-  label = new QLabel("Units",this);
+  label = new QLabel("Units",parent);
   grid->addWidget(label,0,0);
 
   type  = meta->type();
@@ -1176,7 +1178,7 @@ ResolutionGui::ResolutionGui(
 
   QComboBox *combo;
 
-  combo = new QComboBox(this);
+  combo = new QComboBox(parent);
   combo->addItem("Dots Per Inch");
   combo->addItem("Dots Per Centimeter");
   combo->setCurrentIndex(int(type));
@@ -1187,11 +1189,12 @@ ResolutionGui::ResolutionGui(
   QString string;
 
   string = QString("%1") .arg(int(value),4);
-  valueEdit = new QLineEdit(string,this);
+  valueEdit = new QLineEdit(string,parent);
   valueEdit->setInputMask("9999");
   connect(valueEdit,SIGNAL(textEdited( QString const &)),
           this,     SLOT(  valueChange(QString const &)));
   grid->addWidget(valueEdit,0,2);
+  parent->setLayout(grid);
 }
 
 void ResolutionGui::unitsChange(QString const &units)
@@ -1257,7 +1260,7 @@ RendererGui::RendererGui(
 {
   QHBoxLayout *layout;
 
-  layout = new QHBoxLayout(this);
+  layout = new QHBoxLayout(parent);
   
   if (parent) {
     parent->setLayout(layout);
@@ -1265,7 +1268,7 @@ RendererGui::RendererGui(
     setLayout(layout);
   }
 
-  combo = new QComboBox(this);
+  combo = new QComboBox(parent);
   if (Preferences::ldgliteExe != "") {
     combo->addItem("LDGLite");
   }

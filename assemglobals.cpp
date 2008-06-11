@@ -85,17 +85,15 @@ GlobalAssemDialog::GlobalAssemDialog(
     "Scale",&assem->modelScale,
     assem->modelScale._min,
     assem->modelScale._max,
-    0.1,box);
+    0.1);
   data->modelScale = child;
   data->children.append(child);
   boxGrid->addWidget(child,1,0,1,2);
   
   /* Step Number */
 
-  box = new QGroupBox("Step Number",this);
+  box = new QGroupBox("Step Number");
   grid->addWidget(box,1,0);
-  boxGrid = new QGridLayout(this);
-  box->setLayout(boxGrid);
 
   NumberPlacementMeta *stepNumber = &data->meta.LPub.stepNumber;
 

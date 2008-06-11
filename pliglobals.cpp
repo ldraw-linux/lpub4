@@ -117,17 +117,17 @@ GlobalPliDialog::GlobalPliDialog(
     "Scale",&pliMeta->modelScale,
     pliMeta->modelScale._min,
     pliMeta->modelScale._max,
-    0.1,box);
+    0.1);
   data->children.append(child);
   partsLayout->addWidget(child);
   data->scale = child;
 
-  child = new FloatsGui("Lattitude","Longitude",&pliMeta->angle,box);
+  child = new FloatsGui("Lattitude","Longitude",&pliMeta->angle);
   data->children.append(child);
   partsLayout->addWidget(child);
   data->viewAngle = child;
 
-  child = new UnitsGui("Margins",&pliMeta->part.margin,box);
+  child = new UnitsGui("Margins",&pliMeta->part.margin);
   data->children.append(child);
   partsLayout->addWidget(child);
 

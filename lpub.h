@@ -484,6 +484,10 @@ public slots:
   void multiStepSetup();
   void projectSetup();
   
+  void fitWidth();
+  void fitVisible();
+  void actualSize();
+  
   void fitWidth(  LGraphicsView *view);
   void fitVisible(LGraphicsView *view);
   void actualSize(LGraphicsView *view);
@@ -566,6 +570,9 @@ private slots:
     void setPage();
     void firstPage();
     void lastPage();
+
+	void zoomIn();
+	void zoomOut();
 
     void zoomIn(LGraphicsView *view);
     void zoomOut(LGraphicsView *view);
