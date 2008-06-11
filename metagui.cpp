@@ -701,7 +701,7 @@ BackgroundGui::BackgroundGui(
   grid->addWidget(combo, 0, 0);
 
   /* Color */
-
+  
   colorLabel = new QLabel(parent);
   colorLabel->setFrameStyle(QFrame::Sunken|QFrame::Panel);
   colorLabel->setPalette(QPalette(color));
@@ -901,17 +901,20 @@ BorderGui::BorderGui(
   grid->addWidget(thicknessEdit,0,2);
 
   /* Color */
+  
+  QLabel *label = new QLabel("Color",parent);
+  grid->addWidget(label,1,0);
 
   colorLabel = new QLabel(parent);
   colorLabel->setFrameStyle(QFrame::Sunken|QFrame::Panel);
   colorLabel->setPalette(QPalette(border.color));
   colorLabel->setAutoFillBackground(true);
-  grid->addWidget(colorLabel,1,0);
+  grid->addWidget(colorLabel,1,1);
   
   colorButton = new QPushButton("Change",parent);
   connect(colorButton,SIGNAL(clicked(    bool)),
           this,       SLOT(  browseColor(bool)));
-  grid->addWidget(colorButton,1,1);
+  grid->addWidget(colorButton,1,2);
 
   /* Radius */
 
@@ -927,8 +930,6 @@ BorderGui::BorderGui(
           this,SLOT(  radiusChange(int)));
 
   /* Margins */
-
-  QLabel *label;
   
   label = new QLabel("Margins",parent);
   grid->addWidget(label,3,0);

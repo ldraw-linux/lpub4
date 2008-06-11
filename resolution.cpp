@@ -28,7 +28,7 @@
 #include "resolution.h"
 
 ResolutionType resolutionType = DPI;
-float          resolution     = 72;
+float          resolution     = 150;
 
 float inches2centimeters(float inches)
 {
