@@ -51,7 +51,7 @@ void Preferences::lpubPreferences()
   lpubPath = cwd.absolutePath();
 }
 
-void Preferences::ldrawPreferences()
+void Preferences::ldrawPreferences(bool force)
 {
   QFileInfo fileInfo;
   QSettings settings(LPUB,SETTINGS);
@@ -61,7 +61,7 @@ void Preferences::ldrawPreferences()
     ldrawPath = settings.value(ldrawKey).toString();
   }
 
-  if (ldrawPath != "") {
+  if (ldrawPath != "" && ! force) {
     QDir cwd(ldrawPath);
 
     if (cwd.exists()) {

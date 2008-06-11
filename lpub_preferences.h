@@ -24,7 +24,7 @@ class Preferences
   public:
     Preferences();
     static void lpubPreferences();
-    static void ldrawPreferences();
+    static void ldrawPreferences(bool);
 	static void renderPreferences();
 	static void pliPreferences();
 	static void getRequireds();

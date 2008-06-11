@@ -45,7 +45,7 @@ PreferencesDialog::PreferencesDialog(QWidget     *_parent)
 
 void PreferencesDialog::on_browseLDraw_clicked()
 {
-  Preferences::ldrawPreferences();
+  Preferences::ldrawPreferences(true);
 }
 
 void PreferencesDialog::on_browsePli_clicked()

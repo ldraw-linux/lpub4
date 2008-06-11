@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
 
     QApplication app(argc, argv);
 	
-    Preferences::ldrawPreferences();
+    Preferences::ldrawPreferences(false);
 
     Gui     LPubWin;
     LPubWin.show();
