@@ -121,7 +121,7 @@ void PreferencesDialog::on_browseLDGLite_clicked()
           ui.preferredRenderer->setEnabled(true);
 		}
 	  } 
-      ui.ldviewBox->setChecked(fileInfo.exists());
+      ui.ldgliteBox->setChecked(fileInfo.exists());
 	}
   }
 }
