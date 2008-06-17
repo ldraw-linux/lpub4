@@ -1484,13 +1484,10 @@ public:
   }
   float ldu()
   {
-    switch (resolutionType) {
-      case DPI:
-        return 1.0/64;
-      break;
-      default:
-        return 0.04;
-      break;
+    if (resolutionType == DPI) {
+      return 1.0/64;
+    } else {
+      return 0.04;
     }
   }
   ResolutionMeta() 
