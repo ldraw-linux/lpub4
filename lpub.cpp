@@ -309,10 +309,13 @@ void Gui::projectSetup()
 void Gui::preferences()
 {
   if (Preferences::getPreferences()) {
+    QString renderer = Render::getRenderer();
     Render::setRenderer(Preferences::preferredRenderer);
-	gui->clearCSICache();
-	gui->clearPLICache();
-	redrawPage();
+    if (Render::getRenderer() != renderer) {
+      gui->clearCSICache();
+      gui->clearPLICache();
+    }
+    redrawPage();
   }
 }
 
@@ -325,9 +328,9 @@ void Gui::preferences()
 
 Gui::Gui()
 {
-	Preferences::lpubPreferences();
-	Preferences::renderPreferences();
-	Preferences::pliPreferences();
+    Preferences::lpubPreferences();
+    Preferences::renderPreferences();
+    Preferences::pliPreferences();
 
     displayPageNum = 1;
 
@@ -397,7 +400,7 @@ Gui::Gui()
 #endif
 
     Preferences::getRequireds();
-	Render::setRenderer(Preferences::preferredRenderer);
+    Render::setRenderer(Preferences::preferredRenderer);
 }
 
 Gui::~Gui()
@@ -528,6 +531,9 @@ void Gui::createActions()
 
     QString pageString = "";
     setPageLineEdit = new QLineEdit(pageString,this);
+    QSize size = setPageLineEdit->sizeHint();
+    size.setWidth(size.width()/3);
+    setPageLineEdit->setMinimumSize(size);
     connect(setPageLineEdit, SIGNAL(returnPressed()), this, SLOT(setPage()));
 
     clearPLICacheAct = new QAction(tr("Clear Parts List Cache"), this);
@@ -639,20 +645,21 @@ void Gui::createToolBars()
     editToolBar->addAction(undoAct);
     editToolBar->addAction(redoAct);
 
+    navigationToolBar = addToolBar(tr("Navigation"));
+    navigationToolBar->addAction(firstPageAct);
+    navigationToolBar->addAction(previousPageAct);
+    navigationToolBar->addWidget(setPageLineEdit);
+    navigationToolBar->addAction(nextPageAct);
+    navigationToolBar->addAction(lastPageAct);
+
+    mpdToolBar = addToolBar(tr("MPD"));
+    mpdToolBar->addWidget(mpdCombo);
+
     zoomToolBar = addToolBar(tr("Zoom"));
     zoomToolBar->addAction(fitVisibleAct);
     zoomToolBar->addAction(fitWidthAct);
     zoomToolBar->addAction(zoomInAct);
     zoomToolBar->addAction(zoomOutAct);
-
-    navigationToolBar = addToolBar(tr("Navigation"));
-    navigationToolBar->addAction(firstPageAct);
-    navigationToolBar->addAction(previousPageAct);
-    setPageAct = navigationToolBar->addWidget(setPageLineEdit);
-    navigationToolBar->addAction(nextPageAct);
-    navigationToolBar->addAction(lastPageAct);
-    mpdToolBar = addToolBar(tr("MPD"));
-    mpdToolBar->addWidget(mpdCombo);
 }
 
 void Gui::createStatusBar()
