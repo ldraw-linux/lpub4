@@ -362,6 +362,7 @@ DoubleSpinGui::DoubleSpinGui(
   layout->addWidget(spin);
   spin->setRange(min,max);
   spin->setSingleStep(step);
+  spin->setDecimals(2);
   spin->setValue(meta->value());
   connect(spin,SIGNAL(valueChanged(double)),
           this,SLOT  (valueChanged(double)));
@@ -432,7 +433,7 @@ ConstrainGui::ConstrainGui(
     case PliConstrainWidth:
     case PliConstrainHeight:
       string = QString("%1") .arg(constraint.constraint,
-                                  4,'f',1);
+                                  4,'f',2);
     break;
     case PliConstrainColumns:
       string = QString("%1") .arg(int(constraint.constraint));
@@ -453,7 +454,7 @@ ConstrainGui::ConstrainGui(
   /* Constraint */
 
   value = new QLineEdit(string,parent);
-  value->setInputMask("009.9");
+  value->setInputMask("009.99");
   connect(value,SIGNAL(textEdited( QString const &)),
           this, SLOT(  valueChange(QString const &)));
   layout->addWidget(value);
@@ -470,11 +471,11 @@ void ConstrainGui::typeChange(QString const &type)
     constraint.type = PliConstrainSquare;
   } else if (type == "Width") {
     string = QString("%1") .arg(constraint.constraint,
-                                4,'f',1);
+                                4,'f',2);
     constraint.type = PliConstrainWidth;
   } else if (type == "Height") {
     string = QString("%1") .arg(constraint.constraint,
-                                4,'f',1);
+                                4,'f',2);
     constraint.type = PliConstrainHeight;
   } else {
     string = QString("%1") .arg(int(constraint.constraint));
