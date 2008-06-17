@@ -450,7 +450,7 @@ void CalloutPointerItem::mouseMoveEvent   (QGraphicsSceneMouseEvent *event)
 
     QRect rect(0,0,calloutRect.width(),calloutRect.height());
 
-    int c, m;
+    int c = 0, m = 0;
 
     switch (selectedPoint) {
       case C1:
@@ -862,7 +862,7 @@ void CalloutPointerItem::defaultPointer()
  
 void CalloutPointerItem::calculatePointerMetaLoc()
 {
-  float loc;
+  float loc = 0;
 
   switch (placement) {
     case TopLeft:
