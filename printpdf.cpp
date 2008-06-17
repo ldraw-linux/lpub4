@@ -65,51 +65,51 @@ void Gui::bestPageSizeOrientation(
   QPrinter::Orientation &orient)
 {
   int   numPageSizes = sizeof(pageSizes)/sizeof(pageSizes[0]);
-  float diffWidth;
-  float diffHeight;
+  float diffWidth = 0;
+  float diffHeight = 0;
   bool  fit = false;
   
   for (int i = 0; i < numPageSizes; i++) {
  
-    float widthDiff = pageSizes[i].width - widthMm;
+  float widthDiff = pageSizes[i].width - widthMm;
 	float heightDiff = pageSizes[i].height - heightMm;
 	
     if (widthDiff >= 0  && heightDiff >= 0) {
-	  if (fit) {
-		if (widthDiff < diffWidth && heightDiff < diffHeight) {
-		  pageSize = pageSizes[i].pageSize;
-		  orient = QPrinter::Portrait;
-		  diffWidth = widthDiff;
-		  diffHeight = heightDiff;
-		}
-	  } else {
-	    fit = true;
-		pageSize = pageSizes[i].pageSize;
-		orient = QPrinter::Portrait;
-		diffWidth  = widthDiff;
-		diffHeight = heightDiff;
+	    if (fit) {
+		    if (widthDiff < diffWidth && heightDiff < diffHeight) {
+		      pageSize = pageSizes[i].pageSize;
+		      orient = QPrinter::Portrait;
+		      diffWidth = widthDiff;
+		      diffHeight = heightDiff;
+	    	}
+	    } else {
+	      fit = true;
+		    pageSize = pageSizes[i].pageSize;
+		    orient = QPrinter::Portrait;
+		    diffWidth  = widthDiff;
+		    diffHeight = heightDiff;
+	    }
 	  }
-	}
  
     widthDiff = pageSizes[i].height - widthMm;
-	heightDiff  = pageSizes[i].width - heightMm;
+	  heightDiff  = pageSizes[i].width - heightMm;
 	
     if (widthDiff >= 0  && heightDiff >= 0) {
-	  if (fit) {
-		if (widthDiff < diffWidth && heightDiff < diffHeight) {
-		  pageSize = pageSizes[i].pageSize;
-		  orient = QPrinter::Landscape;
-		  diffWidth = widthDiff;
-		  diffHeight = heightDiff;
-		}
+	    if (fit) {
+		  if (widthDiff < diffWidth && heightDiff < diffHeight) {
+		    pageSize = pageSizes[i].pageSize;
+		    orient = QPrinter::Landscape;
+		    diffWidth = widthDiff;
+		    diffHeight = heightDiff;
+		  }
 	  } else {
 	    fit = true;
-		pageSize = pageSizes[i].pageSize;
-		orient = QPrinter::Portrait;
-		diffWidth  = widthDiff;
-		diffHeight = heightDiff;
+		  pageSize = pageSizes[i].pageSize;
+		  orient = QPrinter::Portrait;
+		  diffWidth  = widthDiff;
+		  diffHeight = heightDiff;
+	    }
 	  }
-	}
   }
 }
 
@@ -120,8 +120,8 @@ void Gui::printToFile()
   float pageHeight = page.meta.LPub.page.size.valueUnit(1);
   if (page.meta.LPub.resolution.type() == DPI) {
     // convert to MM
-	pageWidth = int(inches2centimeters(pageWidth)*10);
-	pageHeight = int(inches2centimeters(pageHeight)*10);
+	  pageWidth = int(inches2centimeters(pageWidth)*10);
+	  pageHeight = int(inches2centimeters(pageHeight)*10);
   }
   QPrinter::PageSize pageSize;
   QPrinter::Orientation orientation;
@@ -137,9 +137,9 @@ void Gui::printToFile()
 
   QString fileName = QFileDialog::getSaveFileName(
     this,
-	tr("Print File Name"),
-	QDir::currentPath() + "/" + baseName,
-	tr("PDF (*.pdf)\nPDF (*.PDF)"));
+	  tr("Print File Name"),
+	  QDir::currentPath() + "/" + baseName,
+	  tr("PDF (*.pdf)\nPDF (*.PDF)"));
 
   fileInfo.setFile(fileName);
   QString suffix = fileInfo.suffix();
