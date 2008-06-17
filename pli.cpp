@@ -366,7 +366,7 @@ int Pli::placePli(
   while (nPlaced < keys.size()) {
 
     int i;
-    PliPart *part;
+    PliPart *part = NULL;
 
     for (i = 0; i < keys.size(); i++) {
       QString key = keys[i];
@@ -585,7 +585,7 @@ int Pli::placePli(
 
   int margin;
   int totalCols = margins.size();
-  int lastMargin;
+  int lastMargin = 0;
   for (int col = 0; col < totalCols; col++) {
     lastMargin = margins[col].second;
     if (col == 0) {
