@@ -119,7 +119,7 @@ void Callout::sizeitVert()
       BorderData borderData = meta.LPub.callout.border.value();
       int margin[2] = {borderData.margin[0], borderData.margin[1]};
       placeRelative(&instanceCount,margin);
-	  switch (placementData.placement) {
+      switch (placementData.placement) {
         case TopLeft:
         case Left:
         case BottomLeft:
@@ -130,7 +130,7 @@ void Callout::sizeitVert()
         break;
         default:
         break;
-      }
+      } 
       switch (placementData.placement) {
         case TopLeft:
         case Top:
