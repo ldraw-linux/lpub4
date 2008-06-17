@@ -69,16 +69,18 @@ void Preferences::ldrawPreferences(bool force)
     }
   }
 
-  do {
-    ldrawPath = QFileDialog::getExistingDirectory(NULL,
-                  QFileDialog::tr("Locate LDraw Directory"),
-                  "/",
-                  QFileDialog::ShowDirsOnly | 
-                  QFileDialog::DontResolveSymlinks);
-    fileInfo.setFile(ldrawPath);
-  } while ( ! fileInfo.exists());
+  ldrawPath = QFileDialog::getExistingDirectory(NULL,
+                QFileDialog::tr("Locate LDraw Directory"),
+                "/",
+                QFileDialog::ShowDirsOnly | 
+                QFileDialog::DontResolveSymlinks);
+  fileInfo.setFile(ldrawPath);
 
-  settings.setValue(ldrawKey,ldrawPath);
+  if (fileInfo.exists()) {
+    settings.setValue(ldrawKey,ldrawPath);
+  } else {
+    exit(-1);
+  }
 }
 
 
@@ -93,15 +95,15 @@ void Preferences::renderPreferences()
   QString ldglitePath;
   
   if (settings.contains(ldglitePathKey)) {
-	ldglitePath = settings.value(ldglitePathKey).toString();
-    QFileInfo info(ldglitePath);
-	if (info.exists()) {
-	  ldgliteInstalled = true;
-	  ldgliteExe = ldglitePath;
-	} else {
-	  settings.remove(ldglitePathKey);
-	  ldgliteInstalled = false;
-	}
+    ldglitePath = settings.value(ldglitePathKey).toString();
+      QFileInfo info(ldglitePath);
+    if (info.exists()) {
+      ldgliteInstalled = true;
+      ldgliteExe = ldglitePath;
+    } else {
+      settings.remove(ldglitePathKey);
+      ldgliteInstalled = false;
+    }
   } else {
     ldgliteInstalled = false;
   }
@@ -113,15 +115,15 @@ void Preferences::renderPreferences()
   QString ldviewPath;
   
   if (settings.contains(ldviewPathKey)) {
-	ldviewPath = settings.value(ldviewPathKey).toString();
+    ldviewPath = settings.value(ldviewPathKey).toString();
     QFileInfo info(ldviewPath);
-	if (info.exists()) {
-	  ldviewInstalled = true;
-	  ldviewExe = ldviewPath;
-	} else {
-	  settings.remove(ldviewPathKey);
-	  ldviewInstalled = false;
-	}
+    if (info.exists()) {
+      ldviewInstalled = true;
+      ldviewExe = ldviewPath;
+    } else {
+      settings.remove(ldviewPathKey);
+      ldviewInstalled = false;
+    }
   } else {
     ldviewInstalled = false;
   }
@@ -132,22 +134,22 @@ void Preferences::renderPreferences()
   
   if (settings.contains(preferredRendererKey)) {
     preferredRenderer = settings.value(preferredRendererKey).toString();
-	if (preferredRenderer == "LDGLite") {
-	  if ( ! ldgliteInstalled)  {
-	    preferredRenderer.clear();
-        settings.remove(preferredRendererKey);		
-	  }
-	} else if (preferredRenderer == "LDView") {
-	  if ( ! ldviewInstalled) {
-	    preferredRenderer.clear();
-		settings.remove(preferredRendererKey);
-	  }
-	}
+    if (preferredRenderer == "LDGLite") {
+      if ( ! ldgliteInstalled)  {
+        preferredRenderer.clear();
+          settings.remove(preferredRendererKey);    
+      }
+    } else if (preferredRenderer == "LDView") {
+      if ( ! ldviewInstalled) {
+        preferredRenderer.clear();
+      settings.remove(preferredRendererKey);
+      }
+    }
   }
   if (preferredRenderer == "") {
     if (ldviewInstalled && ldgliteInstalled) {
       preferredRenderer = "LDGLite";
-	} else if (ldviewInstalled) {
+    } else if (ldviewInstalled) {
       preferredRenderer = "LDView";
     } else if (ldgliteInstalled) {
       preferredRenderer = "LDGLite";
@@ -177,7 +179,7 @@ void Preferences::pliPreferences()
 
   fileInfo.setFile(pliFile);
   if (fileInfo.exists()) {
-	settings.setValue("PliControl",pliFile);
+    settings.setValue("PliControl",pliFile);
   }
 }
 
@@ -189,46 +191,46 @@ bool Preferences::getPreferences()
   if (dialog->exec() == QDialog::Accepted) {
     if (ldrawPath != dialog->ldrawPath()) {
       ldrawPath = dialog->ldrawPath();
-	  if (ldrawPath == "") {
-	    settings.remove("LDrawDir");
-	  } else {
+      if (ldrawPath == "") {
+        settings.remove("LDrawDir");
+      } else {
         settings.setValue("LDrawDir",ldrawPath);
-	  }
-	}
-	if (pliFile != dialog->pliFile()) {
-	  pliFile = dialog->pliFile();
-	  if (pliFile == "") {
-	    settings.remove("PliControl");
-	  } else {
-	    settings.setValue("PliControl",pliFile);
-	  }
-	}
-	if (ldgliteExe != dialog->ldgliteExe()) {
-	  ldgliteExe = dialog->ldgliteExe();
-	  if (ldgliteExe == "") {
-	    settings.remove("LDGLite");
-	  } else {
-	    settings.setValue("LDGLite",ldgliteExe);
-	  }
-	}
-	if (ldviewExe != dialog->ldviewExe()) {
-	  ldviewExe = dialog->ldviewExe();
-	  if (ldviewExe == "") {
-	    settings.remove("LDView");
-	  } else {
-	    settings.setValue("LDView",ldviewExe);
-	  }
-	}
-	  
-	if (preferredRenderer != dialog->preferredRenderer()) {
-	  preferredRenderer = dialog->preferredRenderer();
-	  if (preferredRenderer == "") {
-	    settings.remove("PreferredRenderer");
-	  } else {
+      }
+    }
+    if (pliFile != dialog->pliFile()) {
+      pliFile = dialog->pliFile();
+      if (pliFile == "") {
+        settings.remove("PliControl");
+      } else {
+        settings.setValue("PliControl",pliFile);
+      }
+    }
+    if (ldgliteExe != dialog->ldgliteExe()) {
+      ldgliteExe = dialog->ldgliteExe();
+      if (ldgliteExe == "") {
+        settings.remove("LDGLite");
+      } else {
+        settings.setValue("LDGLite",ldgliteExe);
+      }
+    }
+    if (ldviewExe != dialog->ldviewExe()) {
+      ldviewExe = dialog->ldviewExe();
+      if (ldviewExe == "") {
+        settings.remove("LDView");
+      } else {
+        settings.setValue("LDView",ldviewExe);
+      }
+    }
+      
+    if (preferredRenderer != dialog->preferredRenderer()) {
+      preferredRenderer = dialog->preferredRenderer();
+      if (preferredRenderer == "") {
+        settings.remove("PreferredRenderer");
+      } else {
         settings.setValue("PreferredRenderer",preferredRenderer);
-	  }
-	}
-	return true;
+      }
+    }  
+    return true;
   } else {
     return false;
   }
