@@ -440,7 +440,7 @@ void Ranges::addGraphicsItems(
 
 /*
  * For MultiStep                Callout
- *       TransparentBackground    ColorBacktround/Border
+ *       TransparentBackground    ColorBackground/Border
  * 
  *     Range
  *       TransparentRect
@@ -473,13 +473,12 @@ void Ranges::addGraphicsItemsVert(
         range->addGraphicsItemsVert(
           offset_x + offset[XX], offset_y + offset[YY], &meta, relativeType, rb);
 
-        if (list.size() - i > 1) {
+        if (list.size() > 1 && i < list.size() - 1) {
           // add divider here
           DividerItem *divider = new DividerItem(
                           this,
                          &meta,
-                          meta.context.topOfRanges(),
-                          meta.context.bottomOfRanges(),
+                          range->bottomOfRange(),
                           offset_x + offset[XX] + range->offset[XX] + range->size[XX],
                           offset_y + offset[YY] + range->offset[YY]);
           divider->setParentItem(parent);
@@ -520,13 +519,12 @@ void Ranges::addGraphicsItemsHoriz(
         range->addGraphicsItemsHoriz(
           offset_x + offset[XX], offset_y + offset[YY], &meta, relativeType, rb);
 
-        if (list.size() - i > 1) {
+        if (list.size() > 1 && i < list.size() - 1) {
           // add divider here
           DividerItem *divider = new DividerItem(
                           this,
                          &meta,
-                          meta.context.topOfRanges(),
-                          range->context.bottomOfRange(),
+                          range->bottomOfRange(),
                           offset_x + offset[XX] + range->offset[XX],
                           offset_y + offset[YY] + range->offset[YY] + range->size[YY]);
           divider->setParentItem(parent);
