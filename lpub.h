@@ -571,8 +571,8 @@ private slots:
     void firstPage();
     void lastPage();
 
-	void zoomIn();
-	void zoomOut();
+	  void zoomIn();
+	  void zoomOut();
 
     void zoomIn(LGraphicsView *view);
     void zoomOut(LGraphicsView *view);
@@ -588,6 +588,8 @@ private slots:
 	  QGraphicsScene *scene);
 
     void redrawPage();
+    
+    void enableActions();
 
     /******************************************************************
      * File management functions
@@ -673,7 +675,6 @@ private:
   QAction  *lastPageAct;
   QAction  *nextPageAct;
   QAction  *previousPageAct;
-  QAction  *setPageAct;
   QLineEdit*setPageLineEdit;
   QAction  *clearPLICacheAct;
   QAction  *clearCSICacheAct;

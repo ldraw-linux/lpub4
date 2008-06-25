@@ -36,9 +36,10 @@ void Gui::open()
     if (!fileName.isEmpty()) {
         openFile(fileName);
         displayPage();
+        enableActions();
         return;
-      }
     }
+  }
   return;
 }
 
@@ -157,6 +158,7 @@ void Gui::openRecentFile()
     setCurrentFile(fileName);
     Paths::mkdirs();
     displayPage();
+    enableActions();
   }
 }
 

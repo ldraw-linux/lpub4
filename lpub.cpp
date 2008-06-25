@@ -547,26 +547,32 @@ void Gui::createActions()
     // Config menu
 
     pageSetupAct = new QAction(tr("Page Setup"), this);
+    pageSetupAct->setEnabled(false);
     pageSetupAct->setStatusTip(tr("Default values for your project's pages"));
     connect(pageSetupAct, SIGNAL(triggered()), this, SLOT(pageSetup()));
 
     assemSetupAct = new QAction(tr("Assembly Setup"), this);
+    assemSetupAct->setEnabled(false);
     assemSetupAct->setStatusTip(tr("Default values for your project's assembly images"));
     connect(assemSetupAct, SIGNAL(triggered()), this, SLOT(assemSetup()));
 
     pliSetupAct = new QAction(tr("Parts List Setup"), this);
+    pliSetupAct->setEnabled(false);
     pliSetupAct->setStatusTip(tr("Default values for your project's parts lists"));
     connect(pliSetupAct, SIGNAL(triggered()), this, SLOT(pliSetup()));
 
     calloutSetupAct = new QAction(tr("Callout Setup"), this);
+    calloutSetupAct->setEnabled(false);
     calloutSetupAct->setStatusTip(tr("Default values for your project's callouts"));
     connect(calloutSetupAct, SIGNAL(triggered()), this, SLOT(calloutSetup()));
 
     multiStepSetupAct = new QAction(tr("Step Group Setup"), this);
+    multiStepSetupAct->setEnabled(false);
     multiStepSetupAct->setStatusTip(tr("Default values for your project's step groups"));
     connect(multiStepSetupAct, SIGNAL(triggered()), this, SLOT(multiStepSetup()));
 
     projectSetupAct = new QAction(tr("Project Setup"), this);
+    projectSetupAct->setEnabled(false);
     projectSetupAct->setStatusTip(tr("Default values for your project"));
     connect(projectSetupAct, SIGNAL(triggered()), this, SLOT(projectSetup()));
 
@@ -579,6 +585,16 @@ void Gui::createActions()
     aboutAct = new QAction(tr("&About"), this);
     aboutAct->setStatusTip(tr("Show the application's About box"));
     connect(aboutAct, SIGNAL(triggered()), this, SLOT(about()));
+}
+
+void Gui::enableActions()
+{
+    pageSetupAct->setEnabled(true);
+    assemSetupAct->setEnabled(true);
+    pliSetupAct->setEnabled(true);
+    calloutSetupAct->setEnabled(true);
+    multiStepSetupAct->setEnabled(true);
+    projectSetupAct->setEnabled(true);
 }
 
 void Gui::createMenus()
