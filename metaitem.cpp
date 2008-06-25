@@ -327,7 +327,6 @@ void MetaItem::addNextStep(Where topOfRanges)  // always add at end
         if (firstChange) {
           beginMacro("addNextStep2");
         }
-        insertMeta(them.current,"0 // AddNextStep2\n");
         insertMeta(them.current,step);
         appendMeta(them.current,stepGroupEnd);
         if (rc1 == StepRc || rc1 == RotStepRc) {
@@ -340,7 +339,6 @@ void MetaItem::addNextStep(Where topOfRanges)  // always add at end
     } else if (rc2 == StepRc || rc2 == RotStepRc) {
       if (firstChange) {
         beginMacro("addNextStep3");
-        insertMeta(them.current+1,"0 // AddNextStep3\n");
       }
       insertMeta(them.current+1,stepGroupEnd);
       if (rc1 == StepRc || rc1 == RotStepRc) {
@@ -357,7 +355,6 @@ void MetaItem::addNextStep(Where topOfRanges)  // always add at end
     if (firstChange) {
       beginMacro("addNextStep5");
     }
-    insertMeta(me.current,"0 // AddNextStep5\n");
     appendMeta(me.current,stepGroupEnd);
     appendMeta(me.current,step);
     deleteMeta(me.bottomOfRanges);
