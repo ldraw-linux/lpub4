@@ -1102,7 +1102,12 @@ void MetaItem::changeMargins(
 
   if (ok) {
     margin->setValueUnits(values[0],values[1]);
-    setMetaBottomOf(topOfStep,bottomOfStep,margin,local);
+    Where tmp = topOfStep;
+    if (tmp.lineNumber == 1) {
+      tmp = sortedGlobalWhere(tmp.modelName,"ZZZZZZ");
+      --tmp;
+    }
+    setMetaTopOf(tmp,bottomOfStep,margin,local);
   }
 }
 

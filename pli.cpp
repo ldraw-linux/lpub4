@@ -1369,11 +1369,14 @@ void PGraphicsPixmapItem::contextMenuEvent(
   QMenu menu;
   QString part = "Part ";
   QAction *marginAction = commonMenus.marginMenu(menu,part);
+
+#if 0
   QAction *scaleAction  = commonMenus.scaleMenu(menu,part);
 
   QAction *orientationAction= menu.addAction("Edit Part Orientation");
   orientationAction->setDisabled(true);
   orientationAction->setWhatsThis("This doesn't work right now");
+#endif
 
   QAction *selectedAction   = menu.exec(event->screenPos());
 
@@ -1387,6 +1390,7 @@ void PGraphicsPixmapItem::contextMenuEvent(
                   pli->range.topOf,
                   pli->range.bottomOf,
                   &meta->LPub.pli.part.margin);
+#if 0
   } else if (selectedAction == scaleAction) {
     changeFloatSpin(
       "Parts List",
@@ -1395,5 +1399,6 @@ void PGraphicsPixmapItem::contextMenuEvent(
       pli->range.bottomOf,
       &meta->LPub.pli.modelScale);
     gui->clearPLICache();
+#endif
   }
 }
