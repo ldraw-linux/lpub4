@@ -168,7 +168,6 @@ DividerItem::DividerItem(
   Ranges        *ranges,
   Meta          *_meta,
   Where          _topOfRanges,
-  Where          _bottomOfRanges,
   int            offsetX,
   int            offsetY)
 {
@@ -183,7 +182,6 @@ DividerItem::DividerItem(
   parentRelativeType = ranges->relativeType;
   meta = _meta;
   topOfRanges    = _topOfRanges;
-  bottomOfRanges = _bottomOfRanges;
 
   SepData sepData = sep->value();
 
@@ -266,9 +264,9 @@ void DividerItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
   }
 
   if (selectedAction == editAction) {
-    changeDivider("Divider",topOfRanges,bottomOfRanges,sep,false);
+    changeDivider("Divider",topOfRanges,topOfRanges,/*bottomOfRanges,*/sep,false);
   } else if (selectedAction == deleteAction) {
-    deleteMultiStepDivider(sep->here());
+    deleteMultiStepDivider(topOfRanges);
   }
 }
 void DividerLine::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)

@@ -97,14 +97,12 @@ public:
     PlacementType parentRelativeType;
     DividerLine  *lineItem;
     Where         topOfRanges;
-    Where         bottomOfRanges;
 
     DividerItem() {}
     DividerItem(
       Ranges *_ranges,
       Meta   *_meta,
       Where   _topWhere,
-      Where   _bottomWhere,
       int     _offset_x,
       int     _offset_y);
     

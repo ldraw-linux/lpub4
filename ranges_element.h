@@ -68,6 +68,8 @@ public:
 
   const Where &topOfRanges();
   const Where &bottomOfRanges();
+  const Where &topOfRange();
+  const Where &bottomOfRange();
 };
 
 #endif
