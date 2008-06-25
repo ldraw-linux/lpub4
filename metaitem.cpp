@@ -372,7 +372,7 @@ void MetaItem::addPrevStep(
   bool firstChange = true;
 
   rc1 = scanStepGroup(topOfRanges,me);
-  rc2 = scanPrevStepGroup(topOfRanges-1, them);
+  rc2 = scanPrevStepGroup(topOfRanges, them);
 
   if (rc2 == StepGroupBeginRc) {
     firstChange = false;
@@ -426,12 +426,18 @@ void MetaItem::addPrevStep(
   } else if (rc1 == StepGroupBeginRc) {
     deleteMeta(me.topOfRanges);
   }
+  
   if (rc2 == EndOfFileRc) {
     Where foo = sortedGlobalWhere(them.current.modelName,"ZZZZZZ");
     insertMeta(foo,stepGroupBegin);
+  } else if (rc2 == StepRc || rc2 == RotStepRc) {
+    Where tmp = them.topOfRanges;
+    rc1 = scanBackward(tmp, StepMask);
+    insertMeta(++tmp,stepGroupBegin);
   } else {
     insertMeta(them.topOfRanges,stepGroupBegin);
   }
+  
   if ( ! firstChange) {
     endMacro();
   }
