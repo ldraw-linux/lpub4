@@ -75,11 +75,24 @@ CalloutPointerItem::CalloutPointerItem(
   submodelLevel = _submodelLevel;
 
   selectedPoint = None;
-  QString color = meta->LPub.callout.subModelColor.value(submodelLevel);
+  QString color;
+  BackgroundData backgroundData;
+  backgroundData = meta->LPub.callout.background.value();
+   
+  switch (backgroundData.type) {
+    case BgColor:
+      color = backgroundData.string;
+    break;
+    case BgSubmodelColor:
+      color = meta->LPub.callout.subModelColor.value(submodelLevel);
+    break;
+    default:
+    break;
+  }
+
   PointerData pointerData = pointer.pointerMeta.value();
   BorderData  border = meta->LPub.callout.border.value();
-  BackgroundData backgroundData = meta->LPub.callout.background.value();
-
+  
   backgroundColor = backgroundData.string;
   borderColor     = border.color;
   borderThickness = border.thickness;
