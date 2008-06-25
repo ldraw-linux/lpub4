@@ -316,7 +316,7 @@ void MetaItem::addNextStep(Where topOfRanges)  // always add at end
 
   if (rc2 == StepGroupBeginRc) {
     firstChange = false;
-    beginMacro("addNextStep");
+    beginMacro("addNextStep1");
     removeFirstStep(them);
     rc2 = scanStepGroup(me.current, them);
   }
@@ -325,8 +325,9 @@ void MetaItem::addNextStep(Where topOfRanges)  // always add at end
     if (rc2 == EndOfFileRc) {
       if (them.partsAdded) {
         if (firstChange) {
-          beginMacro("addNextStep");
+          beginMacro("addNextStep2");
         }
+        insertMeta(them.current,"0 // AddNextStep2\n");
         insertMeta(them.current,step);
         appendMeta(them.current,stepGroupEnd);
         if (rc1 == StepRc || rc1 == RotStepRc) {
@@ -338,7 +339,8 @@ void MetaItem::addNextStep(Where topOfRanges)  // always add at end
       }
     } else if (rc2 == StepRc || rc2 == RotStepRc) {
       if (firstChange) {
-        beginMacro("addNextStep");
+        beginMacro("addNextStep3");
+        insertMeta(them.current+1,"0 // AddNextStep3\n");
       }
       insertMeta(them.current+1,stepGroupEnd);
       if (rc1 == StepRc || rc1 == RotStepRc) {
@@ -353,8 +355,9 @@ void MetaItem::addNextStep(Where topOfRanges)  // always add at end
     }
   } else if (rc1 == EndOfFileRc && me.partsAdded) {
     if (firstChange) {
-      beginMacro("addNextStep");
+      beginMacro("addNextStep5");
     }
+    insertMeta(me.current,"0 // AddNextStep5\n");
     appendMeta(me.current,stepGroupEnd);
     appendMeta(me.current,step);
     deleteMeta(me.bottomOfRanges);
@@ -487,7 +490,12 @@ void MetaItem::addMultiStepDivider(
 void MetaItem::deleteMultiStepDivider(Where divider)
 {
   if (divider.modelName != "undefined") {
-    deleteMeta(divider);
+    Rc rc;
+    rc = scanForward(divider,StepMask|StepGroupDividerMask|StepGroupEndMask);
+
+    if (rc == StepGroupDividerRc) {
+      deleteMeta(divider);
+    }
   }
 }
 
@@ -502,17 +510,24 @@ bool equivalentAdds(
   QString const &second)
 {
   QStringList firstTokens, secondTokens;
+  bool        firstMirror, secondMirror;
+  
+  firstMirror = false;
+  secondMirror = false;
   
   split(first,firstTokens);
   split(second,secondTokens);
   
   for (int i = 5; i < 14; i++) {
-    if (firstTokens[i].toFloat() != secondTokens[i].toFloat()) {
-	  return false;
+    if (firstTokens[i].toFloat() < 0) {
+	  firstMirror = true;
+	}
+	if (secondTokens[i].toFloat() < 0) {
+	  secondMirror = true;
 	}
   }
   
-  return firstTokens[14] == secondTokens[14];
+  return firstMirror == secondMirror && firstTokens[14] == secondTokens[14];
 }
 
 void MetaItem::convertToCallout(Meta *meta)
@@ -961,7 +976,12 @@ void MetaItem::changePlacement(
 
   if (ok) {
     placement->setValue(placementData);
-    setMetaBottomOf(topOfRanges,bottomOfRanges,placement,useLocal);
+	if (relativeType == PartsListType && 
+	   (parentType == StepGroupType || parentType == CalloutType)) {
+      setMetaBottomOf(topOfRanges,bottomOfRanges,placement,useLocal);
+	} else {
+      setMetaTopOf(topOfRanges,bottomOfRanges,placement,useLocal);
+	}
   }
 }
 
@@ -1167,7 +1187,7 @@ void MetaItem::changeFloatSpin(
                                   data,
                                   floatMeta->_min,
                                   floatMeta->_max,
-                                  1.0,
+                                  0.1,
                                   title,
                                   label,
                                   gui);
