@@ -306,6 +306,7 @@ int LDView::renderCsi(
   arguments << "-SubduedLighting=1";
   arguments << "-UseSpecular=0";
   arguments << "-LightVector=0,1,1";
+  arguments << "-SaveActualSize=0";
   arguments << w;
   arguments << h;
   arguments << s;
@@ -347,6 +348,12 @@ int LDView::renderPli(
 {
   int width  = meta.LPub.page.size.value(0);
   int height = meta.LPub.page.size.value(1);
+  
+  QFileInfo fileInfo(ldrName);
+  
+  if ( ! fileInfo.exists()) {
+    return -1;
+  }
 
   /* determine camera distance */
   
@@ -370,6 +377,7 @@ int LDView::renderPli(
   arguments << "-SubduedLighting=1";
   arguments << "-UseSpecular=0";
   arguments << "-LightVector=0,1,1";
+  arguments << "-SaveActualSize=0";
   arguments << w;
   arguments << h;
   arguments << s;
