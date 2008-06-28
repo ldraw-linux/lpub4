@@ -34,13 +34,22 @@ PreferencesDialog::PreferencesDialog(QWidget     *_parent)
   parent = _parent;
   if (Preferences::preferredRenderer == "LDView") {
     ui.preferredRenderer->setCurrentIndex(1);
-      ui.preferredRenderer->setEnabled(true);
+    ui.preferredRenderer->setEnabled(true);
   } else if (Preferences::preferredRenderer == "LDGLite") {
     ui.preferredRenderer->setCurrentIndex(0);
-      ui.preferredRenderer->setEnabled(true);
+    ui.preferredRenderer->setEnabled(true);
   } else {
     ui.preferredRenderer->setEnabled(false);
   }
+  bool centimeters = Preferences::preferCentimeters;
+  ui.Centimeters->setChecked( centimeters );
+  ui.Inches->setChecked( ! centimeters );
+}
+
+void PreferencesDialog::disableUnits()
+{
+  ui.Centimeters->setDisabled(true);
+  ui.Inches->setDisabled(true);
 }
 
 void PreferencesDialog::on_browseLDraw_clicked()
@@ -163,3 +172,7 @@ QString const PreferencesDialog::preferredRenderer()
   return "";
 }
 
+bool const PreferencesDialog::centimeters()
+{
+  return ui.Centimeters->isChecked();
+}

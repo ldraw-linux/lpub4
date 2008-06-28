@@ -39,6 +39,17 @@ float centimeters2inches(float centimeters)
   return centimeters*0.3937;
 }
 
+void defaultResolutionType(
+  bool centimeters)
+{
+  if (centimeters) {
+    resolutionType = DPCM;
+    resolution /= inches2centimeters(1);
+  } else {
+    resolutionType = DPI;
+  }
+}
+
 float toInches(
   ResolutionType type,
   float          value)

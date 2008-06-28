@@ -36,6 +36,7 @@ QString Preferences::ldgliteExe;
 QString Preferences::ldviewExe;
 QString Preferences::pliFile;
 QString Preferences::preferredRenderer;
+bool    Preferences::preferCentimeters = false;
 
 Preferences::Preferences()
 {
@@ -183,9 +184,27 @@ void Preferences::pliPreferences()
   }
 }
 
-bool Preferences::getPreferences()
+void Preferences::unitsPreferences()
+{
+  QSettings settings(LPUB,SETTINGS);
+  if ( ! settings.contains("Centimeters")) {
+    QMessageBox::information(NULL,
+      QMessageBox::tr("LPub"),
+      QMessageBox::tr("You need to specify a preference for inches or centimeters"),
+      QMessageBox::Ok);
+    getPreferences();
+  }
+  preferCentimeters = settings.value("Centimeters").toBool();
+}
+
+bool Preferences::getPreferences(bool fileOpen)
 {
   PreferencesDialog *dialog = new PreferencesDialog();
+  
+  if (fileOpen) {
+    dialog->disableUnits();
+  }
+  
   QSettings settings(LPUB,SETTINGS);
 
   if (dialog->exec() == QDialog::Accepted) {
@@ -229,7 +248,9 @@ bool Preferences::getPreferences()
       } else {
         settings.setValue("PreferredRenderer",preferredRenderer);
       }
-    }  
+    }
+    preferCentimeters = dialog->centimeters();
+    settings.setValue("Centimeters",dialog->centimeters());
     return true;
   } else {
     return false;

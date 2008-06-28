@@ -394,6 +394,14 @@ public:
   {
     _value[pushed] = value;
   }
+  virtual void setValueInches(float value)
+  {
+    if (resolutionType == DPI) {
+      _value[pushed] = value;
+    } else {
+      _value[pushed] = inches2centimeters(value);
+    }
+  }
   virtual float value()
   {
     return _value[pushed]*resolution;
@@ -411,7 +419,7 @@ public:
     _precision = 4;
     _inputMask = "9.9999";
   }
-          QString format(bool);
+  QString format(bool);
   virtual ~UnitMeta() {}
 };
   
@@ -429,6 +437,22 @@ public:
   virtual void  setValueUnits(float v1, float v2)
   {
     FloatPairMeta::setValues(v1,v2);
+  }
+  virtual void setValueInches(float v, int which)
+  {
+    if (resolutionType == DPI) {
+      _value[pushed][which] = v;
+    } else {
+      _value[pushed][which] = inches2centimeters(v);
+    }
+  }
+  virtual void setValuesInches(float v1, float v2) {
+    if (resolutionType == DPI) {
+      setValueUnits(v1,v2);
+    } else {
+      setValueUnits(inches2centimeters(v1),
+                    inches2centimeters(v2));
+    }
   }
   virtual float value(int which)
   {
@@ -457,8 +481,13 @@ private:
 public:
   MarginsMeta()
   {
-    _value[0][0] = DEFAULT_MARGIN;
-    _value[0][1] = DEFAULT_MARGIN;
+    if (resolutionType == DPI) {
+      _value[0][0] = DEFAULT_MARGIN;
+      _value[0][1] = DEFAULT_MARGIN;
+    } else {
+      _value[0][0] = inches2centimeters(DEFAULT_MARGIN);
+      _value[0][1] = inches2centimeters(DEFAULT_MARGIN);
+    }
     _min = 0;
     _max = 100;
     _fieldWidth = 6;
@@ -563,6 +592,38 @@ public:
   void setValueUnit(QString value)
   {
     _value[pushed] = value;
+  }
+  void setValueInches(QString value)
+  {
+    if (resolutionType == DPI) {
+      _value[pushed] = value;
+    } else {
+      // 0 family
+      // 1 pointSizeF
+      // 2 pixelSize
+      // 3 styleHint
+      // 4 weight
+      // 5 underline
+      // 6 strikeout
+      // 7 strikeOut
+      // 8 fixedPitch
+      // 9 rawMode
+
+      QStringList list = _value[pushed].split(",");
+
+      // points = 1/72
+      // height = points/72 
+
+      float units;
+      units = list[1].toFloat()/72.0;  // now we have inches
+      units *= 02.54;
+
+      list[1] = QString("%1") .arg(int(units+0.5));
+
+      QString pixels = list.join(",");
+
+      _value[pushed] = pixels;
+    }
   }
   QString value()
   {
@@ -833,6 +894,17 @@ public:
   {
     _value[pushed] = borderData;
   }
+  void setValueInches(BorderData &borderData)
+  {
+    if (resolutionType == DPCM) {
+      _value[pushed] = borderData;
+    } else {
+      BorderData cmBorder = borderData;
+      cmBorder.thickness = inches2centimeters(cmBorder.thickness);
+      cmBorder.margin[0] = inches2centimeters(cmBorder.margin[0]);
+      cmBorder.margin[1] = inches2centimeters(cmBorder.margin[1]);
+    }
+  }
   virtual void convert(float factor)
   {
     _value[0].thickness *= factor;
@@ -841,7 +913,11 @@ public:
   }
   BorderMeta() 
   {
-    _value[0].thickness = DEFAULT_THICKNESS;
+    if (resolutionType == DPI) {
+      _value[0].thickness = DEFAULT_THICKNESS;
+    } else {
+      _value[0].thickness = inches2centimeters(DEFAULT_THICKNESS);
+    }
     _value[0].margin[0] = 0;
     _value[0].margin[1] = 0;
   }
@@ -1028,6 +1104,21 @@ public:
                 float margin0,
                 float margin1)
   {
+    _value[pushed].color = color;
+    _value[pushed].thickness = thickness;
+    _value[pushed].margin[0] = margin0;
+    _value[pushed].margin[1] = margin1;
+  }
+  void setValueInches(QString color,
+                      float thickness,
+                      float margin0,
+                      float margin1)
+  {
+    if (resolutionType == DPI) {
+      thickness = inches2centimeters(thickness);
+      margin0   = inches2centimeters(margin0);
+      margin1   = inches2centimeters(margin1);
+    }
     _value[pushed].color = color;
     _value[pushed].thickness = thickness;
     _value[pushed].margin[0] = margin0;
@@ -1487,7 +1578,7 @@ public:
     if (resolutionType == DPI) {
       return 1.0/64;
     } else {
-      return 0.04;
+      return inches2centimeters(1.0/64.0);
     }
   }
   ResolutionMeta() 

@@ -490,14 +490,23 @@ void MetaItem::addMultiStepDivider(
   }
 }
 
-void MetaItem::deleteMultiStepDivider(Where divider)
+void MetaItem::deleteMultiStepDivider(PlacementType parentRelativeType, Where divider)
 {
   if (divider.modelName != "undefined") {
     Rc rc;
-    rc = scanForward(divider,StepMask|StepGroupDividerMask|StepGroupEndMask);
+    
+    if (parentRelativeType == StepGroupType) {
+      rc = scanForward(divider,StepMask|StepGroupDividerMask|StepGroupEndMask);
 
-    if (rc == StepGroupDividerRc) {
-      deleteMeta(divider);
+      if (rc == StepGroupDividerRc) {
+        deleteMeta(divider);
+      }
+    } else {
+      rc = scanForward(divider,StepMask|CalloutDividerMask|CalloutEndMask);
+
+      if (rc == CalloutDividerRc) {
+        deleteMeta(divider);
+      }
     }
   }
 }
@@ -507,6 +516,27 @@ void MetaItem::deleteMultiStepDivider(Where divider)
  * Callout tools
  *
  **********************************************************************/
+ 
+float determinant(
+  QStringList tokens)
+{
+
+  /* 5  6  7
+     8  9 10
+    11 12 13 */
+    
+  float a = tokens[5].toFloat();
+  float b = tokens[6].toFloat();
+  float c = tokens[7].toFloat();
+  float d = tokens[8].toFloat();
+  float e = tokens[9].toFloat();
+  float f = tokens[10].toFloat();
+  float g = tokens[11].toFloat();
+  float h = tokens[12].toFloat();
+  float i = tokens[13].toFloat();
+  
+  return a*e*i - a*f*h - b*d*i + b*f*g + c*d*h - c*e*g;
+}
  
 bool equivalentAdds(
   QString const &first,
@@ -521,14 +551,8 @@ bool equivalentAdds(
   split(first,firstTokens);
   split(second,secondTokens);
   
-  for (int i = 5; i < 14; i++) {
-    if (firstTokens[i].toFloat() < 0) {
-	  firstMirror = true;
-	}
-	if (secondTokens[i].toFloat() < 0) {
-	  secondMirror = true;
-	}
-  }
+  firstMirror = determinant(firstTokens) < 0;
+  secondMirror = determinant(secondTokens) < 0;
   
   return firstMirror == secondMirror && firstTokens[14] == secondTokens[14];
 }

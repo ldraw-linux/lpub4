@@ -1466,7 +1466,7 @@ Rc BuffExchgMeta::parse(QStringList &argv, int index,Where &here)
       }
     } 
   }
-      
+
   QMessageBox::warning(NULL,
     QMessageBox::tr("LPub"),
     QMessageBox::tr("Malformed buffer exchange \"%1\"") .arg(argv.join(" ")));

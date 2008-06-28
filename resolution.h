@@ -38,6 +38,7 @@ enum ResolutionType {
 extern ResolutionType resolutionType;
 extern float          resolution;
 
+void  defaultResolutionType(bool centimeters);
 float inches2centimeters(float inches);
 float centimeters2inches(float centimeters);
 float toInches(ResolutionType,float);

@@ -25,17 +25,19 @@ class Preferences
     Preferences();
     static void lpubPreferences();
     static void ldrawPreferences(bool);
-	static void renderPreferences();
-	static void pliPreferences();
-	static void getRequireds();
-	static bool getPreferences();
+	  static void renderPreferences();
+	  static void pliPreferences();
+    static void unitsPreferences();
+	  static void getRequireds();
+	  static bool getPreferences(bool fileOpen = false);
 
     static QString ldrawPath;
     static QString ldgliteExe;
     static QString ldviewExe;
-	static QString preferredRenderer;
+	  static QString preferredRenderer;
     static QString pliFile;
     static QString lpubPath;
+    static bool    preferCentimeters;
 
     virtual ~Preferences() {}
 };

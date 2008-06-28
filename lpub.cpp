@@ -308,7 +308,7 @@ void Gui::projectSetup()
 
 void Gui::preferences()
 {
-  if (Preferences::getPreferences()) {
+  if (Preferences::getPreferences(curFile != "")) {
     QString renderer = Render::getRenderer();
     Render::setRenderer(Preferences::preferredRenderer);
     if (Render::getRenderer() != renderer) {
@@ -331,6 +331,8 @@ Gui::Gui()
     Preferences::lpubPreferences();
     Preferences::renderPreferences();
     Preferences::pliPreferences();
+    Preferences::unitsPreferences();
+    defaultResolutionType(Preferences::preferCentimeters);
 
     displayPageNum = 1;
 
