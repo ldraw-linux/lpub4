@@ -208,6 +208,7 @@ void Gui::openFile(QString &fileName)
       watcher.addPath(bar);
     }
   }
+  defaultResolutionType(Preferences::preferCentimeters);
 }
 
 void Gui::updateRecentFileActions()

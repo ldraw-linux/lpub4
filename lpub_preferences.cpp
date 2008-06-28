@@ -27,6 +27,7 @@
 #include "ui_preferences.h"
 #include "preferencesdialog.h"
 #include "name.h"
+#include "resolution.h"
 
 Preferences preferences;
 
@@ -194,7 +195,6 @@ void Preferences::unitsPreferences()
       QMessageBox::Ok);
     getPreferences();
   }
-  preferCentimeters = settings.value("Centimeters").toBool();
 }
 
 bool Preferences::getPreferences(bool fileOpen)
@@ -250,7 +250,8 @@ bool Preferences::getPreferences(bool fileOpen)
       }
     }
     preferCentimeters = dialog->centimeters();
-    settings.setValue("Centimeters",dialog->centimeters());
+    settings.setValue("Centimeters",preferCentimeters);
+    defaultResolutionType(preferCentimeters);
     return true;
   } else {
     return false;
