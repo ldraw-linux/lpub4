@@ -92,7 +92,7 @@ static double pi = 4*atan(1.0);
 // the default camera distance for real size
 static float LduDistance = 10.0/tan(0.005*pi/180);
 
-float Render::cameraDistance(
+float LDGLite::cameraDistance(
   Meta &meta,
   float scale)
 {
@@ -261,8 +261,48 @@ int LDGLite::renderPli(
 /***************************************************************************
  *
  * LDView renderer
+ *                                  6x6                    5990
+ *      LDView               LDView    LDGLite       LDView
+ * 0.1    8x5     8x6         32x14    40x19  0.25  216x150    276x191  0.28
+ * 0.2   14x10   16x10                              430x298    552x381
+ * 0.3   20x14   20x15                              644x466    824x571
+ * 0.4   28x18   28x19                              859x594   1100x762
+ * 0.5   34x22   36x22                             1074x744   1376x949  0.28
+ * 0.6   40x27   40x28                             1288x892
+ * 0.7   46x31   48x32                            1502x1040
+ * 0.8   54x35   56x37                          
+ * 0.9   60x40   60x41
+ * 1.0   66x44   68x46       310x135  400x175 0.29 
+ * 1.1   72x48
+ * 1.2   80x53
+ * 1.3   86x57
+ * 1.4   92x61
+ * 1.5   99x66
+ * 1.6  106x70
+ * 2.0  132x87  132x90       620x270  796x348 0.28
+ * 3.0  197x131 200x134      930x404 1169x522
+ * 4.0  262x174 268x178     1238x539 1592x697 0.29
+ * 5.0  328x217 332x223     1548x673
+ * 
  *
  **************************************************************************/
+
+float LDView::cameraDistance(
+  Meta &meta,
+  float scale)
+{
+  float onexone;
+  float factor;
+
+  // Do the math in pixels
+
+  onexone  = 20*meta.LPub.resolution.ldu(); // size of 1x1 in units
+  onexone *= meta.LPub.resolution.value();  // size of 1x1 in pixels
+  onexone *= scale;
+  factor   = (meta.LPub.page.size.value(0)*0.775)/onexone; // in pixels;
+  
+  return factor*LduDistance; 
+}
 
 int LDView::renderCsi(
   const QString     &addLine,
@@ -286,7 +326,7 @@ int LDView::renderCsi(
   
   QStringList arguments;
 
-  int cd = cameraDistance(meta,meta.LPub.assem.modelScale.value());
+  int cd = cameraDistance(meta,meta.LPub.assem.modelScale.value())*1376/1074;
   int width = meta.LPub.page.size.value(0);
   int height = meta.LPub.page.size.value(1);
 
@@ -357,7 +397,7 @@ int LDView::renderPli(
 
   /* determine camera distance */
   
-  int cd = cameraDistance(meta,meta.LPub.pli.modelScale.value());
+  int cd = cameraDistance(meta,meta.LPub.pli.modelScale.value())*1376/1074;
 
   QString cg = QString("-cg%1,%2,%3") .arg(meta.LPub.pli.angle.value(0)) 
                                       .arg(meta.LPub.pli.angle.value(1))
