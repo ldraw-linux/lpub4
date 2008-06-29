@@ -1491,7 +1491,7 @@ void BuffExchgMeta::doc(QTextStream &out, QString preamble)
 PageMeta::PageMeta()
 {
   size.setValueUnits(8.5,11.0);
-  size.setRange(1,100);
+  size.setRange(1,1000);
   size.setFormats(6,4,"9.9999");
 
   BorderData borderData;
