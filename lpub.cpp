@@ -427,8 +427,9 @@ void Gui::closeEvent(QCloseEvent *event)
 void Gui::about()
 {
    QMessageBox::about(this, tr("About LPub"),
-            tr("<b>LPub</b> is a WYSIWYG tool for creating LEGO building\n"
-               "instructions Copyright 2000-2008 Kevin Clague"
+            tr("<b>LPub 4.0.0.0</b> is a WYSIWYG tool for creating\n"
+               "LEGO(c) style building instructions\n"
+               "Copyright 2000-2008 Kevin Clague\n"
                "kevin_clague@yahoo.com"));
 }
 
@@ -645,7 +646,6 @@ void Gui::createMenus()
     configMenu->addAction(projectSetupAct);
 
     configMenu->addSeparator();
-
     configMenu->addAction(preferencesAct);
 
     helpMenu = menuBar()->addMenu(tr("&Help"));
