@@ -71,7 +71,7 @@ public:
   void deleteLastMultiStep(    Where);
 
   void addMultiStepDivider (   Where, RcMeta *divider);
-  void deleteMultiStepDivider( Where);
+  void deleteMultiStepDivider(PlacementType parentRelativeType, Where divider);
 
   void moveStepPrev(           PlacementType, Where, Where);
   void moveStepNext(           PlacementType, Where, Where, Where, Where);

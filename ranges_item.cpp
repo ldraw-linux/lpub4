@@ -266,7 +266,7 @@ void DividerItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
   if (selectedAction == editAction) {
     changeDivider("Divider",topOfRanges,topOfRanges,/*bottomOfRanges,*/sep,false);
   } else if (selectedAction == deleteAction) {
-    deleteMultiStepDivider(topOfRanges);
+    deleteMultiStepDivider(parentRelativeType,topOfRanges);
   }
 }
 void DividerLine::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
