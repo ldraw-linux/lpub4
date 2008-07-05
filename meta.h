@@ -1586,7 +1586,7 @@ public:
   }
   virtual ~ResolutionMeta() {}
   virtual void init(BranchMeta *parent, 
-                    const QString name);
+                    QString name);
   virtual Rc parse(QStringList &argv, int index, Where &here);
           QString format(bool);
   virtual void    doc(QTextStream &out, QString preamble);
