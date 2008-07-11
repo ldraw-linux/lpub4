@@ -15,6 +15,8 @@
 ****************************************************************************/
 
 #include <QFileDialog>
+#include <QFileInfo>
+#include <QMessageBox>
 
 #include "ui_preferences.h"
 #include "preferencesdialog.h"
@@ -24,19 +26,43 @@ PreferencesDialog::PreferencesDialog(QWidget     *_parent)
 {
   ui.setupUi(this);
   
-  ui.ldrawPath->setText(    Preferences::ldrawPath);
+  QString ldrawPath = Preferences::ldrawPath;
+  
+  if (ldrawPath == "") {
+    ldrawPath = ".";
+  }
+  
+  ui.ldrawPath->setText(    ldrawPath);
   ui.pliName->setText(      Preferences::pliFile);
   ui.pliBox->setChecked(    Preferences::pliFile != "");
   ui.ldglitePath->setText(  Preferences::ldgliteExe);
   ui.ldgliteBox->setChecked(Preferences::ldgliteExe != "");
   ui.ldviewPath->setText(   Preferences::ldviewExe);
   ui.ldviewBox->setChecked( Preferences::ldviewExe != "");
+  
+  ui.preferredRenderer->setMaxCount(0);
+  ui.preferredRenderer->setMaxCount(2);
+  
+  QFileInfo fileInfo(Preferences::ldgliteExe);
+  int ldgliteIndex = ui.preferredRenderer->count();
+  bool ldgliteExists = fileInfo.exists();
+  if (ldgliteExists) {
+    ui.preferredRenderer->addItem("LDGLite");
+  }
+  
+  fileInfo.setFile(Preferences::ldviewExe);
+  int ldviewIndex = ui.preferredRenderer->count();
+  bool ldviewExists = fileInfo.exists();
+  if (ldviewExists) {
+    ui.preferredRenderer->addItem("LDView");
+  }
+  
   parent = _parent;
-  if (Preferences::preferredRenderer == "LDView") {
-    ui.preferredRenderer->setCurrentIndex(1);
+  if (Preferences::preferredRenderer == "LDView" && ldviewExists) {
+    ui.preferredRenderer->setCurrentIndex(ldviewIndex);
     ui.preferredRenderer->setEnabled(true);
-  } else if (Preferences::preferredRenderer == "LDGLite") {
-    ui.preferredRenderer->setCurrentIndex(0);
+  } else if (Preferences::preferredRenderer == "LDGLite" && ldgliteExists) {
+    ui.preferredRenderer->setCurrentIndex(ldgliteIndex);
     ui.preferredRenderer->setEnabled(true);
   } else {
     ui.preferredRenderer->setEnabled(false);
@@ -96,12 +122,13 @@ void PreferencesDialog::on_browseLDView_clicked()
       ui.ldviewPath->setText(selectedFiles[0]);
       QFileInfo  fileInfo(selectedFiles[0]);
       if (fileInfo.exists()) {
-        if ( ! ui.preferredRenderer->isEnabled()) {
-          ui.preferredRenderer->setCurrentIndex(1);
-          ui.preferredRenderer->setEnabled(true);
+        int ldviewIndex = ui.preferredRenderer->findText("LDView");
+        if (ldviewIndex < 0) {
+          ui.preferredRenderer->addItem("LDView");
         }
+        ui.preferredRenderer->setEnabled(true);
       } 
-      ui.ldgliteBox->setChecked(fileInfo.exists());
+      ui.ldviewBox->setChecked(fileInfo.exists());
     }
   }
 }
@@ -125,10 +152,11 @@ void PreferencesDialog::on_browseLDGLite_clicked()
       ui.ldglitePath->setText(selectedFiles[0]);
       QFileInfo  fileInfo(selectedFiles[0]);
       if (fileInfo.exists()) {
-        if ( ! ui.preferredRenderer->isEnabled()) {
-          ui.preferredRenderer->setCurrentIndex(0);
-          ui.preferredRenderer->setEnabled(true);
-    	}
+        int ldgliteIndex = ui.preferredRenderer->findText("LDGLite");
+        if (ldgliteIndex < 0) {
+          ui.preferredRenderer->addItem("LDGLite");
+        }
+        ui.preferredRenderer->setEnabled(true);
       } 
       ui.ldgliteBox->setChecked(fileInfo.exists());
     }
