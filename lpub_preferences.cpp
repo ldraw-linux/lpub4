@@ -31,7 +31,7 @@
 
 Preferences preferences;
 
-QString Preferences::ldrawPath;
+QString Preferences::ldrawPath = " ";
 QString Preferences::lpubPath = ".";
 QString Preferences::ldgliteExe;
 QString Preferences::ldviewExe;
@@ -58,6 +58,10 @@ void Preferences::ldrawPreferences(bool force)
   QFileInfo fileInfo;
   QSettings settings(LPUB,SETTINGS);
   QString const ldrawKey("LDrawDir");
+  
+  if (ldrawPath == "") {
+    ldrawPath = " ";
+  }
   
   if (settings.contains(ldrawKey)) {
     ldrawPath = settings.value(ldrawKey).toString();
@@ -176,12 +180,24 @@ void Preferences::pliPreferences()
   } else {
     settings.remove("PliControl");
   }
+
+  //QMessageBox::warning(NULL,"LPub",lpubPath,QMessageBox::Cancel);
+  
+#ifdef __APPLE__
+
+  pliFile = lpubPath + "/pli.mpd";
+  
+#else
     
   pliFile = lpubPath + "/extras/pli.mpd";
+
+#endif
 
   fileInfo.setFile(pliFile);
   if (fileInfo.exists()) {
     settings.setValue("PliControl",pliFile);
+  } else {
+    //pliFile = "";
   }
 }
 
@@ -194,6 +210,8 @@ void Preferences::unitsPreferences()
       QMessageBox::tr("You need to specify a preference for inches or centimeters"),
       QMessageBox::Ok);
     getPreferences();
+  } else {
+    preferCentimeters = settings.value("Centimeters").toBool();
   }
 }
 
