@@ -126,14 +126,12 @@ class Callout : public Ranges {
 class CalloutInstanceItem : public NumberPlacementItem
 {
   Callout *callout;
-  Where    defaultWhere;
 public:
   CalloutInstanceItem(
     Callout             *callout,
     Meta                *meta,
     const char          *format,
     int                  _value,
-    Where               &defaultWhere,
     QGraphicsItem       *parent);
 protected:
   void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
