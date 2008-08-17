@@ -59,7 +59,7 @@ void LDrawFile::loadFile(const QString &fileName)
     
     // allow files ldr suffix to allow for MPD
     
-    bool mpd;
+    bool mpd = false;
 
     QTextStream in(&file);
 
