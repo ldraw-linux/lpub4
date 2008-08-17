@@ -34,9 +34,10 @@
 #include <QString>
 #include <QMap>
 #include <QDateTime>
-#include "rx.h"
+#include <QList>
+#include <QRegExp>
 
-extern QStringList LDrawHeaderRx;
+extern QList<QRegExp> LDrawHeaderRegExp;
 
 class LDrawSubFile {
   public:
@@ -86,26 +87,7 @@ class LDrawFile {
     }
 
   public:
-    LDrawFile()
-    {
-       LDrawHeaderRx 
-       << "^\\s*0\\s+Author[^\n]*" 
-       << "^\\s*0\\s+!CATEGORY[^\n]*"
-       << "^\\s*0\\s+!CMDLINE[^\n]*"
-       << "^\\s*0\\s+!COLOUR[^\n]*"
-       << "^\\s*0\\s+!HELP[^\n]*"
-       << "^\\s*0\\s+!HISTORY[^\n]*"
-       << "^\\s*0\\s+!KEYWORDS[^\n]*"
-       << "^\\s*0\\s+!LDRAW_ORG[^\n]*"
-       << "^\\s*0\\s+LDRAW_ORG[^\n]*"
-       << "^\\s*0\\s+!LICENSE[^\n]*"
-       << "^\\s*0\\s+Name[^\n]*" 
-       << "^\\s*0\\s+Official[^\n]*"
-       << "^\\s*0\\s+Unofficial[^\n]*" 
-       << "^\\s*0\\s+Un-official[^\n]*" 
-       << "^\\s*0\\s+Original LDraw[^\n]*"
-       << "^\\s*0\\s+~Moved to[^\n]*";
-    }
+    LDrawFile();
     ~LDrawFile()
     {
       _subFiles.empty();
@@ -278,5 +260,9 @@ class LDrawFile {
     bool saveLDRFile(const QString &filename);
     void writeToTmp(const QString &fileName, const QStringList &);
 };
+
+int split(const QString &line, QStringList &argv);
+bool isHeader(QString &line);
+
 
 #endif
