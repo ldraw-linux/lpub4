@@ -51,7 +51,7 @@ void PageBackgroundItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
     if (rangeElement->relativeType == StepType) {
       lastStep = dynamic_cast<Step *> (rangeElement);
       MetaItem mi;
-      int numSteps = mi.numSteps(lastStep->context.topOfFile().modelName);
+      int numSteps = mi.numSteps(lastStep->topOfStep().modelName);
       if (lastStep->stepNumber.number != numSteps) {
         addNextAction = menu.addAction("Add Next Step");
         addNextAction->setWhatsThis("Add Next Step:\n Add the first step of the next page to this page\n");
@@ -96,22 +96,14 @@ void PageBackgroundItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
   }
 
   if (selectedAction == calloutAction) {
-    convertToCallout(&page->meta);
+    convertToCallout(&page->meta, page->bottom.modelName);
 
   } else if (selectedAction == ignoreAction) {
     convertToIgnore(&page->meta);
 
   } else if (selectedAction == addNextAction) {
-    if (relativeType == StepGroupType) {
-      addNextStep(lastStep->topOfRanges());
-    } else {
-      addNextStep(lastStep->context.topOfStep());
-    }
+    addNextMultiStep(lastStep->topOfRanges(),lastStep->bottomOfRanges());
   } else if (selectedAction == addPrevAction) {
-    if (relativeType == StepGroupType) {
-      addPrevStep(firstStep->topOfRanges());
-    } else {
-      addPrevStep(firstStep->context.topOfStep());
-    }
+    addPrevMultiStep(firstStep->topOfRanges(),firstStep->bottomOfRanges());
   }
 }

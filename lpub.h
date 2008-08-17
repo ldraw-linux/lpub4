@@ -51,8 +51,6 @@
  *      means ldglite.  LDView is the only other canidate renderer under
  *      consideration.
  *
- *    rx.h - some known regular expressionss specifically for LDraw files.
- *
  *  The next layer has to do with the parsing of the LDraw files and knowing
  *  what to do with them.  At the lowest level, LPub's parsing is line based
  *  as specified in the LDraw file specification.  At the higher layers, the
@@ -170,7 +168,7 @@
  *   parsing the actual values of a specific configuration meta-command, or
  *   returning a special return code for action meta-commands.  Every leaf
  *   has the knowledge of where it was defined in your LDraw model (modelName,
- *   lineNumber).  See the Where, and Context classes in where.(h,cpp).  The
+ *   lineNumber).  See the Where class in where.(h,cpp).  The
  *   Where information (filename, linenumber) is used to implement backannotation
  *   of user changes into the LDraw files.
  *
@@ -391,6 +389,8 @@ class Gui : public QMainWindow
 public:
   Gui();
   ~Gui();
+
+  int             displayPageNum;  // what page are we displaying
   
   FitMode fitMode;         // how to fit the scene into the view
   bool    ldrawFileContains(const QString &fileName) 
@@ -505,9 +505,7 @@ signals:
 
   void displayFileSig(LDrawFile *ldrawFile, const QString &subFile);
   void showLineSig(int lineNumber);
-
 private:    
-  int             displayPageNum;  // what page are we displaying
   Ranges          page;            // the abstract version of page contents
 
   QGraphicsScene *KpageScene;       // top of displayed page's graphics items
@@ -529,20 +527,22 @@ private:
 
   void countPages();
 
+  void skipHeader(Where &current);
+
   int findPage(                    // traverse the hierarchy until we get to the
     LGraphicsView  *view,          // page of interest, let traverse process the
-	QGraphicsScene *scene,         // page, and then finish by counting the rest
+	  QGraphicsScene *scene,         // page, and then finish by counting the rest
     int           &pageNum,        // of the pages
-	QString const &addLine,
+	  QString const &addLine,
     Where          current,    
-	Meta          &meta);
+	  Meta          &meta);
 
   int drawPage(                    // process the page of interest and any callouts
     LGraphicsView  *view,
-	QGraphicsScene *scene,
+	  QGraphicsScene *scene,
     Ranges        *ranges,
     int            stepNum,
-	QString const &addLine,
+	  QString const &addLine,
     Where         &current,
     QStringList    csiParts,
     Pli           &pli,
@@ -551,7 +551,7 @@ private:
 
   int addGraphicsPageItems(        // this converts the abstract page into
     Ranges         *ranges,        // a graphics view
-	LGraphicsView  *view, 
+	  LGraphicsView  *view, 
     QGraphicsScene *scene);
 
 private slots:
@@ -584,8 +584,8 @@ private slots:
     void mpdComboChanged(int index);
 
     void clearPage(
-	  LGraphicsView  *view,
-	  QGraphicsScene *scene);
+	    LGraphicsView  *view,
+	    QGraphicsScene *scene);
 
     void redrawPage();
     

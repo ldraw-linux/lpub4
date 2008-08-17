@@ -27,10 +27,37 @@
 
 #include "ranges_element.h"
 #include "range_element.h"
+#include "ranges.h"
+#include "callout.h"
 
-Boundary AbstractRangeElement::boundary()
+Ranges *AbstractRangeElement::grandparent()
 {
-  return parent->boundary(this);
+  return parent->grandparent();
+}
+
+Callout *AbstractRangeElement::callout()
+{
+  return dynamic_cast<Callout *>(grandparent());
+}
+
+const Where &AbstractRangeElement::topOfStep()
+{
+  return top;
+}
+    
+const Where &AbstractRangeElement::bottomOfStep()
+{
+  return parent->bottomOfStep(this);
+}
+
+const Where &AbstractRangeElement::topOfRange()
+{
+  return parent->topOfRange();
+}
+
+const Where &AbstractRangeElement::bottomOfRange()
+{
+  return parent->bottomOfRange();
 }
 
 const Where &AbstractRangeElement::topOfRanges()
@@ -41,6 +68,34 @@ const Where &AbstractRangeElement::topOfRanges()
 const Where &AbstractRangeElement::bottomOfRanges()
 {
   return parent->bottomOfRanges();
+}
+const Where &AbstractRangeElement::topOfCallout()
+{
+  Callout *co = callout();
+  if (co) {
+    return co->topOfCallout();
+  }
+  static Where empty;
+  return empty;
+}
+const Where &AbstractRangeElement::bottomOfCallout()
+{
+  Callout *co = callout();
+  if (co) {
+    return co->bottomOfCallout();
+  }
+  static Where empty;
+  return empty;
+}
+
+AllocMeta &AbstractRangeElement::allocMeta()
+{
+  return parent->allocMeta();
+}
+
+Boundary AbstractRangeElement::boundary()
+{
+  return parent->boundary(this);
 }
 
 QString AbstractRangeElement::path()

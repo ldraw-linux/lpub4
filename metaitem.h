@@ -49,32 +49,38 @@ enum ScanMask {
   StepGroupMask = StepGroupBeginMask|StepGroupDividerMask|StepGroupEndMask,
 };
 
-
 class StepGroup;
 
 class MetaItem {
 public:
   void setGlobalMeta(QString &topLevelFile, LeafMeta *leaf);
 
-  void convertToCallout(       Meta *);
-  void nestCallouts(           const QString & );
-  void addCalloutDivider (     Where,   RcMeta *divider);
-  void removeCallout(          Context &);
-  void unnestCallouts(         const QString & );
-  void updatePointer(          Where,   PointerMeta *pointer);
-  void deletePointer(          Where);
+  void convertToCallout(       Meta *, const QString &);
+  void nestCallouts(           const QString &);
+  void removeCallout(          const QString &, const Where &, const Where &);
+  void unnestCallouts(         const QString &);
+  void updatePointer(          const Where &,   PointerMeta *pointer);
+  void deletePointer(          const Where &);
 
-  void addNextStep(            Where topOfStep);
-  void addPrevStep(            Where topOfStep);
+  void addNextMultiStep(       const Where &topOfRanges, const Where &bottomOfRanges);
+  void addPrevMultiStep(       const Where &topOfRanges, const Where &bottomOfRanges); 
 
-  void deleteFirstMultiStep(   Where);
-  void deleteLastMultiStep(    Where);
+  int  removeFirstStep(        const Where &topOfRanges);
+  int  removeLastStep(         const Where &topOfRanges, const Where &lastStep);
 
-  void addMultiStepDivider (   Where, RcMeta *divider);
-  void deleteMultiStepDivider(PlacementType parentRelativeType, Where divider);
+  void deleteFirstMultiStep(   const Where &);
+  void deleteLastMultiStep(    const Where &, const Where &);
 
-  void moveStepPrev(           PlacementType, Where, Where);
-  void moveStepNext(           PlacementType, Where, Where, Where, Where);
+  void addDivider(             PlacementType, const Where &, RcMeta *divider);
+  void deleteDivider(          PlacementType parentRelativeType, const Where &divider);
+
+  void MetaItem::addToNext(    PlacementType parentRelativeType, const Where &topOfStep);
+  void MetaItem::addToPrev(    PlacementType parentRelativeType, const Where &topOfStep);
+
+  void calloutAddToPrev(       const Where &);
+  void calloutAddToNext(       const Where &);
+  void stepGroupAddToPrev(     const Where &);
+  void stepGroupAddToNext(     const Where &);
 
   void convertToIgnore(        Meta *);
 
@@ -83,94 +89,112 @@ public:
                         QString, 
                         const Where &top,
                         const Where &bottom, 
-                        PlacementMeta *, 
+                        PlacementMeta *,
+                        int  append = 1, 
                         bool checkLocal = true);
 
   void changeAlloc(     const Where &, 
                         const Where &, 
-				        AllocMeta   &);
+				                AllocMeta   &,
+                        int   append = 1);
+                        
   void changeBool(      const Where &, 
                         const Where &, 
-                        BoolMeta    *, 
+                        BoolMeta    *,
+                        int   append = 1, 
                         bool allowLocal = false);
 
   void changeFont(      const Where &, 
                         const Where &,
                         FontMeta  *,
+                        int   append = 1,
                         bool checkLocal = true);  
   
   void changeColor(     const Where &, 
                         const Where &,
-                        StringMeta  *,   
+                        StringMeta  *,  
+                        int   append = 1, 
                         bool checkLocal = true);
 
   void changeBackground(QString, 
                         const Where &, 
                         const Where &,
-                        BackgroundMeta*, 
+                        BackgroundMeta*,
+                        int   append = 1, 
                         bool checkLocal = true);
 
   void changeBorder(    QString, 
                         const Where &, 
                         const Where &,
-                        BorderMeta  *,   
+                        BorderMeta  *,
+                        int  append = 1, 
                         bool checkLocal = true);
 
   void changeViewAngle( QString, 
                         const Where &, 
                         const Where &, 
-                        FloatPairMeta *, 
+                        FloatPairMeta *,
+                        int  append = 1, 
                         bool checkLocal = true);
 
   void changeConstraint(QString, 
                         const Where &, 
                         const Where &, 
-                        ConstrainMeta *, 
+                        ConstrainMeta *,
+                        int   append = 1, 
                         bool checkLocal = true);
 
   void changeDivider(   QString, 
                         const Where &, 
                         const Where &, 
                         SepMeta *,   
+                        int  append = 1,
                         bool checkLocal = true);
 
   void changeMargins(   QString, 
                         const Where &, 
                         const Where &, 
-                        MarginsMeta *,   
+                        MarginsMeta *,
+                        int   append = 1,   
                         bool checkLocal = true);
 
   void changeFloat(     QString, 
                         QString, 
                         const Where &, 
                         const Where &, 
-                        FloatMeta *, 
+                        FloatMeta *,
+                        int   append = 1, 
                         bool checkLocal = true);
 
   void changeFloatSpin( QString, 
                         QString, 
                         const Where &, 
                         const Where &, 
-                        FloatMeta *, 
+                        FloatMeta *,
+                        int  append = 1, 
                         bool checkLocal = true);
 
   void changeUnits(     QString,          
                         const Where &, 
                         const Where &, 
                         UnitsMeta *, 
+                        int  append = 1,
                         bool checkLocal = true);
 
   void setMetaTopOf(    const Where &,
                         const Where &,
                         LeafMeta *,
-                        bool);
+                        int   append,
+                        bool  local = false,
+                        bool  global = false);
 
   void setMetaBottomOf( const Where &,
                         const Where &,
                         LeafMeta *,
-                        bool);
+                        bool local = false,
+                        bool global = true);
 
-  void changePlacementOffset(Where defaultconst, PlacementMeta *placement, bool local = true);  
+  void changePlacementOffset(Where defaultconst, PlacementMeta *placement, bool local = true, bool global = false);  
 
   void replaceMeta(const Where &here, const QString &line);
   void insertMeta( const Where &here, const QString &line);
@@ -178,18 +202,20 @@ public:
   void deleteMeta( const Where &here);
   void beginMacro( QString name);
   void endMacro();
+  
+  Where firstLine(QString);
   Where sortedGlobalWhere(QString modelName,QString metaString);
   Where sortedGlobalWhere(Meta &tmpMeta,QString modelName,QString metaString);
 
   Rc   scanForward( Where &here, int mask, bool &partsAdded);
-  Rc   scanBackward(Where &here, int mask, bool &partsAdded);
   Rc   scanForward( Where &here, int mask);
-  Rc   scanBackward(Where &here, int mask);
+  Rc   scanForwardStepGroup(Where &here, bool & partsAdded);
+  Rc   scanForwardStepGroup(Where &here);
 
-  Rc   scanStepGroup(Where current, StepGroup &group);
-  Rc   scanPrevStepGroup(Where current, StepGroup &group);
-  void removeFirstStep(StepGroup &group);
-  int  removeLastStep(StepGroup &group);
+  Rc   scanBackward(Where &here, int mask, bool &partsAdded);
+  Rc   scanBackward(Where &here, int mask);
+  Rc   scanBackwardStepGroup(Where &here, bool & partsAdded);
+  Rc   scanBackwardStepGroup(Where &here);
 
   int  numSteps(QString modelName);
 };

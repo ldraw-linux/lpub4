@@ -110,48 +110,47 @@ void CalloutBackgroundItem::contextMenuEvent(
   QAction *selectedAction = menu.exec(event->screenPos());
 
   if (selectedAction == addPointerAction) {
-    Pointer *pointer = new Pointer(callout->meta.context.topOfRanges(),calloutMeta);
+    Pointer *pointer = new Pointer(callout->topOfCallout(),calloutMeta);
     CalloutPointerItem *calloutPointer = 
       new CalloutPointerItem(calloutRect,
                              csiRect,&callout->meta,pointer,submodelLevel,this,view);
     calloutPointer->defaultPointer();
 
   } else if (selectedAction == perStepAction) {
-    changeBool(callout->meta.context.topOfRanges(),
-               callout->meta.context.bottomOfRanges(),
+    changeBool(callout->topOfCallout(),
+               callout->bottomOfCallout(),
                &callout->meta.LPub.callout.pli.perStep);
 
   } else if (selectedAction == placementAction) {
     changePlacement(parentRelativeType, 
                     relativeType,
                     "Placement",
-                    callout->meta.context.topOfRanges(),
-                    callout->meta.context.bottomOfRanges(),
-                    &placement, false);
+                    callout->topOfCallout(),
+                    callout->bottomOfCallout(),
+                    &placement);
 
   } else if (selectedAction == editBackgroundAction) {
     changeBackground("Background",
-                     callout->meta.context.topOfRanges(), 
-                     callout->meta.context.bottomOfRanges(),
-                     &background, 
-                     false);
+                     callout->topOfCallout(), 
+                     callout->bottomOfCallout(),
+                     &background);
 
   } else if (selectedAction == editBorderAction) {
     changeBorder("Border",
-                 callout->meta.context.topOfRanges(), 
-                 callout->meta.context.bottomOfRanges(),
-                 &border, 
-                 false);
+                 callout->topOfCallout(), 
+                 callout->bottomOfCallout(),
+                 &border);
 
   } else if (selectedAction == marginAction) {
     changeMargins("Callout Margins",
-                  callout->meta.context.topOfRanges(), 
-                  callout->meta.context.bottomOfRanges(), 
-                  &margin, 
-                  false);
+                  callout->topOfCallout(), 
+                  callout->bottomOfCallout(), 
+                  &margin);
 
   } else if (selectedAction == unCalloutAction) {
-    removeCallout(callout->meta.context);
+    removeCallout(callout->modelName(),
+                  callout->topOfCallout(),
+                  callout->bottomOfCallout());
   }
 }
 
@@ -222,7 +221,7 @@ void CalloutBackgroundItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
       placementData.offsets[1] -= h;
       placement.setValue(placementData);
 
-      changePlacementOffset(callout->meta.context.topOfRanges(),&placement);  
+      changePlacementOffset(callout->topOfRanges(),&placement);  
     }
     QGraphicsItem::mouseReleaseEvent(event);
     gui->endMacro();

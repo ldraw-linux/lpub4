@@ -38,6 +38,9 @@
 #include "placementdialog.h"
 #include "commonmenus.h"
 
+#include "ranges.h"
+#include "step.h"
+
 void NumberItem::setAttributes(
   PlacementType  _relativeType,
   PlacementType  _parentRelativeType,
@@ -168,12 +171,14 @@ void NumberPlacementItem::setAttributes(
 }
 
 PageNumberItem::PageNumberItem(
+  Ranges        *_ranges,
   Meta          *_meta,
   NumberPlacementMeta &_number,
   const char    *_format,
   int            _value,
   QGraphicsItem *_parent)
 {
+  ranges = _ranges;
   QString toolTip("Page Number");
   setAttributes(PageNumberType,
                 SingleStepType,
@@ -209,33 +214,31 @@ void PageNumberItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
     changePlacement(PageType,
                     PageNumberType,
                     "Page Number Placement",
-                    meta->context.topOfStep(),
-                    meta->context.bottomOfStep(),
+                    ranges->topOfRanges(),
+                    ranges->bottomOfRanges(),
                     placement);
 
   } else if (selectedAction == fontAction) {
 
-    changeFont(meta->context.topOfStep(),meta->context.bottomOfStep(),font);
+    changeFont(ranges->topOfRanges(),ranges->bottomOfRanges(),font);
 
   } else if (selectedAction == colorAction) {
 
-    changeColor(meta->context.topOfStep(),meta->context.bottomOfStep(),color);
+    changeColor(ranges->topOfRanges(),ranges->bottomOfRanges(),color);
 
   } else if (selectedAction == marginAction) {
 
     QString foo = PlacementDialog::relativeToName(relativeType);
 
     changeMargins("Page Number Margins",
-                  meta->context.topOfStep(),
-                  meta->context.bottomOfStep(),
+                  ranges->topOfRanges(),ranges->bottomOfRanges(),
                   margin);
   }
 }
 
 StepNumberItem::StepNumberItem(
+  Step          *_step,
   PlacementType  parentRelativeType,
-  const Where   &_topOfRanges,
-  const Where   &_bottomOfRanges,
   Meta          *_meta,
   NumberPlacementMeta    &_number,
   const char    *_format,
@@ -243,8 +246,7 @@ StepNumberItem::StepNumberItem(
   QGraphicsItem *_parent,
   QString        name)
 {
-  topOfRanges = _topOfRanges;
-  bottomOfRanges = _bottomOfRanges;
+  step = _step;
   QString toolTip("Step Number");
   setAttributes(StepNumberType,
                 parentRelativeType,
@@ -266,95 +268,55 @@ void StepNumberItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
   QAction *marginAction    = commonMenus.marginMenu(menu,name);
 
   QAction *selectedAction   = menu.exec(event->screenPos());
+  
+  Where topOfStep = step->topOfStep();
+  Where bottomOfStep = step->bottomOfStep();
+  Where topOfRanges = step->topOfRanges();
+  Where bottomOfRanges = step->bottomOfRanges();
+  
+  Where top, bottom;
+  bool  local;
+  MetaItem mi;
+  
+  switch (parentRelativeType) {
+    case StepGroupType:
+      top    = step->topOfRanges();
+      mi.scanForward(top,StepGroupMask);
+      bottom = step->bottomOfRanges();
+      local  = false;
+    break;
+    case CalloutType:
+      top    = step->topOfCallout();
+      bottom = step->bottomOfCallout();
+      local  = false;
+    break;
+    default:
+      top    = step->topOfStep();
+      bottom = step->bottomOfStep();
+      local  = true;
+    break;
+  }
 
   if (selectedAction == placementAction) {
 
-    switch (parentRelativeType) {
-      case StepGroupType:
-        changePlacement(parentRelativeType,
-                        StepNumberType,
-                        "Move Step Number", 
-                        topOfRanges,
-                        bottomOfRanges,
-                        placement,
-                        false);
-      break;
-      case CalloutType:
-        changePlacement(parentRelativeType,
-                        StepNumberType,
-                        "Move Step Number", 
-                        topOfRanges,
-                        bottomOfRanges,
-                        placement,
-                        false);
-      break;
-      case SingleStepType:
-        changePlacement(parentRelativeType,
-                        StepNumberType,
-                        "Move Step Number", 
-                        meta->context.topOfStep(),
-                        meta->context.bottomOfStep(),
-                        placement,
-                        true);
-      break;
-      default:
-      break;
-    }
+    changePlacement(parentRelativeType,
+                    StepNumberType,
+                    "Move Step Number", 
+                    top,
+                    bottom,
+                    placement,
+                    1,local);
+
   } else if (selectedAction == fontAction) {
 
-    switch (parentRelativeType) {
-      case StepGroupType:
-        changeFont(topOfRanges, bottomOfRanges, font,false);
-      break;
-      case CalloutType:
-        changeFont(topOfRanges-1, bottomOfRanges, font, false);
-      break;
-      case SingleStepType:
-        changeFont(meta->context.topOfStep(),meta->context.bottomOfStep(),font);
-      break;
-      default:
-      break;
-    }
+    changeFont(top, bottom, font, 1, local);
+
   } else if (selectedAction == colorAction) {
 
-    switch (parentRelativeType) {
-      case StepGroupType:
-        changeColor(topOfRanges,bottomOfRanges,color,false);
-      break;
-      case CalloutType:
-        changeColor(topOfRanges-1,bottomOfRanges,color,false);
-      break;
-      case SingleStepType:
-        changeColor(meta->context.topOfStep(),meta->context.bottomOfStep(),color);
-      break;
-      default:
-      break;
-    }
+    changeColor(top,bottom,color, 1, local);
+
   } else if (selectedAction == marginAction) {
 
-    switch (parentRelativeType) {
-      case StepGroupType:
-        changeMargins("Change Step Number Margins",
-                      topOfRanges, 
-                      bottomOfRanges,
-                      margin, 
-                      false);
-      break;
-      case CalloutType:
-        changeMargins("Change Step Number Margins",
-                      topOfRanges-1, 
-                      bottomOfRanges,
-                      margin, 
-                      false);
-      break;
-      case SingleStepType:
-        changeMargins("Change Step Number Margins",
-                      meta->context.topOfStep(), 
-                      meta->context.bottomOfStep(),
-                      margin);
-      break;
-      default:
-      break;
-    }
+    changeMargins("Change Step Number Margins",top,bottom,margin,1,local);
   } 
 }

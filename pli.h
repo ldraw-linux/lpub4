@@ -58,8 +58,8 @@ class AnnotateTextItem;
 class PGraphicsPixmapItem;
 class PliBackgroundItem;
 
-class PliPart;
 class Pli;
+class Step;
 
 class PliPart {
   public:
@@ -131,6 +131,9 @@ class Pli : public Placement {
 
     QHash<QString, PliPart*> parts;
     QList<QString>           sortedKeys;
+    Where                    topPLI, bottomPLI;
+    Where                    topRanges, bottomRanges;
+    Where                    topCallout, bottomCallout;
 
   public:
     Meta              *meta;
@@ -138,7 +141,6 @@ class Pli : public Placement {
     PliBackgroundItem *background;
     bool               bom;
     ConstrainMeta      constraint;
-    WhereRange         range;
 
     Pli(bool _bom = false)
     {
@@ -147,11 +149,61 @@ class Pli : public Placement {
       bom = _bom;
       initAnnotationString();
     }
+    
     ~Pli()
     {
       clear();
     }
-      
+    
+    const Where &topOfPLI()
+    {
+      return topPLI;
+    }
+    const Where &bottomOfPLI()
+    {
+      return bottomPLI;
+    }
+    const Where &topOfRanges()
+    {
+      return topRanges;
+    }
+    const Where &bottomOfRanges()
+    {
+      return bottomRanges;
+    }
+    const Where &topOfCallout()
+    {
+      return topCallout;
+    }
+    const Where &bottomOfCallout()
+    {
+      return bottomCallout;
+    }
+    void setTopOfPLI(const Where &topOfStep)
+    {
+      topPLI = topOfStep;
+    }
+    void setBottomOfPLI(const Where &bottomOfStep) 
+    {
+      bottomPLI = bottomOfStep;
+    }
+    void setTopOfRanges(const Where &topOfRanges)
+    {
+      topRanges = topOfRanges;
+    }
+    void setBottomOfRanges(const Where &bottomOfRanges)
+    {
+      bottomRanges = bottomOfRanges;
+    }
+    void setTopOfCallout(const Where &topOfCallout)
+    {
+      topCallout = topOfCallout;
+    }
+    void setBottomOfCallout(const Where &bottomOfCallout)
+    {
+      bottomCallout = bottomOfCallout;
+    }
+    
     void setPos(float x, float y);
 
     /* Append a new part instance to the parts of parts used so far */
@@ -173,9 +225,9 @@ class Pli : public Placement {
 
     void unite(Pli &pli);
 
-	int  placeSort(QList<QString> &);
+	  int  placeSort(QList<QString> &);
     int  placePli(QList<QString> &, int,int,bool,bool,int&,int&,int&);
-	void placeCols(QList<QString> &);
+	  void placeCols(QList<QString> &);
     bool initAnnotationString();
     void getAnnotate(QString &, QString &);
     void partClass(QString &, QString &);
@@ -195,28 +247,16 @@ class Pli : public Placement {
       placement = from.placement;
       margin    = from.margin;
       bom       = from.bom;
-      range     = from.range;
+      topPLI    = from.topPLI;
+      bottomPLI  = from.bottomPLI;
+      topRanges = from.topRanges;
+      bottomRanges = from.bottomRanges;
+      topCallout = from.topCallout;
+      bottomCallout = from.bottomCallout;
     }
 
     void getLeftEdge(QImage &, QList<int> &);
     void getRightEdge(QImage &, QList<int> &);
-
-    void setTopOfPLI(const Where &here)
-    {
-      range.setTop(here);
-    }
-    void setBottomOfPLI(const Where &here)
-    {
-      range.setBottom(here);
-    }
-    const Where &topOfPLI()            
-    { 
-      return range.top();
-    }
-    const Where &bottomOfPLI()
-    {
-      return range.bottom();
-    }
 };
 
 class PliBackgroundItem : public PlacementBackgroundItem
@@ -235,50 +275,8 @@ public:
     Meta          *_meta,
     PlacementType  _parentRelativeType,
     int            submodelLevel, 
-    QGraphicsItem *parent)
-  {
-    meta      = *_meta;
-    pli       = _pli;
-    placement = _pli->placement;
-
-    parentRelativeType = _parentRelativeType;
-
-    QPixmap *pixmap = new QPixmap(width,height);
-
-    constraint = pli->constraint;
+    QGraphicsItem *parent);
     
-    if (_pli->bom) {
-      QString toolTip("Bill Of Materials");
-      setBackground( pixmap,
-                     PartsListType,
-                    _parentRelativeType,
-                    _meta->LPub.bom.placement,
-                    _meta->LPub.bom.background,
-                    _meta->LPub.bom.border,
-                    _meta->LPub.bom.margin,
-                    _meta->LPub.pli.subModelColor,
-                    0,
-                    toolTip);
-    } else {
-      QString toolTip("Part List");
-      setBackground( pixmap,
-                     PartsListType,
-                     _parentRelativeType,
-                    _meta->LPub.pli.placement,
-                    _meta->LPub.pli.background,
-                    _meta->LPub.pli.border,
-                    _meta->LPub.pli.margin,
-                    _meta->LPub.pli.subModelColor,
-                    submodelLevel,
-                    toolTip);
-    }
-    placement = meta.LPub.pli.placement;
-    setPixmap(*pixmap);
-    setParentItem(parent);
-    if (parentRelativeType != SingleStepType) {
-      setFlag(QGraphicsItem::ItemIsMovable,false);
-    }
-  }
   void setPos(float x, float y)
   {
     QGraphicsPixmapItem::setPos(x,y);

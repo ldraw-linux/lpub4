@@ -35,34 +35,39 @@
  * This is the base class for step and reserve
  */
 
+class Ranges;
+class Callout;
 class AbstractRangesElement;
+class AllocMeta;
 
 class AbstractRangeElement : public Placement {
   public:
     AbstractRangesElement *parent;
+    Where   top;
 
     AbstractRangeElement()
     {
     }
-    virtual ~AbstractRangeElement() {}
 
-    Boundary boundary();
+    virtual ~AbstractRangeElement() {};
 
-    Context context;
-    const Where &topOfStep()
-    {
-      return context.topOfStep();
-    }
-    const Where &bottomOfStep()
-    {
-      return context.bottomOfStep();
-    }
-    const Where &topOfFile()
-    {
-      return context.topOfFile();
-    }
+    const Where &topOfStep();
+    void         setTopOfStep(Where &);
+    const Where &bottomOfStep();
+    const Where &topOfRange();
+    const Where &bottomOfRange();
     const Where &topOfRanges();
     const Where &bottomOfRanges();
+    const Where &topOfCallout();
+    const Where &bottomOfCallout();
+    
+    Ranges *grandparent();
+    Callout *callout();
+    
+    AllocMeta &allocMeta();
+    
+    Boundary boundary();
+
     QString path();
 	  QString csiName();
     QStringList submodelStack();

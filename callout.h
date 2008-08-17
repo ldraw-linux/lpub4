@@ -62,10 +62,27 @@ class Callout : public Ranges {
     QList<CalloutPointerItem *> graphicsPointerList;
 
     CalloutBackgroundItem *background;
+    Where                  topCallout,bottomCallout;
+    
+    Where &topOfCallout()
+    {
+      return topCallout;
+    }
+    Where &bottomOfCallout()
+    {
+      return bottomCallout;
+    }
+    void setTopOfCallout(const Where &topOfCallout)
+    {
+      topCallout = topOfCallout;
+    }
+    void setBottomOfCallout(const Where &bottomOfCallout)
+    {
+      bottomCallout = bottomOfCallout;
+    }
+    
 
     Callout(
-      AbstractRangeElement *_parent,
-      PlacementType         _parentRelativeType,
       Meta                 &_meta,
       QGraphicsView        *_view);
 
@@ -75,7 +92,7 @@ class Callout : public Ranges {
 
     virtual ~Callout();
 
-    void appendPointer(Where &here, CalloutMeta &attrib);
+    void appendPointer(const Where &here, CalloutMeta &attrib);
 
     void addGraphicsItems(
       int   offsetX, int offsetY, 
@@ -108,9 +125,11 @@ class Callout : public Ranges {
 
 class CalloutInstanceItem : public NumberPlacementItem
 {
-  Where defaultWhere;
+  Callout *callout;
+  Where    defaultWhere;
 public:
   CalloutInstanceItem(
+    Callout             *callout,
     Meta                *meta,
     const char          *format,
     int                  _value,

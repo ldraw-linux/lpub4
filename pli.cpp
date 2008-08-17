@@ -32,12 +32,12 @@
 #include <QFileInfo>
 #include <QFile>
 #include "pli.h"
+#include "step.h"
 #include "resolution.h"
 #include "render.h"
 #include "paths.h"
 #include "partslist.h"
 #include "ldrawfiles.h"
-#include "rx.h"
 #include "placementdialog.h"
 #include "metaitem.h"
 #include "color.h"
@@ -1118,12 +1118,16 @@ int Pli::addPli(
   background = 
     new PliBackgroundItem(
           this,
-          Placement::size[0],
-          Placement::size[1],
+          width,
+          height,
           _meta,
           parentRelativeType,
           submodelLevel,
           parent);
+          
+  if ( ! background) {
+    return -1;
+  }
 
   QString key;
 
@@ -1181,6 +1185,58 @@ QString PGraphicsPixmapItem::pliToolTip(
 
   toolTip = LDrawColor::name(color) + " " + type + " \"" + title + "\"";
   return toolTip;
+}
+
+PliBackgroundItem::PliBackgroundItem(
+  Pli           *_pli,
+  int            width,
+  int            height,
+  Meta          *_meta,
+  PlacementType  _parentRelativeType,
+  int            submodelLevel, 
+  QGraphicsItem *parent)
+{
+  meta      = *_meta;
+  pli       = _pli;
+  placement = _pli->placement;
+
+  parentRelativeType = _parentRelativeType;
+
+  QPixmap *pixmap = new QPixmap(width,height);
+
+  constraint = pli->constraint;
+    
+  if (_pli->bom) {
+    QString toolTip("Bill Of Materials");
+    setBackground( pixmap,
+                   PartsListType,
+                  _parentRelativeType,
+                  _meta->LPub.bom.placement,
+                  _meta->LPub.bom.background,
+                  _meta->LPub.bom.border,
+                  _meta->LPub.bom.margin,
+                  _meta->LPub.pli.subModelColor,
+                  0,
+                  toolTip);
+  } else {
+    QString toolTip("Part List");
+    setBackground( pixmap,
+                   PartsListType,
+                   _parentRelativeType,
+                   _meta->LPub.pli.placement,
+                   _meta->LPub.pli.background,
+                   _meta->LPub.pli.border,
+                   _meta->LPub.pli.margin,
+                   _meta->LPub.pli.subModelColor,
+                   submodelLevel,
+                   toolTip);
+  }
+  placement = meta.LPub.pli.placement;
+  setPixmap(*pixmap);
+  setParentItem(parent);
+  if (parentRelativeType != SingleStepType) {
+    setFlag(QGraphicsItem::ItemIsMovable,false);
+  }
 }
 
 void PliBackgroundItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
@@ -1255,49 +1311,78 @@ void PliBackgroundItem::contextMenuEvent(
       if (selectedAction == NULL) {
         return;
       }
+  
+      Where top;
+      Where bottom;
+      bool  local;
+      
+      Where topOfPLI = pli->topOfPLI();
+      Where bottomOfPLI = pli->bottomOfPLI();
+  
+      switch (parentRelativeType) {
+        case StepGroupType:
+          top    = pli->topOfRanges();
+          MetaItem mi;
+          mi.scanForward(top,StepGroupMask);
+          bottom = pli->bottomOfRanges();
+          local = false;
+        break;
+        case CalloutType:
+          top    = pli->topOfCallout();
+          bottom = pli->bottomOfCallout();
+          local = false;
+        break;
+        default:
+          top    = topOfPLI;
+          bottom = bottomOfPLI;
+          local = true;
+        break;
+      }
 
       Meta *meta = pli->meta;
       QString me = pli->bom ? "BOM" : "PLI";
       if (selectedAction == constrainAction) {
         changeConstraint(me+" Constraint",
-                         pli->topOfPLI(),
-                         pli->bottomOfPLI(),
+                         topOfPLI,
+                         bottomOfPLI,
                          &constraint);
       } else if (selectedAction == placementAction) {
-        switch (parentRelativeType) {
-          case StepGroupType:
-          case CalloutType:
-            changePlacement(parentRelativeType,
-                            PartsListType,
-                            me+" Placement",
-                            meta->context.topOfRanges(),
-                            meta->context.bottomOfRanges(),
-                            placementMeta,
-                            false);
-          break;
-          default:
-            changePlacement(parentRelativeType,
-                            PartsListType,
-                            me+" Placement",
-                            meta->context.topOfStep(),
-                            meta->context.bottomOfStep(),
-                            placementMeta);
-        }
+        changePlacement(parentRelativeType,
+                        PartsListType,
+                        me+" Placement",
+                        top,
+                        bottom,
+                        placementMeta,
+                        1,local);
       } else if (selectedAction == backgroundAction) {
-        changeBackground(me+" Background",
-                         pli->topOfPLI(),
-                         pli->bottomOfPLI(),
-                         &meta->LPub.pli.background);
+        if (0 && bom) {
+          changeBackground(me+" Background",
+                           top,
+                           bottom,
+                           &meta->LPub.bom.background);
+        } else {
+          changeBackground(me+" Background",
+                           top,
+                           bottom,
+                           &meta->LPub.pli.background,1,local);
+        }
       } else if (selectedAction == borderAction) {
-        changeBorder(me+" Border",
-                     pli->topOfPLI(),
-                     pli->bottomOfPLI(),
-                     &border);
+        if (0 && bom) {
+          changeBorder(me+" Border",
+                       top,
+                       bottom,
+                       &meta->LPub.bom.border);
+        } else {
+          changeBorder(me+" Border",
+                       top,
+                       bottom,
+                       &meta->LPub.pli.border,1,local);
+        }
       } else if (selectedAction == marginAction) {
         changeMargins(me+" Margins",
-                      pli->topOfPLI(),
-                      pli->bottomOfPLI(),
-                      &margin);
+                      top,
+                      bottom,
+                      &margin,1,local);
       }
   	}
   }
@@ -1319,16 +1404,36 @@ void AnnotateTextItem::contextMenuEvent(
   if (selectedAction == NULL) {
     return;
   }
-
+  
+  Where top;
+  Where bottom;
+  
+  switch (parentRelativeType) {
+    case StepGroupType:
+      top    = pli->topOfRanges();
+      MetaItem mi;
+      mi.scanForward(top,StepGroupMask);
+      bottom = pli->bottomOfRanges();
+    break;
+    case CalloutType:
+      top    = pli->topOfCallout();
+      bottom = pli->bottomOfCallout();
+    break;
+    default:
+      top    = pli->topOfPLI();
+      bottom = pli->bottomOfPLI();
+    break;
+  }
+ 
   Meta *meta = pli->meta;
   if (selectedAction == fontAction) {
-    changeFont(pli->range.topOf,pli->range.bottomOf,&meta->LPub.pli.annotate.font);
+    changeFont(top,bottom,&meta->LPub.pli.annotate.font);
   } else if (selectedAction == colorAction) {
-    changeColor(pli->range.topOf,pli->range.bottomOf,&meta->LPub.pli.annotate.color);
+    changeColor(top,bottom,&meta->LPub.pli.annotate.color);
   } else if (selectedAction == marginAction) {
     changeMargins("Part Length Margins",
-                  pli->range.topOf,
-                  pli->range.bottomOf,
+                  top,
+                  bottom,
                   &meta->LPub.pli.annotate.margin);
   }
 }
@@ -1349,17 +1454,34 @@ void InstanceTextItem::contextMenuEvent(
   if (selectedAction == NULL) {
     return;
   }
-
+  
+  Where top;
+  Where bottom;
+  
+  switch (parentRelativeType) {
+    case StepGroupType:
+      top    = pli->topOfRanges() + 1;
+      MetaItem mi;
+      mi.scanForward(top,StepGroupMask);
+      bottom = pli->bottomOfRanges();
+    break;
+    case CalloutType:
+      top    = pli->topOfCallout();
+      bottom = pli->bottomOfCallout();
+    break;
+    default:
+      top    = pli->topOfPLI();
+      bottom = pli->bottomOfPLI();
+    break;
+  }
+  
   Meta *meta = pli->meta;
   if (selectedAction == fontAction) {
-    changeFont(pli->range.topOf,pli->range.bottomOf,&meta->LPub.pli.instance.font);
+    changeFont(top,bottom,&meta->LPub.pli.instance.font,1,false);
   } else if (selectedAction == colorAction) {
-    changeColor(pli->range.topOf,pli->range.bottomOf,&meta->LPub.pli.instance.color);
+    changeColor(top,bottom,&meta->LPub.pli.instance.color,1,false);
   } else if (selectedAction == marginAction) {
-    changeMargins("Parts Count Margins",
-                  pli->range.topOf,
-                  pli->range.bottomOf,
-                  &meta->LPub.pli.instance.margin);
+    changeMargins("Margins",top,bottom,&meta->LPub.pli.instance.margin,1,false);
   }
 }
 
@@ -1387,17 +1509,17 @@ void PGraphicsPixmapItem::contextMenuEvent(
   Meta *meta = pli->meta;
   if (selectedAction == marginAction) {
     changeMargins("Parts List Part Margins",
-                  pli->range.topOf,
-                  pli->range.bottomOf,
+                  pli->topOfPLI(),
+                  pli->bottomOfPLI(),
                   &meta->LPub.pli.part.margin);
 #if 0
   } else if (selectedAction == scaleAction) {
-    changeFloatSpin(
+    changeFloatSpinTop(
       "Parts List",
       "Model Size",
-      pli->range.topOf,
-      pli->range.bottomOf,
-      &meta->LPub.pli.modelScale);
+      pli->topOfPLI(),
+      pli->bottomOfPLI(),
+      &meta->LPub.pli.modelScale,0);
     gui->clearPLICache();
 #endif
   }

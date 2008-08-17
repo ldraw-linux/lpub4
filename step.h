@@ -51,6 +51,7 @@ class Step : public AbstractRangeElement
     bool             pliPerStep;
 
     Step(
+      Where                 &topOfStep,
       AbstractRangesElement *_parent,
       int                    num, 
       Meta                  &meta, 

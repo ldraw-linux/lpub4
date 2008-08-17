@@ -52,24 +52,22 @@ public:
 
   Boundary boundary(AbstractRangeElement *);
 
-  Context      context;
-
   QString modelName();
 
   QString path();
   QString csiName();
 
   QStringList submodelStack();
-  Context      &getContext();
-
+  
   AllocMeta    &allocMeta();
-
   AllocEnc      allocType();
 
+  const Where &bottomOfStep(AbstractRangeElement *me);
   const Where &topOfRanges();
   const Where &bottomOfRanges();
   const Where &topOfRange();
   const Where &bottomOfRange();
+  Ranges *grandparent();
 };
 
 #endif

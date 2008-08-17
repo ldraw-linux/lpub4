@@ -76,7 +76,7 @@ void MultiStepRangesBackgroundItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *
     placementData.offsets[1] += newPosition.y()/meta->LPub.page.size.value(1);
     meta->LPub.multiStep.placement.setValue(placementData);
 
-    changePlacementOffset(ranges->meta.context.topOfRanges(),&meta->LPub.multiStep.placement,false);
+    changePlacementOffset(ranges->topOfRanges(),&meta->LPub.multiStep.placement,false);
   }
 }
 
@@ -102,8 +102,6 @@ MultiStepRangeBackgroundItem::MultiStepRangeBackgroundItem(
   subModelFont      = &multiStep->subModelFont;
   subModelFontColor = &multiStep->subModelFontColor;
   perStep           = &multiStep->pli.perStep;
-
-  context           = _range->context;
   relativeType      = _ranges->relativeType;
 
   int tx = _offset_x+_range->offset[XX];
@@ -148,18 +146,18 @@ void MultiStepRangeBackgroundItem::contextMenuEvent(
     changePlacement(PageType,
                     relativeType,
                     "Step Group Placement",
-                    meta->context.topOfRanges(),
-                    meta->context.bottomOfRanges(),
+                    ranges->topOfRanges(),
+                    ranges->bottomOfRanges(),
                     &meta->LPub.multiStep.placement,
                     false);
   } else if (selectedAction == perStepAction) {
-    changeBool(meta->context.topOfRanges(),
-               meta->context.bottomOfRanges(),
+    changeBool(ranges->topOfRanges(),
+               ranges->bottomOfRanges(),
               &meta->LPub.multiStep.pli.perStep);
   } else if (selectedAction == marginAction) {
     changeMargins("Step Group Margins",
-                  meta->context.topOfRanges(),
-                  meta->context.bottomOfRanges(),
+                  ranges->topOfRanges(),
+                  ranges->bottomOfRanges(),
                   margin);
   }
 }
@@ -266,7 +264,7 @@ void DividerItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
   if (selectedAction == editAction) {
     changeDivider("Divider",topOfRanges,topOfRanges,/*bottomOfRanges,*/sep,false);
   } else if (selectedAction == deleteAction) {
-    deleteMultiStepDivider(parentRelativeType,topOfRanges);
+    deleteDivider(parentRelativeType,topOfRanges);
   }
 }
 void DividerLine::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)

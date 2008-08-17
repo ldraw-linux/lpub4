@@ -40,12 +40,12 @@ CsiItem::CsiItem(
   Step          *_step,
   Meta          *_meta,
   QPixmap       &pixmap,
-  Context       &_context,
   int            _submodelLevel,
   QGraphicsItem *parent,
   PlacementType  _parentRelativeType)
 {
-  step = _step;
+  step    = _step;
+  
   assem = &_meta->LPub.assem;
   if (_parentRelativeType == StepGroupType) {
     divider = &_meta->LPub.multiStep.divider;
@@ -59,7 +59,6 @@ CsiItem::CsiItem(
   setPixmap(pixmap);
   setParentItem(parent);
   setTransformationMode(Qt::SmoothTransformation);
-  context = _context;
   submodelLevel = _submodelLevel;
 
   setToolTip(step->path());
@@ -78,7 +77,7 @@ void CsiItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
   QMenu menu;
 
   MetaItem mi;
-  int numSteps = mi.numSteps(step->context.topOfFile().modelName);
+  int numSteps = mi.numSteps(step->top.modelName);
   Boundary boundary = step->boundary();
 
   QAction *addNextAction = NULL;
@@ -118,33 +117,31 @@ void CsiItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
   if (parentRelativeType == StepGroupType || parentRelativeType == CalloutType) {
     if ((boundary & StartOfRange) && ! (boundary & StartOfRanges)) {
       if (allocType == Vertical) {
-        movePrevAction = menu.addAction("Move Step Left One Column");
+        movePrevAction = menu.addAction("Add to Previous Column");
         movePrevAction->setWhatsThis(
-          "Move Step Left One Column:\n"
-          "  Remove this step from its current column,\n"
-          "  and put it in column to the left");
+          "Add to Previous Column:\n"
+          "  Move this step to the previous column");
       } else {
-        movePrevAction = menu.addAction("Move Step Up One Row");
+        movePrevAction = menu.addAction("Add to Previous Row");
         movePrevAction->setWhatsThis(
-          "Move Step Up One Row:\n"
-          "  Remove this step from its current row,\n"
-          "  and put in the row above");
+          "Add to Previous Row:\n"
+          "  Move this step to the previous row\n");
       }
     }
 
     if ((boundary & EndOfRange) && ! (boundary & EndOfRanges)) {
       if (allocType == Vertical) {
-        moveNextAction = menu.addAction("Move Step Right One Column");
+        moveNextAction = menu.addAction("Add to Next Column");
         moveNextAction->setWhatsThis(
-          "Move Step Right One Column:\n"
+          "Add to Next Colum:\n"
           "  Remove this step from its current column,\n"
           "  and put it in the column to the right");
       } else {
-        moveNextAction = menu.addAction("Move Step Down One Row");
+        moveNextAction = menu.addAction("Add to Next Row");
         moveNextAction->setWhatsThis(
-          "Move Step Down One Row:\n"
-          "  Remove this step from its current row,\n"
-          "  and put it in the row below");
+          "Add to Next Row:\n"
+          "  Remove this step from its current column,\n"
+          "  and put it in the row above");
       }
     }
     if ( ! (boundary & EndOfRange) && ! (boundary & EndOfRanges)) {
@@ -228,104 +225,88 @@ void CsiItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
   if ( ! selectedAction ) {
     return;
   }
+  
+  Callout *callout = step->callout();
+  
+  Where topOfStep    = step->topOfStep();
+  Where bottomOfStep = step->bottomOfStep();
+  Where topOfRanges  = step->topOfRanges();
+  Where bottomOfRanges = step->bottomOfRanges();
+  Where begin = topOfRanges;
+  
+  if (parentRelativeType == StepGroupType) {
+    MetaItem mi;
+    mi.scanForward(begin,StepGroupMask);
+  }
 
   if (selectedAction == addPrevAction) {
-    if (parentRelativeType == StepGroupType) {
-      addPrevStep(step->context.topOfRanges());
-    } else {
-      addPrevStep(step->context.topOfStep());
-    }
+    addPrevMultiStep(topOfRanges,bottomOfRanges);
+
   } else if (selectedAction == addNextAction) {
-    if (parentRelativeType == StepGroupType) {
-      addNextStep(step->topOfRanges());
-    } else {
-      addNextStep(step->context.topOfStep());
-    }
+    addNextMultiStep(topOfRanges,bottomOfRanges);
 
   } else if (selectedAction == removeAction) {
     if (boundary & StartOfRanges) {
-      deleteFirstMultiStep(step->topOfRanges());
+      deleteFirstMultiStep(topOfRanges);
     } else {
-      deleteLastMultiStep(step->context.topOfRanges());
+      deleteLastMultiStep(topOfRanges,bottomOfRanges);
     }
   } else if (selectedAction == movePrevAction) {
 
-    moveStepPrev(parentRelativeType,
-                 step->context.bottomOfRanges(),
-                 step->context.bottomOfStep());
+    addToPrev(parentRelativeType,topOfStep);
 
   } else if (selectedAction == moveNextAction) {
 
-    moveStepNext(parentRelativeType,
-                 step->context.topOfRanges(),
-                 step->context.bottomOfRange(),
-                 step->context.topOfStep(),
-                 step->context.bottomOfStep());
-
+    addToNext(parentRelativeType,topOfStep);
+              
   } else if (selectedAction == addDividerAction) {
-    if (parentRelativeType == StepGroupType) {
-      addMultiStepDivider(step->context.bottomOfStep(),divider);
-    } else {
-      addCalloutDivider(step->context.bottomOfStep(),divider);
-    }        
-
+    addDivider(parentRelativeType,bottomOfStep,divider);
   } else if (selectedAction == allocAction) {
-    changeAlloc(step->parent->getContext().topOfRanges(),
-                step->parent->getContext().bottomOfRanges(),
-                step->parent->allocMeta());
+    if (parentRelativeType == StepGroupType) {
+      changeAlloc(begin,
+                  bottomOfRanges,
+                  step->allocMeta());
+    } else {
+      changeAlloc(callout->topOfCallout(),
+                  callout->bottomOfCallout(),
+                  step->allocMeta());
+    }
 
   } else if (selectedAction == placementAction) {
     changePlacement(parentRelativeType,
                     CsiType,
                     "Assembly Placement",
-                    step->context.topOfStep(), 
-                    step->context.bottomOfStep(),
+                    topOfStep, 
+                    bottomOfStep,
                     &meta->LPub.assem.placement);
   } else if (selectedAction == scaleAction) {
-    switch (parentRelativeType) {
-      case StepGroupType:
-        changeFloatSpin("Assembly",
-                        "Model Size",
-                        step->context.topOfRanges(), 
-                        step->context.bottomOfRanges(), 
-                        &meta->LPub.assem.modelScale, 
-                        false);
-      break;
-      case CalloutType:
-        changeFloatSpin("Assembly",
-                        "Model Size",
-                        step->topOfRanges(), 
-                        step->bottomOfRanges(), 
-                        &meta->LPub.assem.modelScale, 
-                        false);
-      break;
-      default:
-        changeFloatSpin("Assembly",
-                        "Model Size",
-                        step->context.topOfStep(), 
-                        step->context.bottomOfStep(), 
-                        &meta->LPub.assem.modelScale);
-      break;
-    }
+    bool allowLocal = parentRelativeType != StepGroupType && 
+                      parentRelativeType != CalloutType;
+    changeFloatSpin("Assembly",
+                    "Model Size",
+                    begin, 
+                    bottomOfRanges, 
+                    &meta->LPub.assem.modelScale, 
+                    1,allowLocal);
   } else if (selectedAction == marginsAction) {
 
     switch (parentRelativeType) {
       case StepGroupType:
         changeMargins("Assembly Margins",
-                      step->context.topOfStep(), 
-                      step->context.bottomOfStep(), 
+                      topOfStep, 
+                      bottomOfStep, 
                       &meta->LPub.multiStep.csi.margin);
       break;
       case CalloutType:
         changeMargins("Assembly Margins",
-                      step->context.topOfStep(), 
-                      step->context.bottomOfStep(), 
+                      topOfStep, 
+                      bottomOfStep, 
                       &meta->LPub.callout.csi.margin);
       break;
       case SingleStepType:
         changeMargins("Assembly Margins",
-                      step->context.topOfStep(), 
-                      step->context.bottomOfStep(), 
+                      topOfStep, 
+                      bottomOfStep, 
                       &meta->LPub.assem.margin);
       break;
       default:
@@ -387,7 +368,7 @@ void CsiItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
           callout->updatePointers(deltaI);
         }      
 
-        changePlacementOffset(step->context.topOfStep(),&meta->LPub.assem.placement);  
+        changePlacementOffset(step->topOfStep(),&meta->LPub.assem.placement);  
       }
       endMacro();
     }

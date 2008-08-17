@@ -43,14 +43,10 @@
 //---------------------------------------------------------------------------
 
 Callout::Callout(
-  AbstractRangeElement *_parent,
-  PlacementType         _parentRelativeType,
   Meta                 &_meta,
   QGraphicsView        *_view)
 {
-  parent        = _parent;
   view          = _view;
-  parentRelativeType = _parentRelativeType;
   relativeType  = CalloutType;
   meta = _meta;
   instances = 1;
@@ -80,7 +76,7 @@ AllocMeta &Callout::allocMeta()
   }
 }
 
-void Callout::appendPointer(Where &here, CalloutMeta &attrib)
+void Callout::appendPointer(const Where &here, CalloutMeta &attrib)
 {
   Pointer *pointer = new Pointer(here,attrib);
   pointerList.append(pointer);
@@ -287,8 +283,9 @@ void Callout::addGraphicsItemsVert(
       default:
       break;
     }
-    Where defaultWhere = meta.context.topOfRanges()+1;
+    Where defaultWhere = topOfRanges();
     CalloutInstanceItem *item = new CalloutInstanceItem(
+      this,
      &meta, 
       "%dx",
       instanceCount.number,
@@ -328,9 +325,9 @@ void Callout::addGraphicsItemsHoriz(
       default:
       break;
     }
-    Where defaultWhere = meta.context.topOfRanges()+1;
+    Where defaultWhere = topOfRanges();
     CalloutInstanceItem *item = new CalloutInstanceItem(
-      &meta, "%dx",instanceCount.number,defaultWhere,parent);
+      this,&meta, "%dx",instanceCount.number,defaultWhere,parent);
     item->setPos(offsetX + instanceCount.offset[0], offsetY + instanceCount.offset[1]);
   }
 
@@ -393,12 +390,14 @@ void Callout::sizeitFreeform(
 }
 
 CalloutInstanceItem::CalloutInstanceItem(
+  Callout             *_callout,
   Meta                *_meta,
   const char          *_format,
   int                  _value,
   Where               &_defaultWhere,
   QGraphicsItem       *_parent)
 {
+  callout = _callout;
   defaultWhere = _defaultWhere;
   QString toolTip("Number of times model in callout is used on this page");
   setAttributes(PageNumberType,
@@ -470,17 +469,16 @@ void CalloutInstanceItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event
 
   if (selectedAction == fontAction) {
 
-    changeFont(meta->context.topOfRanges(), meta->context.bottomOfRanges(),font);
+    changeFont(callout->topOfCallout(), callout->bottomOfCallout(),font);
 
   } else if (selectedAction == colorAction) {
 
-    changeColor(meta->context.topOfRanges(), meta->context.bottomOfRanges(),color);
+    changeColor(callout->topOfCallout(), callout->bottomOfCallout(),color);
 
   } else if (selectedAction == marginAction) {
 
     changeMargins("Times Used Margin",
-                  meta->context.topOfRanges(), 
-                  meta->context.bottomOfRanges(),
+                  callout->topOfCallout(), callout->bottomOfCallout(),
                   margin);
   }
 }
