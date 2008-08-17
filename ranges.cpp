@@ -28,6 +28,7 @@
 
 #include "ranges.h"
 #include "ranges_item.h"
+#include "range_element.h"
 #include "range.h"
 #include "step.h"
 #include "meta.h"
@@ -57,7 +58,7 @@ Ranges::~Ranges()
 
 QString Ranges::modelName()
 {
-  return meta.context.topOfFile().modelName;
+  return bottom.modelName;
 }
 
 QString Ranges::path()
@@ -68,6 +69,32 @@ QString Ranges::path()
   }
   thePath += "/" + QFileInfo(modelName()).baseName();
   return thePath;
+}
+
+const Where &Ranges::bottomOfStep(
+  AbstractRangesElement *me)
+{
+  for (int i = 0; i < list.size(); i++) {
+    if (list[i] == me) {
+      if (i < list.size()-1) {
+        return list[i+1]->topOfRange();
+      }
+    }
+  }
+  return bottom;
+}
+
+const Where &Ranges::topOfRanges()
+{
+  return list[0]->topOfRange();
+}
+const Where &Ranges::bottomOfRanges()
+{
+  return bottom;
+}
+void Ranges::setBottomOfRanges(const Where &bos)
+{
+  bottom = bos;
 }
 
 QString Ranges::csiName()
@@ -106,14 +133,6 @@ AllocEnc Ranges::allocType()
 AllocMeta &Ranges::allocMeta()
 {
   return meta.LPub.multiStep.alloc;
-}
-const Where &Ranges::topOfRanges()
-{
-  return meta.context.topOfRanges();
-}
-const Where &Ranges::bottomOfRanges()
-{
-  return meta.context.bottomOfRanges();
 }
 /*********************************************
  *

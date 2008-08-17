@@ -35,6 +35,8 @@
 #include "metaitem.h"
 
 class Where;
+class Ranges;
+class Step;
 
 class NumberItem : public QGraphicsTextItem, public MetaItem
 {
@@ -128,8 +130,10 @@ protected:
 
 class PageNumberItem : public NumberPlacementItem
 {
+  Ranges *ranges;
 public:
   PageNumberItem(
+    Ranges        *ranges,
     Meta          *meta,
     NumberPlacementMeta &number,
     const char    *format,
@@ -141,13 +145,11 @@ protected:
 
 class StepNumberItem : public NumberPlacementItem
 {
-  Where topOfRanges;
-  Where bottomOfRanges;
+  Step *step;
 public:
   StepNumberItem(
+    Step          *step,
     PlacementType  parentRelativeType,
-    const Where   &topOfRanges,
-    const Where   &bottomOfRanges,
     Meta          *meta,
     NumberPlacementMeta &number,
     const char    *format,

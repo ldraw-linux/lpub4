@@ -20,9 +20,6 @@
  * The Where class described here is a fundamental class used for
  * backannotating user edits into the LDraw files.
  *
- * The context class represents important landmark Where's such as top and
- * bottom of step, range, file and model.
- *
  * Please see lpub.h for an overall description of how the files in LPub
  * make up the LPub program.
  *
@@ -184,87 +181,6 @@ public:
     return bottomOf;
   }
 };
-    
-class Context {
-  private:
-    QString    _topOfModel;
-    Where      _topOfFile;
-    WhereRange _step;
-    Where      _topOfRanges;
-    Where      _bottomOfRanges;
-    WhereRange _range;
-    WhereRange _callout;
-    
-  public:
-    Context ()
-    {
-    }
-
-    void setTopOfModel(QString &tom)
-    {
-      _topOfModel = tom;
-    }
-    QString topOfModel() { return _topOfModel; }
-
-
-    void  setTopOfFile(Where &here)
-    {
-      _topOfFile = Where(here.modelName,0);
-      _topOfRanges = Where();
-      _range = WhereRange();
-      _step.setTop(here);
-    }
-    void  setTopOfFile(QString &modelName)
-    {
-      _topOfFile = Where(modelName,0);
-    }
-    const Where &topOfFile() { return _topOfFile;  }
-    
-
-    void  setBottomOfStep(Where &here)
-    {
-      _step.setBottom(here);
-    }
-    const Where &topOfStep()           { return _step.top();  }
-    const Where &bottomOfStep()        { return _step.bottom(); }
-
-
-    void  setTopOfRanges(Where &here)
-    {
-      _topOfRanges   = here;
-      _range.setTop(here);
-    }
-    void  setBottomOfRanges(Where &here)
-    {
-      _bottomOfRanges   = here;
-    }
-    const Where &topOfRanges()        { return _topOfRanges; }
-    const Where &bottomOfRanges()     { return _bottomOfRanges; }
- 
-
-    void  setTopOfRange(Where &here)
-    {
-      _range.setTop(here);
-    }
-    void  setBottomOfRange(Where &here)
-    {
-      _range.setBottom(here);
-    }
-    const Where &topOfRange()        { return _range.top(); }
-    const Where &bottomOfRange()     { return _range.bottom(); }
-
-
-    void  setTopOfCallout(Where &here)
-    {
-      _callout.setTop(here);
-    }
-    void  setBottomOfCallout(Where &here)
-    {
-      _callout.setBottom(here);
-    }
-    const Where &topOfCallout()       { return _callout.top(); }
-    const Where &bottomOfCallout()    { return _callout.bottom(); }
-};    
 
 #endif
 

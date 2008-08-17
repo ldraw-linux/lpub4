@@ -50,6 +50,8 @@ class Ranges : public Placement {
     QGraphicsView *view;
 
     Pli            pli;
+    
+    Where          bottom;
 
     Ranges();
     Ranges(Step *_parent,Meta &_meta,QGraphicsView *_view);
@@ -86,7 +88,9 @@ class Ranges : public Placement {
 
     Boundary boundary(AbstractRangesElement *);
 
+    const Where &bottomOfStep(AbstractRangesElement *me);
     const Where &topOfRanges();
     const Where &bottomOfRanges();
+    void setBottomOfRanges(const Where &bos);
 };
 #endif
