@@ -933,7 +933,7 @@ void CalloutPointerItem::updatePointer(
 
 void CalloutPointerItem::addPointerMeta()
 {
-  QString metaString = pointer.pointerMeta.preamble + pointer.pointerMeta.format(false);
+  QString metaString = pointer.pointerMeta.format(false,false);
   Where here = pointer.here+1;
   insertMeta(here,metaString);
   gui->displayPage();
