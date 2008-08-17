@@ -22,7 +22,6 @@
 #include <QRegExp>
 #include <math.h>
 #include "render.h"
-#include "rx.h"
 
 #include "lpub.h"
 
