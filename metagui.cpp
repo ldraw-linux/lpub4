@@ -1201,7 +1201,7 @@ ResolutionGui::ResolutionGui(
 
 void ResolutionGui::unitsChange(QString const &units)
 {
-  if (units == "DPI") {
+  if (units == "Dots Per Inch") {
     type = DPI;
   } else {
     type = DPCM;
@@ -1212,9 +1212,9 @@ void ResolutionGui::unitsChange(QString const &units)
   if (type == meta->type()) {
     tvalue = value;
   } else if (type == DPI) {
-    tvalue = centimeters2inches(value)+0.5;
-  } else {
     tvalue = inches2centimeters(value)+0.5;
+  } else {
+    tvalue = centimeters2inches(value)+0.5;
   }
 
   QString string = QString("%1") .arg(int(tvalue));
