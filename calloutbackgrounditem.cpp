@@ -221,7 +221,7 @@ void CalloutBackgroundItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
       placementData.offsets[1] -= h;
       placement.setValue(placementData);
 
-      changePlacementOffset(callout->topOfRanges(),&placement);  
+      changePlacementOffset(callout->topOfCallout(),&placement);  
     }
     QGraphicsItem::mouseReleaseEvent(event);
     gui->endMacro();
