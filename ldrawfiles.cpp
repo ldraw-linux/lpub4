@@ -29,11 +29,10 @@
 #include "ldrawfiles.h"
 #include <QtGui>
 #include <QFile>
+#include <QList>
+#include <QRegExp>
 #include "name.h"
-#include "rx.h"
 #include "paths.h"
-
-QStringList LDrawHeaderRx;
 
 void LDrawFile::empty()
 {
@@ -268,3 +267,112 @@ void LDrawFile::writeToTmp(
     file.close();
   }
 }
+
+int split(const QString &line, QStringList &argv)
+{
+  QString     chopped = line;
+  int         p = 0;
+  int         length = chopped.length();
+
+  if (p == length) {
+    return 0;
+  }
+  
+  while (chopped[p] == ' ') {
+    if (++p == length) {
+      return -1;
+    }
+  }
+  
+  if (chopped[p] == '1') {
+
+    argv << "1";
+    p += 2;
+    if (p >= length) {
+      return -1;
+    }
+    while (chopped[p] == ' ') {
+      if (++p >= length) {
+        return -1;
+      }
+    }
+    
+    if (chopped.mid(p,5) == "GHOST") {
+      p += 6;
+      if (p >= length) {
+        return -1;
+      }
+      while (chopped[p] == ' ') {
+        if (++p >= length) {
+          return -1;
+        }
+      }
+    }
+    
+    // color x y z a b c d e f g h i
+    
+    for (int i = 0; i < 13; i++) {
+      QString token;
+      
+      while (chopped[p] != ' ') {
+        token += chopped[p];
+        if (++p >= length) {
+          return -1;
+        }
+      }
+      argv << token;
+      while (chopped[p] == ' ') {
+        if (++p >= length) {
+          return -1;
+        }
+      }
+    }
+    
+    argv << chopped.mid(p);
+  } else if (chopped[p] == '0' || chopped[p] >= '2' && chopped[p] <= '5') {
+    chopped = chopped.mid(p);  
+    argv << chopped.split(" ",QString::SkipEmptyParts);
+  }
+  
+  return 0;
+}
+
+QList<QRegExp> LDrawHeaderRegExp;
+
+LDrawFile::LDrawFile()
+{
+    {
+       LDrawHeaderRegExp
+       << QRegExp("^\\s*0\\s+Author[^\n]*") 
+       << QRegExp("^\\s*0\\s+!CATEGORY[^\n]*")
+       << QRegExp("^\\s*0\\s+!CMDLINE[^\n]*")
+       << QRegExp("^\\s*0\\s+!COLOUR[^\n]*")
+       << QRegExp("^\\s*0\\s+!HELP[^\n]*")
+       << QRegExp("^\\s*0\\s+!HISTORY[^\n]*")
+       << QRegExp("^\\s*0\\s+!KEYWORDS[^\n]*")
+       << QRegExp("^\\s*0\\s+!LDRAW_ORG[^\n]*")
+       << QRegExp("^\\s*0\\s+LDRAW_ORG[^\n]*")
+       << QRegExp("^\\s*0\\s+!LICENSE[^\n]*")
+       << QRegExp("^\\s*0\\s+Name[^\n]*")
+       << QRegExp("^\\s*0\\s+Official[^\n]*")
+       << QRegExp("^\\s*0\\s+Unofficial[^\n]*") 
+       << QRegExp("^\\s*0\\s+Un-official[^\n]*") 
+       << QRegExp("^\\s*0\\s+Original LDraw[^\n]*")
+       << QRegExp("^\\s*0\\s+~Moved to[^\n]*")
+       << QRegExp("^\\s*0\\s+ROTATION[^\n]*");
+    }
+}
+
+bool isHeader(QString &line)
+{
+  int size = LDrawHeaderRegExp.size();
+   
+  for (int i = 0; i < size; i++) {
+    if (line.contains(LDrawHeaderRegExp[i])) {
+      return true;
+    }
+  }
+  
+  return false;
+}
+   
