@@ -69,7 +69,6 @@ public:
     FreeFormMeta   *freeform;
     FontListMeta   *subModelFont;
     StringListMeta *subModelFontColor;
-    Context         context;
     Ranges         *ranges;
 
     MultiStepRangeBackgroundItem(
@@ -90,7 +89,6 @@ class DividerLine;
 
 class DividerItem : public QGraphicsRectItem, public MetaItem
 {
-  Context context;
 public:
     Meta         *meta;
     SepMeta      *sep;
