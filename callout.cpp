@@ -283,13 +283,11 @@ void Callout::addGraphicsItemsVert(
       default:
       break;
     }
-    Where defaultWhere = topOfRanges();
     CalloutInstanceItem *item = new CalloutInstanceItem(
       this,
      &meta, 
       "%dx",
       instanceCount.number,
-      defaultWhere,
       parent);
     item->setPos(offsetX + instanceCount.offset[0], offsetY + instanceCount.offset[1]);
   }
@@ -325,9 +323,8 @@ void Callout::addGraphicsItemsHoriz(
       default:
       break;
     }
-    Where defaultWhere = topOfRanges();
     CalloutInstanceItem *item = new CalloutInstanceItem(
-      this,&meta, "%dx",instanceCount.number,defaultWhere,parent);
+      this,&meta, "%dx",instanceCount.number,parent);
     item->setPos(offsetX + instanceCount.offset[0], offsetY + instanceCount.offset[1]);
   }
 
@@ -394,11 +391,9 @@ CalloutInstanceItem::CalloutInstanceItem(
   Meta                *_meta,
   const char          *_format,
   int                  _value,
-  Where               &_defaultWhere,
   QGraphicsItem       *_parent)
 {
   callout = _callout;
-  defaultWhere = _defaultWhere;
   QString toolTip("Number of times model in callout is used on this page");
   setAttributes(PageNumberType,
                 CalloutType,
@@ -494,6 +489,6 @@ void CalloutInstanceItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     placementData.offsets[0] += newPosition.x()/meta->LPub.page.size.value(0);
     placementData.offsets[1] += newPosition.y()/meta->LPub.page.size.value(1);
     placement->setValue(placementData);
-    changePlacementOffset(defaultWhere,placement);
+    changePlacementOffset(callout->topOfCallout(),placement);
   }
 }
