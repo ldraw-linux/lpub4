@@ -86,12 +86,12 @@ enum dim {
 class Placement : QObject {
   Q_OBJECT
   public:
-    int           size[2];
-    int           offset[2];
-    int           tbl[2];
-    PlacementType relativeType;
-    PlacementMeta placement;
-    MarginsMeta   margin;
+    int           size[2];       // How big am I?
+    int           offset[2];     // Where do I live within my group
+    int           tbl[2];        // Where am I in my grid?
+    PlacementType relativeType;  // What am I?
+    PlacementMeta placement;     // Where am I placed?
+    MarginsMeta   margin;        // How much room do I need?
 
     QList<Placement *> relativeToList; // things placed relative to me
 
@@ -110,11 +110,7 @@ class Placement : QObject {
       relativeToList.empty();
     }
 
-    void appendRelativeTo(
-      Placement *element)
-    {
-      relativeToList.append(element);
-    }
+    void appendRelativeTo(Placement *element);
 
     int  relativeTo(
       Placement *step);

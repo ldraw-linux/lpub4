@@ -119,11 +119,13 @@ enum Rc {
 class AbstractMeta
 {
 public:
-  int                pushed;
+  int       pushed;
+  bool      global;
 
                      AbstractMeta()
                      {
-                       pushed       = 0;
+                       pushed = 0;
+                       global = false;
                      }
   virtual           ~AbstractMeta() { preamble.clear(); }
   QString            preamble;
@@ -160,9 +162,11 @@ public:
 class LeafMeta : public AbstractMeta {
 public:
   Where     _here[2];
+
   LeafMeta()
   { 
-    pushed = 0; 
+    pushed = 0;
+    global = false;
   }
   const Where &here()
   {
@@ -180,7 +184,10 @@ public:
     }
     return preamble == match;
   }
-  virtual QString format(bool) = 0;
+  
+  virtual QString format(bool local, bool local) = 0;
+  
+  virtual QString format(bool local, bool global, QString);
 
   virtual void doc(QTextStream &out, QString preamble)  { out << preamble; }
 };
@@ -228,7 +235,7 @@ public:
   virtual ~RcMeta() {}
   virtual void    init(BranchMeta *parent, const QString name, Rc _rc=OkRc);
   virtual Rc parse(QStringList &argv, int index, Where &here);
-  virtual QString format(bool) { QString foo; return foo; }
+  virtual QString format(bool,bool) { QString foo; return foo; }
   virtual void    doc(QTextStream &out, QString preamble);
 };
 
@@ -265,7 +272,7 @@ public:
                     const QString name, 
                     Rc _rc=OkRc);
   virtual Rc parse(QStringList &argv, int index, Where &here);
-          QString format(bool);
+          QString format(bool,bool);
   virtual void    doc(QTextStream &out, QString preamble);
 };
 /*
@@ -316,7 +323,7 @@ public:
                        const QString name, 
                        Rc _rc=OkRc);
   virtual Rc parse(QStringList &argv, int index, Where &here);
-          QString format(bool);
+          QString format(bool,bool);
   virtual void    doc(QTextStream &out, QString preamble);
 };
 
@@ -376,7 +383,7 @@ public:
                     const QString name,
                     Rc _rc=OkRc);
   virtual Rc parse(QStringList &argv, int index, Where &here);
-  virtual QString format(bool);
+  virtual QString format(bool,bool);
   virtual void doc(QTextStream &out, QString preamble);
 };
 
@@ -419,7 +426,7 @@ public:
     _precision = 4;
     _inputMask = "9.9999";
   }
-  QString format(bool);
+  QString format(bool, bool);
   virtual ~UnitMeta() {}
 };
   
@@ -525,7 +532,7 @@ public:
                     Rc _rc=OkRc, 
                     QString _delim="\"");
   virtual Rc parse(QStringList &argv, int index, Where &here);
-          QString format(bool);
+          QString format(bool,bool);
   void    pop() 
   { 
     if (pushed) {
@@ -568,7 +575,7 @@ public:
                     Rc _rc=OkRc, 
                     QString _delim = "\"");
   virtual Rc parse(QStringList &argv, int index, Where &here);
-  QString format(bool);
+  QString format(bool,bool);
   void    pop() 
   { 
     if (pushed) {
@@ -745,7 +752,7 @@ public:
                     Rc _rc=OkRc, 
                     QString _delim = "\"");
   virtual Rc parse(QStringList &argv, int index, Where &here);
-  QString format(bool);
+  QString format(bool,bool);
   void    pop() 
   { 
     if (pushed) {
@@ -775,7 +782,7 @@ public:
   }
   virtual ~BoolMeta() {}
   Rc parse(QStringList &argv, int index, Where &here);
-  QString format(bool);
+  QString format(bool,bool);
   virtual void doc(QTextStream &out, QString preamble);
 };
 
@@ -822,8 +829,8 @@ public:
   PlacementMeta();
   virtual ~PlacementMeta() {}
   Rc parse(QStringList &argv, int index, Where &here);
-  QString format(bool);
-  QString formatOffset(bool);
+  QString format(bool,bool);
+  QString formatOffset(bool,bool);
   virtual void doc(QTextStream &out, QString preamble);
 };
 
@@ -859,7 +866,7 @@ public:
   }
   virtual ~BackgroundMeta() {}
   Rc parse(QStringList &argv, int index, Where &here);
-  QString format(bool);
+  QString format(bool,bool);
   void    pop()
   {
     if (pushed) {
@@ -923,7 +930,7 @@ public:
   }
   virtual ~BorderMeta() { }
   Rc parse(QStringList &argv, int index, Where &here);
-  QString format(bool);
+  QString format(bool,bool);
   void    pop() 
   { 
     if (pushed) {
@@ -987,7 +994,7 @@ public:
   PointerMeta();
   virtual ~PointerMeta() {}
   Rc parse(QStringList &argv, int index, Where &here);
-  QString format(bool);
+  QString format(bool,bool);
   virtual void doc(QTextStream &out, QString preamble);
 };
 
@@ -1006,7 +1013,7 @@ public:
   FreeFormMeta();
   virtual ~FreeFormMeta() {}
   Rc parse(QStringList &argv, int index, Where &here);
-  QString format(bool);
+  QString format(bool,bool);
   virtual void doc(QTextStream &out, QString preamble);
 };
 
@@ -1030,7 +1037,7 @@ public:
   AllocMeta();
   virtual ~AllocMeta() {}
   Rc parse(QStringList &argv, int index, Where &here);
-  QString format(bool);
+  QString format(bool,bool);
   virtual void doc(QTextStream &out, QString preamble);
 };
 
@@ -1073,8 +1080,8 @@ public:
   }
   virtual ~InsertMeta() {}
   Rc parse(QStringList &argv, int index, Where &here);
-  QString format(bool);
-  QString format(bool,int);
+  QString format(bool,bool);
+  QString format(bool,bool,int);
   virtual void doc(QTextStream &out, QString preamble);
 };
 
@@ -1137,7 +1144,7 @@ public:
   SepMeta();
   virtual ~SepMeta() { }
   Rc parse(QStringList &argv, int index, Where &here);
-  QString format(bool local);
+  QString format(bool local,bool);
   void pop()
   {
     if (pushed) {
@@ -1249,7 +1256,7 @@ public:
   }
   virtual ~SubMeta() {}
   Rc parse(QStringList &argv, int index, Where &here);
-  QString format(bool);
+  QString format(bool,bool);
   virtual void doc(QTextStream &out, QString preamble);
 };
 
@@ -1287,7 +1294,7 @@ public:
   ConstrainMeta();
   virtual ~ConstrainMeta() {}
   Rc parse(QStringList &argv, int index, Where &here);
-  QString format(bool);
+  QString format(bool,bool);
   virtual void doc(QTextStream &out, QString preamble);
 };
 
@@ -1369,7 +1376,7 @@ public:
   }
   virtual ~RotStepMeta() {}
   Rc parse(QStringList &argv, int index, Where &here);
-  QString format(bool);
+  QString format(bool,bool);
   virtual void doc(QTextStream &out, QString preamble);
 };
 
@@ -1389,7 +1396,7 @@ public:
   }
   virtual ~BuffExchgMeta() { }
   Rc parse(QStringList &argv, int index, Where &here);
-  QString format(bool);
+  QString format(bool,bool);
   void    pop() { pushed = 0; }
   virtual void doc(QTextStream &out, QString preamble);
 };
@@ -1588,7 +1595,7 @@ public:
   virtual void init(BranchMeta *parent, 
                     QString name);
   virtual Rc parse(QStringList &argv, int index, Where &here);
-          QString format(bool);
+          QString format(bool,bool);
   virtual void    doc(QTextStream &out, QString preamble);
 };
 
@@ -1650,12 +1657,11 @@ public:
   MLCadMeta     MLCad;
   LSynthMeta    LSynth;
 
-  Context       context;  //where are we in the LDraw file?
   QList<Where>  submodelStack;
 
-           Meta(QString topLevelFile = "undefined");
+           Meta();
   virtual ~Meta();
-          Rc    parse(QString &line, Where &here, bool partsAdded = true);
+          Rc    parse(QString &line, Where &here);
           bool  preambleMatch(QString &line, QString &preamble);
   virtual void  init(BranchMeta *parent, QString name);
   virtual void  pop();

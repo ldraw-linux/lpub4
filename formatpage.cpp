@@ -93,8 +93,10 @@ int Gui::addGraphicsPageItems(
     // allocate QGraphicsTextItem for page number
 
     PageNumberItem  *pageNumber = 
-      new PageNumberItem(&ranges->meta, 
-                     ranges->meta.LPub.page.number, 
+      new PageNumberItem(
+                      ranges,
+                     &ranges->meta, 
+                      ranges->meta.LPub.page.number, 
                      "%d", 
                      displayPageNum,
                      pageBg);
@@ -179,7 +181,6 @@ int Gui::addGraphicsPageItems(
             csiItem = new CsiItem(step,
                                  &ranges->meta, 
                                  *step->csiPixmap.pixmap,
-                                  step->context,
                                   step->submodelLevel,
                                   pageBg, 
                                   ranges->relativeType);
@@ -191,11 +192,10 @@ int Gui::addGraphicsPageItems(
 
           // allocate QGraphicsTextItem for step number
 
-          if (ldrawFile.numSteps(ranges->meta.context.topOfFile().modelName) > 1) {
+          if (ldrawFile.numSteps(ranges->bottom.modelName) > 1) {
             StepNumberItem *stepNumber = 
-              new StepNumberItem(ranges->relativeType,
-                                 step->topOfRanges(),
-                                 step->bottomOfRanges(),
+              new StepNumberItem(step,
+                                 ranges->relativeType,
                                 &ranges->meta, 
                                  ranges->meta.LPub.stepNumber, 
                                  "%d", 

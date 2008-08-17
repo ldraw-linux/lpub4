@@ -43,6 +43,7 @@
  */
 
 QHash<QString, int> tokenMap;
+
 void AbstractMeta::init(
   BranchMeta *parent, 
   QString name)
@@ -55,6 +56,22 @@ void AbstractMeta::doc(QTextStream &out, QString preamble)
 {
   out << preamble;
 }
+
+QString LeafMeta::format(
+  bool local,
+  bool global,
+  QString suffix)
+{
+  QString result;
+  
+  if (local) {
+    result = "LOCAL ";
+  } else if (global) {
+    result = "GLOBAL ";
+  }
+  
+  return preamble + result + suffix;
+}  
 
 BranchMeta::~BranchMeta()
 {
@@ -87,6 +104,9 @@ Rc BranchMeta::parse(QStringList &argv, int index, Where &here)
           if (argv[index+1] == "LOCAL") {
             i.value()->pushed = 1;
             offset = 2;
+          } else if (argv[index+1] == "GLOBAL") {
+            global = true;
+            offset = 2;
           }
           if (index + offset >= argv.size()) {
             rc = FailureRc;
@@ -109,6 +129,9 @@ Rc BranchMeta::parse(QStringList &argv, int index, Where &here)
 
       if (argv[index] == "LOCAL") {
         i.value()->pushed = 1;
+        offset = 1;
+      } else if (argv[index] == "GLOBAL") {
+        i.value()->global = true;
         offset = 1;
       } else {
         offset = 0;
@@ -239,14 +262,12 @@ Rc IntMeta::parse(QStringList &argv, int index,Where &here)
 
   return FailureRc;
 }
-QString IntMeta::format(bool local)
+QString IntMeta::format(bool local, bool global)
 {
   QString foo;
   foo.arg(_value[pushed],0,base);
-  if (local) {
-    foo = "LOCAL " + foo;
-  }
-  return preamble + foo;
+  
+  return LeafMeta::format(local,global,foo);
 }
 
 void IntMeta::doc(QTextStream &out, QString preamble)
@@ -285,14 +306,11 @@ Rc FloatMeta::parse(QStringList &argv, int index,Where &here)
 
   return FailureRc;
 }
-QString FloatMeta::format(bool local)
+QString FloatMeta::format(bool local, bool global)
 {
   QString foo;
   foo = QString("%1") .arg(value(),_fieldWidth,'f',_precision);
-  if (local) {
-    foo = "LOCAL " + foo;
-  }
-  return preamble + foo;
+  return LeafMeta::format(local,global,foo);
 }
 void FloatMeta::doc(QTextStream &out, QString preamble)
 {
@@ -301,14 +319,11 @@ void FloatMeta::doc(QTextStream &out, QString preamble)
 
 /* ------------------ */
 
-QString UnitMeta::format(bool local)
+QString UnitMeta::format(bool local, bool global)
 {
   QString foo;
   foo = QString("%1") .arg(valueUnit(),_fieldWidth,'f',_precision);
-  if (local) {
-    foo = "LOCAL " + foo;
-  }
-  return preamble + foo;
+  return LeafMeta::format(local,global,foo);
 }
 
 /* ------------------ */
@@ -345,16 +360,12 @@ Rc FloatPairMeta::parse(QStringList &argv, int index,Where &here)
 
   return FailureRc;
 }
-QString FloatPairMeta::format(bool local)
+QString FloatPairMeta::format(bool local, bool global)
 {
   QString foo = QString("%1 %2") 
     .arg(_value[pushed][0],_fieldWidth,'f',_precision) 
     .arg(_value[pushed][1],_fieldWidth,'f',_precision);
-
-  if (local) {
-    foo = "LOCAL " + foo;
-  }
-  return preamble + foo;
+  return LeafMeta::format(local,global,foo);
 }
 void FloatPairMeta::doc(QTextStream &out, QString preamble)
 {
@@ -386,13 +397,10 @@ Rc StringMeta::parse(QStringList &argv, int index,Where &here)
 
   return FailureRc;
 }
-QString StringMeta::format(bool local)
+QString StringMeta::format(bool local, bool global)
 {
   QString foo = delim + _value[pushed] + delim;
-  if (local) {
-    foo = "LOCAL " + foo;
-  }
-  return preamble + foo;
+  return LeafMeta::format(local,global,foo);
 }
 
 void StringMeta::doc(QTextStream &out, QString preamble)
@@ -421,16 +429,13 @@ Rc StringListMeta::parse(QStringList &argv, int index,Where &here)
   _here[pushed] = here;
   return OkRc;
 }
-QString StringListMeta::format(bool local)
+QString StringListMeta::format(bool local, bool global)
 {
   QString foo;
   for (int i = 0; i < _value[pushed].size() ; i++) {
     foo += delim + _value[pushed][i] + delim + " ";
   }
-  if (local) {
-    foo = "LOCAL " + foo;
-  }
-  return preamble + foo;
+  return LeafMeta::format(local,global,foo);
 }
 
 void StringListMeta::doc(QTextStream &out, QString preamble)
@@ -459,16 +464,13 @@ Rc FontListMeta::parse(QStringList &argv, int index,Where &here)
   _here[pushed] = here;
   return OkRc;
 }
-QString FontListMeta::format(bool local)
+QString FontListMeta::format(bool local, bool global)
 {
   QString foo;
   for (int i = 0; i < _value[pushed].size() ; i++) {
     foo += delim + _value[pushed][i] + delim + " ";
   }
-  if (local) {
-    foo = "LOCAL " + foo;
-  }
-  return preamble + foo;
+  return LeafMeta::format(local,global,foo);
 }
 
 void FontListMeta::doc(QTextStream &out, QString preamble)
@@ -493,14 +495,10 @@ Rc BoolMeta::parse(QStringList &argv, int index,Where &here)
 
   return FailureRc;
 }
-QString BoolMeta::format(bool local)
+QString BoolMeta::format(bool local, bool global)
 {
   QString foo (_value[pushed] ? "TRUE" : "FALSE");
-
-  if (local) {
-    foo = "LOCAL " + foo;
-  }
-  return preamble + foo;
+  return LeafMeta::format(local,global,foo);
 }
 
 void BoolMeta::doc(QTextStream &out, QString preamble)
@@ -648,7 +646,7 @@ Rc PlacementMeta::parse(QStringList &argv, int index,Where &here)
   return rc;
 }
 
-QString PlacementMeta::format(bool local)
+QString PlacementMeta::format(bool local, bool global)
 {
   QString foo;
 
@@ -672,10 +670,7 @@ QString PlacementMeta::format(bool local)
                                     .arg(_value[pushed].offsets[1]);
     foo += bar;
   }
-  if (local) {
-    foo = "LOCAL " + foo;
-  }
-  return preamble + foo;
+  return LeafMeta::format(local,global,foo);
 }
 
 void PlacementMeta::doc(QTextStream &out, QString preamble)
@@ -734,7 +729,7 @@ Rc BackgroundMeta::parse(QStringList &argv, int index,Where &here)
     return FailureRc;
   }
 }
-QString BackgroundMeta::format(bool local)
+QString BackgroundMeta::format(bool local, bool global)
 {
   QString foo;
   switch (_value[pushed].type) {
@@ -754,11 +749,7 @@ QString BackgroundMeta::format(bool local)
       }
     break;
   }
-
-  if (local) {
-    foo = "LOCAL " + foo;
-  }
-  return preamble + foo;
+  return LeafMeta::format(local,global,foo);
 }
 
 void BackgroundMeta::doc(QTextStream &out, QString preamble)
@@ -841,7 +832,7 @@ Rc BorderMeta::parse(QStringList &argv, int index,Where &here)
   return rc;
 }
 
-QString BorderMeta::format(bool local)
+QString BorderMeta::format(bool local, bool global)
 {
   QString foo;
   switch (_value[pushed].type) {
@@ -864,11 +855,7 @@ QString BorderMeta::format(bool local)
                   .arg(_value[pushed].margin[0])
                   .arg(_value[pushed].margin[1]);
   foo += bar;
-
-  if (local) {
-    foo = "LOCAL " + foo;
-  }
-  return preamble + foo;
+  return LeafMeta::format(local,global,foo);
 }
 
 void BorderMeta::doc(QTextStream &out, QString preamble)
@@ -979,9 +966,8 @@ Rc PointerMeta::parse(QStringList &argv, int index,Where &here)
     return FailureRc;
   }
 }
-QString PointerMeta::format(bool local)
+QString PointerMeta::format(bool local, bool global)
 {
-  local = local;
   QString foo;
   switch(_value[pushed].placement) {
     case TopLeft:
@@ -1003,7 +989,7 @@ QString PointerMeta::format(bool local)
         .arg(_value[pushed].base);
     break;
   }
-  return foo;
+  return LeafMeta::format(local,global,foo);
 }
 
 void PointerMeta::doc(QTextStream &out, QString preamble)
@@ -1040,16 +1026,16 @@ Rc FreeFormMeta::parse(QStringList &argv, int index,Where &here)
   }
   return rc;
 }
-QString FreeFormMeta::format(bool local)
+QString FreeFormMeta::format(bool local, bool global)
 {
-  QString foo = local ? "LOCAL " : "";
-
+  QString foo;
   if (_value[pushed].mode) {
-    return preamble + foo + relativeNames[_value[pushed].base] + " " + 
-                            placementNames[_value[pushed].justification];
+    foo = relativeNames[_value[pushed].base] + " " + 
+          placementNames[_value[pushed].justification];
   } else {
-    return preamble + foo + "FALSE";
+    foo = "FALSE";
   }
+  return LeafMeta::format(local,global,foo);
 }
 void FreeFormMeta::doc(QTextStream &out, QString preamble)
 {
@@ -1092,7 +1078,7 @@ Rc ConstrainMeta::parse(QStringList &argv, int index,Where &here)
   }      
   return rc;
 }
-QString ConstrainMeta::format(bool local)
+QString ConstrainMeta::format(bool local, bool global)
 {
   QString foo;
   switch (_value[pushed].type) {
@@ -1112,10 +1098,7 @@ QString ConstrainMeta::format(bool local)
       foo = QString("COLS %1") .arg(_value[pushed].constraint);
     break;
   }
-  if (local) {
-    foo = "LOCAL " + foo;
-  }
-  return preamble + foo;
+  return LeafMeta::format(local,global,foo);
 }
 void ConstrainMeta::doc(QTextStream &out, QString preamble)
 {
@@ -1143,14 +1126,15 @@ Rc AllocMeta::parse(QStringList &argv, int index, Where &here)
 
   return FailureRc;
 }
-QString AllocMeta::format(bool local)
+QString AllocMeta::format(bool local, bool global)
 {
-  QString foo = local ? "LOCAL " : "";
+  QString foo;
   if (type[pushed] == Horizontal) {
-    return preamble + foo + "HORIZONTAL";
+    foo = "HORIZONTAL";
   } else {
-    return preamble + foo + "VERTICAL";
+    foo = "VERTICAL";
   }
+  return LeafMeta::format(local,global,foo);
 }
 void AllocMeta::doc(QTextStream &out, QString preamble)
 {
@@ -1189,18 +1173,14 @@ Rc SepMeta::parse(QStringList &argv, int index,Where &here)
 
   return FailureRc;
 }
-QString SepMeta::format(bool local)
+QString SepMeta::format(bool local, bool global)
 {
   QString foo = QString("%1 %2 %3 %4") 
    .arg(_value[pushed].thickness) 
    .arg(_value[pushed].color) 
    .arg(_value[pushed].margin[0]) 
    .arg(_value[pushed].margin[1]);
-
-  if (local) {
-    foo = "LOCAL " + foo;
-  }
-  return preamble + foo;
+  return LeafMeta::format(local,global,foo);
 }
 void SepMeta::doc(QTextStream &out, QString preamble)
 {
@@ -1228,22 +1208,20 @@ Rc InsertMeta::parse(QStringList &argv, int index,Where &here)
   return rc;
 }
 
-QString InsertMeta::format(bool local)
+QString InsertMeta::format(bool local, bool global)
 {
-  return format(local,0);
+  return LeafMeta::format(local,global,"");
 }
 
-QString InsertMeta::format(bool local, int i)
+QString InsertMeta::format(bool local,  bool global, int i)
 {
-  local = local;
+  QString foo;
+  
   if (i < list.size()) {
-    QString foo = QString(" %1 %2") 
-                    .arg(list[i].position[0]) .arg(list[i].position[1]);
-    return preamble + list[i].fileName + foo;
-  } else {
-    QString foo;
-    return foo;
+    foo = QString(" %1 %2") 
+            .arg(list[i].position[0]) .arg(list[i].position[1]);
   }
+  return LeafMeta::format(local,global,foo);
 }
 void InsertMeta::doc(QTextStream &out, QString preamble)
 {
@@ -1369,14 +1347,16 @@ Rc SubMeta::parse(QStringList &argv, int index,Where &here)
   }
   return rc;
 }
-QString SubMeta::format(bool local)
+QString SubMeta::format(bool local, bool global)
 {
-  local = local;
+  QString foo;
+  
   if (_value.type == PliBeginSub1Rc) {
-    return preamble + _value.part;
+    foo = _value.part;
   } else {
-    return preamble + _value.color + " " + _value.part;
+    foo = _value.color + " " + _value.part;
   }
+  return LeafMeta::format(local,global,foo);
 }
 
 void SubMeta::doc(QTextStream &out, QString preamble)
@@ -1435,13 +1415,12 @@ Rc RotStepMeta::parse(QStringList &argv, int index,Where &here)
 
   return FailureRc;
 }
-QString RotStepMeta::format(bool local)
+QString RotStepMeta::format(bool local, bool global)
 {
-  local = local;
   QString foo = QString("%1 %2 %3 %4") 
     .arg(_value.rots[0]) .arg(_value.rots[1])
     .arg(_value.rots[2]) .arg(_value.type);
-  return preamble + foo;
+  return LeafMeta::format(local,global,foo);
 }
 
 void RotStepMeta::doc(QTextStream &out, QString preamble)
@@ -1473,10 +1452,10 @@ Rc BuffExchgMeta::parse(QStringList &argv, int index,Where &here)
 
   return FailureRc;
 }
-QString BuffExchgMeta::format(bool local)
+QString BuffExchgMeta::format(bool local, bool global)
 {
-  local = local;
-  return preamble + _value.buffer + " " + _value.type;
+  QString foo = _value.buffer + " " + _value.type;
+  return LeafMeta::format(local,global,foo);
 }
 
 void BuffExchgMeta::doc(QTextStream &out, QString preamble)
@@ -1780,19 +1759,18 @@ Rc ResolutionMeta::parse(QStringList &argv, int index, Where &here)
   return ResolutionRc;
 }
 
-QString ResolutionMeta::format(bool unused)
+QString ResolutionMeta::format(bool local, bool global)
 {
-  unused = unused;
   QString res;
   switch (resolutionType) {
     case DPI:
-      res = QString("%1 ") .arg(resolution,0,'f',0);
-      return preamble + res + "DPI";
+      res = QString("%1 DPI") .arg(resolution,0,'f',0);
+    break;
     case DPCM:
-      res = QString("%1 ") .arg(resolution,0,'f',0);
-      return preamble + res + "DPCM";
+      res = QString("%1 DPCM") .arg(resolution,0,'f',0);
+    break;
   }
-  return "";
+  return LeafMeta::format(local,global,res);
 } 
 
 void ResolutionMeta::doc(QTextStream &out, QString preamble)
@@ -1858,10 +1836,8 @@ void LSynthMeta::init(BranchMeta *parent, QString name)
 
 /* ------------------ */ 
 
-Meta::Meta(
-  QString topLevelFile)
+Meta::Meta()
 {
-  context.setTopOfModel(topLevelFile);
   QString empty;
   preamble = "0 ";
   init(NULL,empty);
@@ -1968,8 +1944,7 @@ void Meta::mkargv(
 
 Rc Meta::parse(
   QString  &line,
-  Where    &here,
-  bool      partsAdded)
+  Where    &here)
 {
   QStringList argv;
 
@@ -1993,6 +1968,7 @@ Rc Meta::parse(
 	    if (argv[0] == "LPUB") {
         argv[0] = "!LPUB";
       }
+        
 	    if (argv[0] == "PLIST") {
 	      return  LPub.pli.parse(argv,1,here);
 	    }
@@ -2009,19 +1985,6 @@ Rc Meta::parse(
       QMessageBox::warning(NULL,QMessageBox::tr("LPub"),
                               QMessageBox::tr("Parse failed %1:%2\n%3")
                               .arg(here.modelName) .arg(here.lineNumber) .arg(line));
-    } else {
-      if (partsAdded && (rc == StepRc || rc == RotStepRc)) {
-        context.setBottomOfStep(here);
-      } else if (rc == StepGroupBeginRc) {
-        context.setTopOfRanges(here);
-        context.setTopOfRange(here);
-      } else if (rc == StepGroupDividerRc) {
-        context.setBottomOfRange(here);
-      } else if (rc == StepGroupEndRc) {
-        context.setBottomOfRanges(here);
-        context.setBottomOfRange(here);
-        context.setBottomOfStep(here);
-      }
     }
     return rc;
   }

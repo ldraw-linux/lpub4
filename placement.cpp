@@ -68,6 +68,20 @@ void PlacementNum::sizeit(QString format)
   }
 }
 
+void Placement::appendRelativeTo(Placement *element)
+{
+  if (element->relativeType != PageType) {
+    for (int i = 0; i < relativeToList.size(); i++) {
+      if (relativeToList[i] == element) {
+        return;
+      }
+    }
+    if (relativeToList.size() < 100) {
+      relativeToList.append(element);
+    }
+  }
+}
+
 /*
  * we start with a page, and ranges, and
  * we walk through the ranges,range,steps,
@@ -77,25 +91,27 @@ void PlacementNum::sizeit(QString format)
  * foreach thing relative to page, we make a list
  * of things that are relative to them.
  */
-
+int rc;
 int Placement::relativeTo(
   Placement *pe)
 {
+  rc = 0;
+  
   Step *step = dynamic_cast<Step *>(pe);
   if (step) {
     if (step->csiPixmap.placement.value().relativeTo == relativeType) {
       placeRelative(&step->csiPixmap);
-      relativeToList.append(&step->csiPixmap);
+      appendRelativeTo(&step->csiPixmap);
     }
 
     if (step->pli.placement.value().relativeTo == relativeType) {
       placeRelative(&step->pli);
-      relativeToList.append(&step->pli);
+      appendRelativeTo(&step->pli);
     }
 
     if (step->stepNumber.placement.value().relativeTo == relativeType) {
       placeRelative(&step->stepNumber);
-      relativeToList.append(&step->stepNumber);
+      appendRelativeTo(&step->stepNumber);
     }
 
     /* callouts */
@@ -105,23 +121,29 @@ int Placement::relativeTo(
         Callout *callout = step->list[i];
         if (callout->placement.value().relativeTo == relativeType) {
           placeRelative(callout);
-          relativeToList.append(callout);
+          appendRelativeTo(callout);
         }
       }
     } // callouts
+    // Everything placed    
   } // if step
 
   /* try to find relation for things relative to us */
-
-  for (int i = 0; i < relativeToList.size(); i++) {
-    if (relativeToList[i]->relativeTo(step)) {
-      return -1;
+    
+  int limit = relativeToList.size();
+      
+  if (limit < 100) {
+    for (int i = 0; i < limit; i++) {
+      rc = relativeToList[i]->relativeTo(pe);
+      if (rc) {
+        break;
+      }
     }
+  } else {
+    rc = -1;
   }
 
-  // Everything placed
-
-  return 0;
+  return rc;
 }
 
 int Placement::relativeToMs(
@@ -135,7 +157,7 @@ int Placement::relativeToMs(
       if (ranges->pli.tsize() && 
           ranges->pli.placement.value().relativeTo == relativeType) {
         placeRelative(&ranges->pli);
-        relativeToList.append(&ranges->pli);
+        appendRelativeTo(&ranges->pli);
       }
       for (int i = 0; i < ranges->list.size(); i++) {
         if (ranges->list[i]->relativeType == RangeType) {
@@ -156,7 +178,7 @@ int Placement::relativeToMs(
                        placementData.relativeTo == StepGroupType) &&
                        placementData.relativeTo == relativeType) {
                     placeRelative(callout);
-                    placement->relativeToList.append(callout);
+                    placement->appendRelativeTo(callout);
                   }
                 } // if callout
               } // callouts

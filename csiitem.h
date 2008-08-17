@@ -41,7 +41,6 @@ public:
   RcMeta        *divider;
   PlacementType  parentRelativeType;
   bool           multiStep;
-  Context        context;
   Step          *step;
   int            submodelLevel;
 
@@ -51,7 +50,6 @@ public:
   CsiItem(Step          *_step,
           Meta          *_meta,
           QPixmap       &pixmap,
-          Context       &_context,
           int            _submodelLevel,
           QGraphicsItem *parent,
           PlacementType  _parentRelativeType);

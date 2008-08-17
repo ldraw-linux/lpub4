@@ -53,6 +53,7 @@
  ********************************************************************/
 
 Step::Step(
+  Where   &topOfStep,
   AbstractRangesElement *_parent,
   int      num,            // step number as seen by the user
   Meta    &meta,           // the current state of the meta-commands
@@ -60,6 +61,7 @@ Step::Step(
   bool     multiStep,      // we can't be a multi-step
   Pli     &_pli)
 {
+  top    = topOfStep;
   parent = _parent;
 
   submodelLevel = meta.submodelStack.size();
@@ -984,7 +986,6 @@ void Step::addGraphicsItems(
     CsiItem *csiItem = new CsiItem(this,
                                    meta,
                                   *csiPixmap.pixmap, 
-                                   context,
                                    submodelLevel,
                                    parent,
                                    parentRelativeType);
@@ -1000,17 +1001,15 @@ void Step::addGraphicsItems(
   if (stepNumber.number > 0) {
     StepNumberItem *sn; 
     if (calledOut) {
-      sn = new StepNumberItem(parentRelativeType,
-                              meta->context.topOfRanges(),
-                              meta->context.bottomOfRanges(),
+      sn = new StepNumberItem(this,
+                              parentRelativeType,
                               meta,meta->LPub.callout.stepNum,
                               "%d", 
                               stepNumber.number,
                               parent);
     } else {
-      sn = new StepNumberItem(parentRelativeType,
-                              meta->context.topOfRanges(),
-                              meta->context.bottomOfRanges(),
+      sn = new StepNumberItem(this,
+                              parentRelativeType,
                               meta,
                               meta->LPub.multiStep.stepNum,
                               "%d", 
@@ -1194,25 +1193,25 @@ void Step::sizeitFreeform(
 
   switch (relativeBase) {
     case CsiType:
-	  placementData = csiPixmap.placement.value();
-	  placementData.relativeTo = PageType;
-	  csiPixmap.placement.setValue(placementData);
+	    placementData = csiPixmap.placement.value();
+	    placementData.relativeTo = PageType;
+	    csiPixmap.placement.setValue(placementData);
       csiPixmap.relativeTo(this);
       offsetX = csiPixmap.offset[xx];
       sizeX   = csiPixmap.size[yy];
     break;
     case PartsListType:
-	  placementData = pli.placement.value();
-	  placementData.relativeTo = PageType;
-	  pli.placement.setValue(placementData);
+	    placementData = pli.placement.value();
+	    placementData.relativeTo = PageType;
+	    pli.placement.setValue(placementData);
       pli.relativeTo(this);
       offsetX = pli.offset[xx];
       sizeX   = pli.size[yy];
     break;
     case StepNumberType:
-	  placementData = stepNumber.placement.value();
-	  placementData.relativeTo = PageType;
-	  stepNumber.placement.setValue(placementData);
+	    placementData = stepNumber.placement.value();
+	    placementData.relativeTo = PageType;
+	    stepNumber.placement.setValue(placementData);
       stepNumber.relativeTo(this);
       offsetX = stepNumber.offset[xx];
       sizeX   = stepNumber.size[xx];
