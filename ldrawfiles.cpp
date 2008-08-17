@@ -56,10 +56,35 @@ void LDrawFile::loadFile(const QString &fileName)
     // get rid of what's there before we load up new stuff
 
     empty();
+    
+    // allow files ldr suffix to allow for MPD
+    
+    bool mpd;
+
+    QTextStream in(&file);
+
+    QStringList contents;
+    QString     mpdName;
+    QRegExp sof("^\\s*0\\s+FILE\\s+(.*)$");
+    QRegExp part("^\\s*1\\s+.*$");
+
+    while ( ! in.atEnd()) {
+      const QString line = in.readLine(0);
+      if (line.contains(sof)) {
+        mpd = true;
+        break;
+      }
+      if (line.contains(part)) {
+        mpd = false;
+        break;
+      }
+    }
+    
+    file.close();
 
     QApplication::setOverrideCursor(Qt::WaitCursor);
-
-    if (QFileInfo(fileName).suffix() == "mpd") {
+    
+    if (mpd) {
       QDateTime datetime = QFileInfo(fileName).lastModified();
       loadMPDFile(fileName,datetime);
     } else {
