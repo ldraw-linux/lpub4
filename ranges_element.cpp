@@ -25,12 +25,13 @@
  *
  ***************************************************************************/
 
+#include "range_element.h"
 #include "ranges_element.h"
 #include "ranges.h"
 
-Context &AbstractRangesElement::getContext()
+Ranges *AbstractRangesElement::grandparent()
 {
-  return parent->meta.context;
+  return parent;
 }
 
 AllocEnc AbstractRangesElement::allocType()
@@ -43,6 +44,40 @@ AllocMeta &AbstractRangesElement::allocMeta()
   return parent->allocMeta();
 }
 
+/*
+ * Each step only has its top of step.  To find bottom of step, we need
+ * to find the next step's top.....
+ */
+
+const Where &AbstractRangesElement::bottomOfStep(
+  AbstractRangeElement *me)
+{
+  int size = list.size();
+  
+  for (int i = 0; i < size; i++) {
+    if (list[i] == me) {
+      if (i < size - 1) {
+        return list[i+1]->topOfStep();
+      } else {
+        return parent->bottomOfStep(this);
+      }
+    }
+  }
+  static Where nowhere;
+  return nowhere;
+}
+
+const Where &AbstractRangesElement::topOfRange()
+{
+  return list[0]->topOfStep();
+}
+
+const Where &AbstractRangesElement::bottomOfRange()
+{
+  return parent->bottomOfStep(this);
+}
+
+
 const Where &AbstractRangesElement::topOfRanges()
 {
   return parent->topOfRanges();
@@ -53,15 +88,6 @@ const Where &AbstractRangesElement::bottomOfRanges()
   return parent->bottomOfRanges();
 }  
 
-const Where &AbstractRangesElement::topOfRange()
-{
-  return context.topOfRange();
-}
-
-const Where &AbstractRangesElement::bottomOfRange()
-{
-  return context.bottomOfRange();
-}
 
 QString AbstractRangesElement::path()
 {
