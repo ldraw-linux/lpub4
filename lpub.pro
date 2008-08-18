@@ -7,11 +7,14 @@ TARGET =
 DEPENDPATH += . rcc
 INCLUDEPATH += .
 
+MOC_DIR = ./moc
+OBJECTS_DIR = ./objs
+RCC_DIR = ./rcc
+
 macx {
   ICON = LPub.icns
-  MOC_DIR = ./moc
-  OBJECTS_DIR = ./objs
-  RCC_DIR = ./rcc
+# QMAKE_MAC_SDK=/Developer/SDKs/MacOSX10.4u.sdk
+  CONFIG+=x86 ppc
 }
 
 # Input
@@ -57,7 +60,6 @@ HEADERS += backgrounddialog.h \
            render.h \
            reserve.h \
            resolution.h \
-           rx.h \
            scaledialog.h \
            step.h \
            where.h
@@ -110,7 +112,6 @@ SOURCES += assemglobals.cpp \
            render.cpp \
            resolution.cpp \
            rotate.cpp \
-           rx.cpp \
            scaledialog.cpp \
            step.cpp \
            traverse.cpp \
