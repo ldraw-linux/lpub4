@@ -40,6 +40,8 @@
 Ranges::Ranges()
 {
   relativeType  = SingleStepType;
+  pli.ranges = this;
+  pli.callout = NULL;
 }
 Ranges::Ranges(Step *_parent,Meta &_meta,QGraphicsView *_view)
 {

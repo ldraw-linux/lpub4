@@ -149,7 +149,7 @@ void MultiStepRangeBackgroundItem::contextMenuEvent(
                     ranges->topOfRanges(),
                     ranges->bottomOfRanges(),
                     &meta->LPub.multiStep.placement,
-                    false);
+                    1,false);
   } else if (selectedAction == perStepAction) {
     changeBool(ranges->topOfRanges(),
                ranges->bottomOfRanges(),
