@@ -241,7 +241,7 @@ bool Preferences::getPreferences(bool fileOpen)
       } else {
         settings.setValue("PliControl",pliFile);
       }
-    }
+    } 
     if (ldgliteExe != dialog->ldgliteExe()) {
       ldgliteExe = dialog->ldgliteExe();
       if (ldgliteExe == "") {
