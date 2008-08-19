@@ -309,6 +309,9 @@ void Gui::projectSetup()
 void Gui::preferences()
 {
   if (Preferences::getPreferences(curFile != "")) {
+    Meta meta;
+    
+    page.meta = meta;
     QString renderer = Render::getRenderer();
     Render::setRenderer(Preferences::preferredRenderer);
     if (Render::getRenderer() != renderer) {
