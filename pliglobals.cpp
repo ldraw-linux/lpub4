@@ -117,7 +117,7 @@ GlobalPliDialog::GlobalPliDialog(
     "Scale",&pliMeta->modelScale,
     pliMeta->modelScale._min,
     pliMeta->modelScale._max,
-    0.1);
+    0.01);
   data->children.append(child);
   partsLayout->addWidget(child);
   data->scale = child;
