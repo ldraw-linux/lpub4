@@ -438,7 +438,8 @@ public:
   bool isMpd() { return ldrawFile.isMpd(); }
   bool isOlder(const QStringList &foo,const QDateTime &lastModified)
   {
-    return ldrawFile.older(foo,lastModified);
+    bool older = ldrawFile.older(foo,lastModified);
+    return older;
   }
 
   int             maxPages;
