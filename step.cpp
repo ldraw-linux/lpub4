@@ -78,8 +78,8 @@ Step::Step(
   if (calledOut) {
     csiPixmap.margin     = meta.LPub.callout.csi.margin;    // assembly meta's
     csiPixmap.placement  = meta.LPub.callout.csi.placement;
-    _pli.margin           = meta.LPub.callout.pli.margin;    // PLI info
-    _pli.placement        = meta.LPub.callout.pli.placement;
+    _pli.margin          = meta.LPub.callout.pli.margin;    // PLI info
+    _pli.placement       = meta.LPub.callout.pli.placement;
     stepNumber.placement = meta.LPub.callout.stepNum.placement;
     stepNumber.font      = meta.LPub.callout.stepNum.font.value();
     stepNumber.color     = meta.LPub.callout.stepNum.color.value();
@@ -88,8 +88,8 @@ Step::Step(
   } else if (multiStep) {
     csiPixmap.margin     = meta.LPub.multiStep.csi.margin;  // assembly meta's
     csiPixmap.placement  = meta.LPub.multiStep.csi.placement;
-    _pli.margin           = meta.LPub.multiStep.pli.margin;
-    _pli.placement        = meta.LPub.multiStep.pli.placement;
+    _pli.margin          = meta.LPub.multiStep.pli.margin;
+    _pli.placement       = meta.LPub.multiStep.pli.placement;
     stepNumber.placement = meta.LPub.multiStep.stepNum.placement;
     stepNumber.font      = meta.LPub.multiStep.stepNum.font.value();
     stepNumber.color     = meta.LPub.multiStep.stepNum.color.value();
@@ -98,8 +98,8 @@ Step::Step(
   } else {
     csiPixmap.margin     = meta.LPub.assem.margin;         // assembly meta's
     csiPixmap.placement  = meta.LPub.assem.placement;
-    _pli.margin           = meta.LPub.assem.margin;
-    _pli.placement        = meta.LPub.pli.placement;
+    _pli.margin          = meta.LPub.assem.margin;
+    _pli.placement       = meta.LPub.pli.placement;
     stepNumber.font      = meta.LPub.stepNumber.font.value();
     stepNumber.color     = meta.LPub.stepNumber.color.value();
     stepNumber.margin    = meta.LPub.stepNumber.margin;
@@ -108,6 +108,8 @@ Step::Step(
     pliPerStep           = false;
   }
   pli = _pli;
+  pli.ranges = grandparent();
+  pli.step   = this;
 }
 
 /* step destructor destroys all callouts */
