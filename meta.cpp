@@ -101,12 +101,12 @@ Rc BranchMeta::parse(QStringList &argv, int index, Where &here)
 
       if (argv.size() - index > 1) {
         if (i.value()) {
-          if (argv[index+1] == "LOCAL") {
+          if (argv[index+offset] == "LOCAL") {
             i.value()->pushed = 1;
-            offset = 2;
-          } else if (argv[index+1] == "GLOBAL") {
+            offset++;
+          } else if (argv[index+offset] == "GLOBAL") {
             global = true;
-            offset = 2;
+            offset++;
           }
           if (index + offset >= argv.size()) {
             rc = FailureRc;
@@ -1514,7 +1514,7 @@ AssemMeta::AssemMeta()
 {
   placement.setValue(Center,Center,PageType,Inside);
   modelScale.setRange(-10000.0,10000.0);
-  modelScale.setFormats(7,1,"99999.9");
+  modelScale.setFormats(7,4,"99999.9");
   modelScale.setValue(1.0);
   ldgliteParms.setValue("-fh -w1");
   ldviewParms.setValue("");
@@ -1551,11 +1551,11 @@ PliMeta::PliMeta()
   // instance - default
   // annotate - default
   modelScale.setRange(-10000.0,10000.0);
-  modelScale.setFormats(7,1,"99999.9");
+  modelScale.setFormats(7,4,"99999.9");
   modelScale.setValue(1.0);
   angle.setValues(23,-45);
   angle.setRange(-360.0,360.0);
-  angle.setFormats(6,1,"#999.9");
+  angle.setFormats(6,4,"#999.9");
   show.setValue(true);
   ldgliteParms.setValue("-fh -w1");
   ldviewParms.setValue("");
