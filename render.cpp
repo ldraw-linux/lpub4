@@ -140,8 +140,13 @@ int LDGLite::renderCsi(
                                     .arg(height);
   QString o  = QString("-o0,-%1")   .arg(height/6);
   QString mf = QString("-mF%1")     .arg(pngName);
+  
+  int lineThickness = resolution/150+0.5;
+  if (lineThickness == 0) {
+    lineThickness = 1;
+  }
                                     // ldglite always deals in 72 DPI
-  QString w  = QString("-W%1")      .arg(int(resolution/72.0+0.5));
+  QString w  = QString("-W%1")      .arg(lineThickness);
 
   cg = QString("-cg0.0,0.0,%1") .arg(cd);
 
