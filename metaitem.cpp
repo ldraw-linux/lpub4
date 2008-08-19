@@ -482,7 +482,7 @@ void MetaItem::calloutAddToNext(
       Rc rc2 = scanBackward(test,StepMask|CalloutMask);
       beginMacro("moveStepPrev");
       deleteMeta(walk);
-      if (rc != EndOfFileRc && rc != CalloutDividerRc && rc2 != EndOfFileRc) {
+      if (rc != EndOfFileRc && rc2 != CalloutDividerRc && rc2 != EndOfFileRc) {
         appendMeta(topOfStep,calloutDivider);
       }
       endMacro();
@@ -544,11 +544,12 @@ void MetaItem::calloutAddToPrev(
     Where divider = walk++;
     rc = scanForward(walk,StepMask|CalloutMask);
     if (rc == StepRc || RotStepRc) {
+      Where lastStep = walk;
       ++walk;
       rc = scanForward(walk,StepMask|CalloutMask);
       beginMacro("moveStepNext");
       if (rc != EndOfFileRc && rc != CalloutDividerRc) {
-        appendMeta(walk,calloutDivider);
+        appendMeta(lastStep,calloutDivider);
       }
       deleteMeta(divider);
       endMacro();
@@ -908,7 +909,7 @@ void MetaItem::changeFloatSpin(
                                   data,
                                   floatMeta->_min,
                                   floatMeta->_max,
-                                  0.1,
+                                  0.01,
                                   title,
                                   label,
                                   gui);
@@ -1164,51 +1165,17 @@ Where MetaItem::sortedGlobalWhere(
     // if we hit a part add, we're done
 
     if (line.contains(lines1_5)) {
-      return walk;
-    }
-
-    // if this line breaks the alphabetical rule,
-    // we'll stop, because we've probably run
-    // into a meta for the first step in the model
-
-    if (0 && line < prevLine) {
-      return walk;
+      break;
     }
     
-    if (line.contains(global)) {
-      continue;
+    if ( ! line.contains(global)) {
+      break;
     }
 
     // These metas are related to the first step
     // so we'll stop if we hit one of those.
 
     Rc rc = tmpMeta.parse(line,walk);
-
-    switch (rc) {
-      case PliBeginSub1Rc:
-      case PliBeginSub2Rc:
-      case PliBeginIgnRc:
-      case PartBeginIgnRc:
-      case MLCadSkipBeginRc:
-      case SynthBeginRc:
-      case ClearRc:
-      case BufferStoreRc:
-      case MLCadGroupRc:
-      case GroupRemoveRc:
-      case RemoveGroupRc:
-      case RemovePartRc:
-      case RemoveNameRc:
-      case ReserveSpaceRc:
-      case CalloutBeginRc:
-      case StepGroupBeginRc:
-      case EndOfFileRc:
-      case RotStepRc:
-      case StepRc:
-        return walk;
-      break;
-      default:
-      break;
-    }
 
     // Stop if it is time to add the line    
 
