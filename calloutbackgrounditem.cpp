@@ -127,25 +127,25 @@ void CalloutBackgroundItem::contextMenuEvent(
                     "Placement",
                     callout->topOfCallout(),
                     callout->bottomOfCallout(),
-                    &placement);
+                    &placement,1,false);
 
   } else if (selectedAction == editBackgroundAction) {
     changeBackground("Background",
                      callout->topOfCallout(), 
                      callout->bottomOfCallout(),
-                     &background);
+                     &background,1,false);
 
   } else if (selectedAction == editBorderAction) {
     changeBorder("Border",
                  callout->topOfCallout(), 
                  callout->bottomOfCallout(),
-                 &border);
+                 &border,1,false);
 
   } else if (selectedAction == marginAction) {
     changeMargins("Callout Margins",
                   callout->topOfCallout(), 
                   callout->bottomOfCallout(), 
-                  &margin);
+                  &margin,1,false);
 
   } else if (selectedAction == unCalloutAction) {
     removeCallout(callout->modelName(),

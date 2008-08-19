@@ -48,6 +48,7 @@
 #include "where.h"
 #include "name.h"
 
+class Pli;
 
 /****************************************************************************
  * Part List 
@@ -57,9 +58,6 @@ class InstanceTextItem;
 class AnnotateTextItem;
 class PGraphicsPixmapItem;
 class PliBackgroundItem;
-
-class Pli;
-class Step;
 
 class PliPart {
   public:
@@ -125,15 +123,16 @@ class PliPart {
 
 #define INSTANCE_SEP ":"
 
+class Step;
+class Ranges;
+class Callout;
+
 class Pli : public Placement {
   private:
     static QCache<QString, QString> orientation;
 
     QHash<QString, PliPart*> parts;
     QList<QString>           sortedKeys;
-    Where                    topPLI, bottomPLI;
-    Where                    topRanges, bottomRanges;
-    Where                    topCallout, bottomCallout;
 
   public:
     Meta              *meta;
@@ -141,6 +140,13 @@ class Pli : public Placement {
     PliBackgroundItem *background;
     bool               bom;
     ConstrainMeta      constraint;
+    
+    Ranges            *ranges;  // topOfRanges()
+                                // bottomOfRanges()
+    Callout           *callout; // topOfCallout()
+                                // bottomOfCallout()                              
+    Step              *step;    // topOfStep()
+                                // bottomOfStep()
 
     Pli(bool _bom = false)
     {
@@ -148,6 +154,9 @@ class Pli : public Placement {
       meta = NULL;
       bom = _bom;
       initAnnotationString();
+      ranges = NULL;
+      callout = NULL;
+      step = NULL;
     }
     
     ~Pli()
@@ -155,54 +164,12 @@ class Pli : public Placement {
       clear();
     }
     
-    const Where &topOfPLI()
-    {
-      return topPLI;
-    }
-    const Where &bottomOfPLI()
-    {
-      return bottomPLI;
-    }
-    const Where &topOfRanges()
-    {
-      return topRanges;
-    }
-    const Where &bottomOfRanges()
-    {
-      return bottomRanges;
-    }
-    const Where &topOfCallout()
-    {
-      return topCallout;
-    }
-    const Where &bottomOfCallout()
-    {
-      return bottomCallout;
-    }
-    void setTopOfPLI(const Where &topOfStep)
-    {
-      topPLI = topOfStep;
-    }
-    void setBottomOfPLI(const Where &bottomOfStep) 
-    {
-      bottomPLI = bottomOfStep;
-    }
-    void setTopOfRanges(const Where &topOfRanges)
-    {
-      topRanges = topOfRanges;
-    }
-    void setBottomOfRanges(const Where &bottomOfRanges)
-    {
-      bottomRanges = bottomOfRanges;
-    }
-    void setTopOfCallout(const Where &topOfCallout)
-    {
-      topCallout = topOfCallout;
-    }
-    void setBottomOfCallout(const Where &bottomOfCallout)
-    {
-      bottomCallout = bottomOfCallout;
-    }
+    const Where &topOfStep();
+    const Where &bottomOfStep();
+    const Where &topOfRanges();
+    const Where &bottomOfRanges();
+    const Where &topOfCallout();
+    const Where &bottomOfCallout();
     
     void setPos(float x, float y);
 
@@ -247,12 +214,6 @@ class Pli : public Placement {
       placement = from.placement;
       margin    = from.margin;
       bom       = from.bom;
-      topPLI    = from.topPLI;
-      bottomPLI  = from.bottomPLI;
-      topRanges = from.topRanges;
-      bottomRanges = from.bottomRanges;
-      topCallout = from.topCallout;
-      bottomCallout = from.bottomCallout;
     }
 
     void getLeftEdge(QImage &, QList<int> &);

@@ -33,6 +33,8 @@
 #include <QFile>
 #include "pli.h"
 #include "step.h"
+#include "ranges.h"
+#include "callout.h"
 #include "resolution.h"
 #include "render.h"
 #include "paths.h"
@@ -47,6 +49,31 @@
 #include "lpub_preferences.h"
 
 QCache<QString,QString> Pli::orientation;
+    
+const Where &Pli::topOfStep()
+{
+  return step->topOfStep();
+}
+const Where &Pli::bottomOfStep()
+{
+  return step->bottomOfStep();
+}
+const Where &Pli::topOfRanges()
+{
+  return ranges->topOfRanges();
+}
+const Where &Pli::bottomOfRanges()
+{
+  return ranges->bottomOfRanges();
+}
+const Where &Pli::topOfCallout()
+{
+  return callout->topOfCallout();
+}
+const Where &Pli::bottomOfCallout()
+{
+   return callout->bottomOfCallout();
+}
 
 /****************************************************************************
  * Part List Images routines
@@ -1256,7 +1283,7 @@ void PliBackgroundItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
       placementData.offsets[1] += newPosition.y()/meta.LPub.page.size.value(1);
       placement.setValue(placementData);
 
-      changePlacementOffset(pli->topOfPLI(),&placement);
+      changePlacementOffset(pli->topOfStep(),&placement);
     }
   }
 }
@@ -1316,8 +1343,8 @@ void PliBackgroundItem::contextMenuEvent(
       Where bottom;
       bool  local;
       
-      Where topOfPLI = pli->topOfPLI();
-      Where bottomOfPLI = pli->bottomOfPLI();
+      Where topOfStep = pli->topOfStep();
+      Where bottomOfStep = pli->bottomOfStep();
   
       switch (parentRelativeType) {
         case StepGroupType:
@@ -1333,8 +1360,8 @@ void PliBackgroundItem::contextMenuEvent(
           local = false;
         break;
         default:
-          top    = topOfPLI;
-          bottom = bottomOfPLI;
+          top    = topOfStep;
+          bottom = bottomOfStep;
           local = true;
         break;
       }
@@ -1343,8 +1370,8 @@ void PliBackgroundItem::contextMenuEvent(
       QString me = pli->bom ? "BOM" : "PLI";
       if (selectedAction == constrainAction) {
         changeConstraint(me+" Constraint",
-                         topOfPLI,
-                         bottomOfPLI,
+                         topOfStep,
+                         bottomOfStep,
                          &constraint);
       } else if (selectedAction == placementAction) {
         changePlacement(parentRelativeType,
@@ -1420,8 +1447,8 @@ void AnnotateTextItem::contextMenuEvent(
       bottom = pli->bottomOfCallout();
     break;
     default:
-      top    = pli->topOfPLI();
-      bottom = pli->bottomOfPLI();
+      top    = pli->topOfStep();
+      bottom = pli->bottomOfStep();
     break;
   }
  
@@ -1470,8 +1497,8 @@ void InstanceTextItem::contextMenuEvent(
       bottom = pli->bottomOfCallout();
     break;
     default:
-      top    = pli->topOfPLI();
-      bottom = pli->bottomOfPLI();
+      top    = pli->topOfStep();
+      bottom = pli->bottomOfStep();
     break;
   }
   
@@ -1509,16 +1536,16 @@ void PGraphicsPixmapItem::contextMenuEvent(
   Meta *meta = pli->meta;
   if (selectedAction == marginAction) {
     changeMargins("Parts List Part Margins",
-                  pli->topOfPLI(),
-                  pli->bottomOfPLI(),
+                  pli->topOfStep(),
+                  pli->bottomOfStep(),
                   &meta->LPub.pli.part.margin);
 #if 0
   } else if (selectedAction == scaleAction) {
     changeFloatSpinTop(
       "Parts List",
       "Model Size",
-      pli->topOfPLI(),
-      pli->bottomOfPLI(),
+      pli->topOfStep(),
+      pli->bottomOfStep(),
       &meta->LPub.pli.modelScale,0);
     gui->clearPLICache();
 #endif
