@@ -316,9 +316,7 @@ int Gui::drawPage(
         if (callout->bottom.modelName != type) {
 
           Where current2(type,0);
-          skipHeader(current2);
-          callout->pli.setTopOfPLI(current2);
-          
+          skipHeader(current2);          
           callout->meta.rotStep.clear();
           callout->meta.submodelStack << current;
 
@@ -347,7 +345,6 @@ int Gui::drawPage(
           callout->meta = saveMeta;
 
           if (rc != 0) {
-            ranges->setBottomOfRanges(current);
             ranges->placement = ranges->meta.LPub.assem.placement;
             return rc;
           }
@@ -396,7 +393,6 @@ int Gui::drawPage(
       /* must be meta-command (or comment) */
       if (global && tokens.contains("!LPUB") && tokens.contains("GLOBAL")) {
         topOfStep = current;
-        pli.setTopOfPLI(topOfStep);
       } else {
         global = false;
       }
@@ -623,22 +619,6 @@ int Gui::drawPage(
             callout->pli.clear();
             callout->placement = callout->meta.LPub.callout.placement;
             callout->setBottomOfCallout(current);
-
-            Where top = callout->topOfCallout();
-  
-            for (int i = 0; i < callout->list.size(); i++) {
-              Range *range = dynamic_cast<Range *>(callout->list[i]);
-              if (range) {
-                for (int j = 0; j < range->list.size(); j++) {
-                  Step *step = dynamic_cast<Step *>(range->list[j]);
-                  if (step) {
-                    step->pli.setTopOfCallout(   top);
-                    step->pli.setBottomOfCallout(current);
-                  }
-                }
-              }
-            }  
-
             callout = NULL;
           }
         break;
@@ -653,7 +633,6 @@ int Gui::drawPage(
             multiStep = true;
           }
           ranges->relativeType = StepGroupType;
-          pli.setTopOfRanges(topOfStep);
         break;
 
         case StepGroupDividerRc:
@@ -669,7 +648,6 @@ int Gui::drawPage(
             }
             multiStep = false;
   
-            pli.setBottomOfRanges(topOfStep);
             if (pli.tsize() != 0) {
               ranges->pli = pli;
               ranges->pli.sizePli(&ranges->meta, StepGroupType);
@@ -680,19 +658,8 @@ int Gui::drawPage(
 
             ranges->setBottomOfRanges(topOfStep);
             ranges->placement = ranges->meta.LPub.multiStep.placement;
-
-            for (int i = 0; i < ranges->list.size(); i++) {
-              Range *range = dynamic_cast<Range *>(ranges->list[i]);
-              if (range) {
-                for (int j = 0; j < range->list.size(); j++) {
-                  Step *step = dynamic_cast<Step *>(range->list[j]);
-                  if (step) {
-                    step->pli.setTopOfRanges(ranges->topOfRanges());
-                    step->pli.setBottomOfRanges(ranges->bottomOfRanges());
-                  }
-                }
-              }
-            }  
+            displayFileSig(&ldrawFile,current.modelName);
+            showLineSig(ranges->topOfRanges().lineNumber+20);
 
             addGraphicsPageItems(ranges, view, scene);
             return HitEndOfPage;
@@ -741,11 +708,9 @@ int Gui::drawPage(
                 } else {
                   relativeType = SingleStepType;
                 }
-                pli.setBottomOfPLI(current);
                 step->pli = pli;
                 step->pli.sizePli(&ranges->meta,relativeType);
                 pli.clear();
-                pli.setTopOfPLI(current);
               }
 
               step->csiPixmap.pixmap = new QPixmap;
@@ -783,10 +748,8 @@ int Gui::drawPage(
               } else {
                 ranges->setBottomOfRanges(current);
                 ranges->placement = ranges->meta.LPub.assem.placement;
-                pli.setBottomOfPLI(current);
-                pli.setTopOfRanges(step->topOfRanges());
-                pli.setBottomOfRanges(step->bottomOfRanges());
-
+                displayFileSig(&ldrawFile,topOfStep.modelName);
+                showLineSig(topOfStep.lineNumber+20);
                 addGraphicsPageItems(ranges,view,scene);
                 return HitEndOfPage;
               }
@@ -848,10 +811,10 @@ int Gui::drawPage(
 
     ranges->setBottomOfRanges(current);
     ranges->placement = ranges->meta.LPub.multiStep.placement;
-    ranges->pli.setTopOfRanges(ranges->topOfRanges());
-    ranges->pli.setBottomOfRanges(ranges->bottomOfRanges());
 
     addGraphicsPageItems(ranges, view, scene);
+    displayFileSig(&ldrawFile,topOfStep.modelName);
+    showLineSig(current.lineNumber+20);
     return HitEndOfPage;
   }
   return 0;
@@ -1071,7 +1034,6 @@ int Gui::findPage(
                     csiParts.clear();
                     ldrawFile.setNumSteps(current.modelName,stepNumber);
                     page.meta      = saveMeta;
-                    pli.setTopOfPLI(saveCurrent);
                     (void) drawPage(view,scene,&page,saveStepNumber,
                                     addLine,saveCurrent,saveCsiParts,pli,saveBfx);
                     saveCurrent.modelName.clear();
