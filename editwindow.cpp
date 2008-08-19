@@ -120,6 +120,7 @@ void EditWindow::showLine(int lineNumber)
     _textEdit->moveCursor(QTextCursor::Down,QTextCursor::MoveAnchor);
   }
   _textEdit->moveCursor(QTextCursor::EndOfLine,QTextCursor::KeepAnchor);
+  _textEdit->ensureCursorVisible();
 }
 
 void EditWindow::displayFile(
