@@ -141,46 +141,5 @@ class Where
       modelName.clear();
     }
 };
-
-class WhereRange
-{
-public:
-  Where topOf;
-  Where bottomOf;
-  int   writes;
-
-  WhereRange ()
-  {
-    topOf = Where();
-    bottomOf = topOf;
-    writes = 0;
-  }
-
-  void  setBottom(const Where &here)
-  {
-    if (writes++ > 0) {
-      topOf = bottomOf + 1;
-    } 
-    bottomOf = here;
-  }
-  void  setTop(const Where &here)
-  {
-    bottomOf = here;
-    writes = 1;
-  }
-  const Where &top()
-  {
-    if (writes > 1) {
-      return topOf;
-    } else {
-      return bottomOf;
-    }
-  }
-  const Where &bottom()
-  {
-    return bottomOf;
-  }
-};
-
 #endif
 
