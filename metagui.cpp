@@ -362,7 +362,7 @@ DoubleSpinGui::DoubleSpinGui(
   layout->addWidget(spin);
   spin->setRange(min,max);
   spin->setSingleStep(step);
-  spin->setDecimals(2);
+  spin->setDecimals(6);
   spin->setValue(meta->value());
   connect(spin,SIGNAL(valueChanged(double)),
           this,SLOT  (valueChanged(double)));
