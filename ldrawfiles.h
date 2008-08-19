@@ -119,6 +119,15 @@ class LDrawFile {
       }
       return 0;
     }
+    QDateTime lastModified(const QString &fileName)
+    {
+      QMap<QString, LDrawSubFile>::iterator i = _subFiles.find(fileName);
+      if (i != _subFiles.end()) {
+        return i.value()._datetime;
+      }
+      return QDateTime();
+    }
+
     bool contains(const QString &file)
     {
       return _subFiles.contains(file);
@@ -176,8 +185,6 @@ class LDrawFile {
           if (fileDatetime > datetime) {
             return false;
           }
-        } else {
-          return false;
         }
       }
       return true;
