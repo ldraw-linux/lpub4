@@ -151,11 +151,9 @@ void Gui::openRecentFile()
   QAction *action = qobject_cast<QAction *>(sender());
   if (action) {
     QString fileName = action->data().toString();
-    clearPage(KpageView,KpageScene);
     QFileInfo info(fileName);
     QDir::setCurrent(info.absolutePath());
     openFile(fileName);
-    setCurrentFile(fileName);
     Paths::mkdirs();
     displayPage();
     enableActions();
