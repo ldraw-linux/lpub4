@@ -85,7 +85,7 @@ GlobalAssemDialog::GlobalAssemDialog(
     "Scale",&assem->modelScale,
     assem->modelScale._min,
     assem->modelScale._max,
-    0.1);
+    0.01);
   data->modelScale = child;
   data->children.append(child);
   boxGrid->addWidget(child,1,0,1,2);
