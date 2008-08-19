@@ -104,8 +104,8 @@ void Gui::printToFile()
   float pageHeight = page.meta.LPub.page.size.valueUnit(1);
   if (page.meta.LPub.resolution.type() == DPI) {
     // convert to MM
-	pageWidth = int(inches2centimeters(pageWidth)*10);
-	pageHeight = int(inches2centimeters(pageHeight)*10);
+  	pageWidth = int(inches2centimeters(pageWidth)*10);
+	  pageHeight = int(inches2centimeters(pageHeight)*10);
   }
   QPrinter::PageSize pageSize;
   QPrinter::Orientation orientation;
