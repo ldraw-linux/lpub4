@@ -24,8 +24,8 @@ bool isMpd()
 }
 
 bool isOlder(
-  const QStringList   &foo,
-  const QDateTime &lastModified)
+  const QStringList &foo,
+  const QDateTime   &lastModified)
 {
   return gui->isOlder(foo,lastModified);
 }
