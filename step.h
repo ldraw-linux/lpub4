@@ -37,6 +37,7 @@
 
 class Meta;
 class Callout;
+class Range;
 enum PlacementType;
 
 class Step : public AbstractRangeElement
@@ -66,6 +67,9 @@ class Step : public AbstractRangeElement
     {
       list.append(re);
     }
+    
+    Step  *nextStep();
+    Range *range();
 
     int  createCsi(
 	       QString const     &fileName,
