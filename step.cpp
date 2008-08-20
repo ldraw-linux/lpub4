@@ -31,6 +31,7 @@
 #include <QFile>
 
 #include "step.h"
+#include "range.h"
 #include "ranges.h"
 #include "ranges_element.h"
 #include "render.h"
@@ -125,6 +126,19 @@ Step::~Step() {
   }
   pli.clear();
 }
+
+Step *Step::nextStep()
+{
+  const AbstractRangeElement *re = dynamic_cast<const AbstractRangeElement *>(this);
+  return dynamic_cast<Step *>(nextElement(re));
+}
+
+Range *Step::range()
+{
+  Range *range = dynamic_cast<Range *>(parent);
+  return range;
+}
+
 /*
  * given a set of parts, generate a CSI
  */
