@@ -646,6 +646,8 @@ void MetaItem::setMetaTopOf(
     }
     QString line = meta->format(local,global);
 
+    Where topOfFile = topOf;
+
     if (topOf.lineNumber == 0) {
       QString line = gui->readLine(topOf);
       QStringList argv;
@@ -653,9 +655,18 @@ void MetaItem::setMetaTopOf(
       if (argv.size() >= 1 && argv[0] != "0") {
         insertMeta(topOf,"0");
       }
+    } else {
+      Where walk = topOf+1;
+      Rc rc = scanForward(walk,StepMask|StepGroupMask);
+      if (rc == StepGroupEndRc) {
+        topOfFile = walk++;
+        rc = scanForward(walk,StepMask|StepGroupMask);
+      }
+      if (rc == StepGroupBeginRc) {
+        topOfFile = walk;
+      }
     }
-
-    Where topOfFile = topOf;
+      
     topOfFile.lineNumber += append;
     insertMeta(topOfFile, line);
   }
