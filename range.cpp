@@ -34,12 +34,10 @@
 Range::Range(
   Ranges       *_parent,
   AllocEnc      _allocType,
-  SepData       _sep,
   FreeFormMeta  _freeform)
 {
   parent       = _parent;
   allocType    = _allocType;
-  sep          = _sep;
   freeform     = _freeform;
   relativeType = RangeType;
 }

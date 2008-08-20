@@ -60,6 +60,12 @@ const Where &AbstractRangeElement::bottomOfRange()
   return parent->bottomOfRange();
 }
 
+AbstractRangeElement *AbstractRangeElement::nextElement(
+  const AbstractRangeElement *me)
+{
+  return parent->nextElement(me);
+}
+
 const Where &AbstractRangeElement::topOfRanges()
 {
   return parent->topOfRanges();

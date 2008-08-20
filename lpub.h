@@ -471,11 +471,13 @@ public slots:
       QMessageBox::warning(this,tr("LPub"),tr(errorMsg.toAscii()));
     }
   }
-  void showLine(Where &here)
+  
+  void showLine(const Where &topOfStep)
   {
-    displayFileSig(&ldrawFile, here.modelName);
-    showLineSig(here.lineNumber);
+    displayFileSig(&ldrawFile,topOfStep.modelName);
+    showLineSig(topOfStep.lineNumber);
   }
+
   void preferences();
 
   void pageSetup();

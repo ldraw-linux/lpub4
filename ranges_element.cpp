@@ -77,6 +77,29 @@ const Where &AbstractRangesElement::bottomOfRange()
   return parent->bottomOfStep(this);
 }
 
+AbstractRangeElement *AbstractRangesElement::nextElement(
+  const AbstractRangeElement *me)
+{
+  int size = list.size();
+  
+  for (int i = 0; i < size; i++) {
+    if (list[i] == me) {
+      if (i < size - 1) {
+        return list[i+1];
+      } else {
+        const AbstractRangesElement *range;
+        range = parent->nextRange(this);
+        if (range) {
+          return range->list[0];
+        } else {
+          return NULL;
+        }
+      }
+    }
+  }
+  return NULL;
+}
+
 
 const Where &AbstractRangesElement::topOfRanges()
 {

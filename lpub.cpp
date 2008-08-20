@@ -228,7 +228,6 @@ void Gui::displayFile(
   }
 }
 
-
 /*-----------------------------------------------------------------------------*/
 
 void Gui::mpdComboChanged(int index)

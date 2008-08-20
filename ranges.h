@@ -91,6 +91,7 @@ class Ranges : public Placement {
     const Where &bottomOfStep(AbstractRangesElement *me);
     const Where &topOfRanges();
     const Where &bottomOfRanges();
-    void setBottomOfRanges(const Where &bos);
+    void  setBottomOfRanges(const Where &bos);
+          AbstractRangesElement *nextRange(const AbstractRangesElement *me);    
 };
 #endif

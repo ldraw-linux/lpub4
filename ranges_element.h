@@ -67,6 +67,8 @@ public:
   const Where &bottomOfRanges();
   const Where &topOfRange();
   const Where &bottomOfRange();
+        AbstractRangeElement *nextElement(const AbstractRangeElement *me);
+
   Ranges *grandparent();
 };
 

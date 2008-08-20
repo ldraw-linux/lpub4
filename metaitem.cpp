@@ -33,6 +33,7 @@
 #include <QFontDialog>
 #include <QColor>
 #include <QColorDialog>
+#include <QByteArray>
 #include "metaitem.h"
 #include "lpub.h"
 #include "color.h"
@@ -610,10 +611,29 @@ void MetaItem::setMetaTopOf(
   bool         local,
   bool         global)
 {
-  int  lineNumber = meta->here().lineNumber;
-  bool metaInRange;
+  volatile int  lineNumber = meta->here().lineNumber;
+  volatile bool metaInRange;
+  
+  QByteArray Left  = meta->here().modelName.toAscii();
+  QByteArray Right = topOf.modelName.toAscii();
+  
+  volatile char left[256];
+  volatile char right[256];
+  
+  int i;
+  for (i = 0; i < Left.size(); i++) {
+    left[i] = Left[i];
+  }
+  left[i] = '\0';
+  
+  for (i = 0; i < Right.size(); i++) {
+    right[i] = Right[i];
+  }
+  right[i] = '\0';
 
-  metaInRange = meta->here().modelName == topOf.modelName
+  metaInRange = meta->here().modelName == topOf.modelName;
+  
+  metaInRange = metaInRange
    && lineNumber >= topOf.lineNumber 
    && lineNumber <= bottomOf.lineNumber;
 
@@ -1175,7 +1195,7 @@ Where MetaItem::sortedGlobalWhere(
     // These metas are related to the first step
     // so we'll stop if we hit one of those.
 
-    Rc rc = tmpMeta.parse(line,walk);
+    tmpMeta.parse(line,walk);
 
     // Stop if it is time to add the line    
 

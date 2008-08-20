@@ -39,12 +39,11 @@ class Range : public AbstractRangesElement {
   public:
     int          allocType;
     FreeFormMeta freeform;
-    SepData      sep;
+    SepMeta      sepMeta;
     int          leftAdjust;  // for freeform multi_step only
 
     Range(Ranges       *_parent,
           AllocEnc      _allocType,
-          SepData       _sep,
           FreeFormMeta  _freeform);
 
     virtual ~Range();

@@ -60,6 +60,7 @@ class AbstractRangeElement : public Placement {
     const Where &bottomOfRanges();
     const Where &topOfCallout();
     const Where &bottomOfCallout();
+          AbstractRangeElement *nextElement(const AbstractRangeElement *);
     
     Ranges *grandparent();
     Callout *callout();

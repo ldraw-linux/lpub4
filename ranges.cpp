@@ -86,6 +86,24 @@ const Where &Ranges::bottomOfStep(
   return bottom;
 }
 
+AbstractRangesElement *Ranges::nextRange(
+  const AbstractRangesElement *me)
+{
+  int size = list.size();
+  
+  for (int i = 0; i < size; i++) {
+    if (list[i] == me) {
+      if (i < size - 1) {
+        return list[i+1];
+      } else {
+        return NULL;
+      }
+    }
+  }
+  return NULL;
+}
+  
+
 const Where &Ranges::topOfRanges()
 {
   return list[0]->topOfRange();
@@ -496,10 +514,10 @@ void Ranges::addGraphicsItemsVert(
 
         if (list.size() > 1 && i < list.size() - 1) {
           // add divider here
+          
           DividerItem *divider = new DividerItem(
-                          this,
+                          dynamic_cast<Step *>(range->list[list.size()-1]),
                          &meta,
-                          range->bottomOfRange(),
                           offset_x + offset[XX] + range->offset[XX] + range->size[XX],
                           offset_y + offset[YY] + range->offset[YY]);
           divider->setParentItem(parent);
@@ -543,9 +561,8 @@ void Ranges::addGraphicsItemsHoriz(
         if (list.size() > 1 && i < list.size() - 1) {
           // add divider here
           DividerItem *divider = new DividerItem(
-                          this,
+                          dynamic_cast<Step *>(range->list[list.size()-1]),
                          &meta,
-                          range->bottomOfRange(),
                           offset_x + offset[XX] + range->offset[XX],
                           offset_y + offset[YY] + range->offset[YY] + range->size[YY]);
           divider->setParentItem(parent);
