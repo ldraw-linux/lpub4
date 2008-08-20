@@ -90,19 +90,16 @@ class DividerLine;
 class DividerItem : public QGraphicsRectItem, public MetaItem
 {
 public:
-    Meta         *meta;
-    SepMeta      *sep;
+    Step         *step;
     PlacementType parentRelativeType;
     DividerLine  *lineItem;
-    Where         topOfRanges;
 
     DividerItem() {}
     DividerItem(
-      Ranges *_ranges,
-      Meta   *_meta,
-      Where   _topWhere,
-      int     _offset_x,
-      int     _offset_y);
+      Step  *_step,
+      Meta  *_meta,
+      int    _offset_x,
+      int    _offset_y);
     
     void contextMenuEvent(QGraphicsSceneContextMenuEvent *event);
 };
