@@ -20,6 +20,7 @@
 #include "ranges.h"
 #include "ranges_item.h"
 #include "range.h"
+#include "step.h"
 #include "color.h"
 #include "commonmenus.h"
 
@@ -163,25 +164,24 @@ void MultiStepRangeBackgroundItem::contextMenuEvent(
 }
 
 DividerItem::DividerItem(
-  Ranges        *ranges,
-  Meta          *_meta,
-  Where          _topOfRanges,
-  int            offsetX,
-  int            offsetY)
+  Step  *_step,
+  Meta  *_meta,
+  int    offsetX,
+  int    offsetY)
 {
+  step = _step;
   AllocEnc allocEnc;
-  if (ranges->relativeType == CalloutType) {
+  Ranges *ranges = step->grandparent();
+  Range  *range  = step->range();
+  parentRelativeType = ranges->relativeType;
+  
+  if (parentRelativeType == CalloutType) {
     allocEnc = ranges->meta.LPub.callout.alloc.value();
-    sep = &_meta->LPub.callout.sep;
   } else {
     allocEnc = ranges->meta.LPub.multiStep.alloc.value();
-    sep = &_meta->LPub.multiStep.sep;
   }
-  parentRelativeType = ranges->relativeType;
-  meta = _meta;
-  topOfRanges    = _topOfRanges;
 
-  SepData sepData = sep->value();
+  SepData sepData = range->sepMeta.value();
 
   /* Size the rectangle around the divider */
 
@@ -260,11 +260,20 @@ void DividerItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
   if (selectedAction == NULL) {
     return;
   }
+  
+  Step *nextStep = step->nextStep();
+  if ( ! nextStep) {
+    return;
+  }
+  
+  Where topOfStep    = nextStep->topOfStep();
+  Where bottomOfStep = nextStep->bottomOfStep();
+  Range *range = step->range();
 
   if (selectedAction == editAction) {
-    changeDivider("Divider",topOfRanges,topOfRanges,/*bottomOfRanges,*/sep,false);
+    changeDivider("Divider",topOfStep,bottomOfStep,&range->sepMeta,1,false);
   } else if (selectedAction == deleteAction) {
-    deleteDivider(parentRelativeType,topOfRanges);
+    deleteDivider(parentRelativeType,topOfStep);
   }
 }
 void DividerLine::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
