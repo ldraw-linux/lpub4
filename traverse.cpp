@@ -207,12 +207,10 @@ Range *newRange(
   if (calledOut) {
     range = new Range(ranges,
                       ranges->meta.LPub.callout.alloc.value(),
-                      ranges->meta.LPub.callout.sep.value(),
                       ranges->meta.LPub.callout.freeform);
   } else {
     range = new Range(ranges,
                       ranges->meta.LPub.multiStep.alloc.value(),
-                      ranges->meta.LPub.multiStep.sep.value(),
                       ranges->meta.LPub.multiStep.freeform);
   }
   return range;
@@ -600,6 +598,7 @@ int Gui::drawPage(
         break;
 
         case CalloutDividerRc:
+          range->sepMeta = ranges->meta.LPub.callout.sep;
           range = NULL;
           step = NULL;
         break;
@@ -636,6 +635,7 @@ int Gui::drawPage(
         break;
 
         case StepGroupDividerRc:
+          range->sepMeta = ranges->meta.LPub.multiStep.sep;
           range = NULL;
           step = NULL;
         break;
@@ -658,9 +658,7 @@ int Gui::drawPage(
 
             ranges->setBottomOfRanges(topOfStep);
             ranges->placement = ranges->meta.LPub.multiStep.placement;
-            displayFileSig(&ldrawFile,current.modelName);
-            showLineSig(ranges->topOfRanges().lineNumber+20);
-
+            showLine(ranges->topOfRanges());
             addGraphicsPageItems(ranges, view, scene);
             return HitEndOfPage;
           }
@@ -672,7 +670,6 @@ int Gui::drawPage(
         case RotStepRc:
         case StepRc:
           if (partsAdded) {
-            topOfStep = current;
             if (pliIgnore) {
               parseError("PLI BEGIN then STEP. Expected PLI END",current);
               pliIgnore = false;
@@ -748,8 +745,7 @@ int Gui::drawPage(
               } else {
                 ranges->setBottomOfRanges(current);
                 ranges->placement = ranges->meta.LPub.assem.placement;
-                displayFileSig(&ldrawFile,topOfStep.modelName);
-                showLineSig(topOfStep.lineNumber+20);
+                showLine(topOfStep);
                 addGraphicsPageItems(ranges,view,scene);
                 return HitEndOfPage;
               }
@@ -758,6 +754,8 @@ int Gui::drawPage(
             if (partsAdded) {
               stepNum++;
             }
+            topOfStep = current;
+
             partsAdded = false;
             step = NULL;
           }
@@ -812,9 +810,8 @@ int Gui::drawPage(
     ranges->setBottomOfRanges(current);
     ranges->placement = ranges->meta.LPub.multiStep.placement;
 
+    showLine(topOfStep);
     addGraphicsPageItems(ranges, view, scene);
-    displayFileSig(&ldrawFile,topOfStep.modelName);
-    showLineSig(current.lineNumber+20);
     return HitEndOfPage;
   }
   return 0;
@@ -1001,7 +998,7 @@ int Gui::findPage(
   
                 if (pageNum < displayPageNum) {
                   saveCsiParts   = csiParts;
-                  saveCurrent    = topOfStep;
+                  //saveCurrent    = topOfStep;
                   saveStepNumber = stepNumber;
                   saveMeta       = meta;
                   saveBfx        = bfx;
@@ -1023,14 +1020,15 @@ int Gui::findPage(
               if (partsAdded) {
                 ++stepNumber;
                 meta.pop();
+                if (pageNum < displayPageNum) {
+                  saveCsiParts   = csiParts;
+                  saveCurrent    = current;
+                  saveStepNumber = stepNumber;
+                  saveMeta       = meta;
+                  saveBfx        = bfx;
+                }
                 if ( ! stepGroup) {
-                  if (pageNum < displayPageNum) {
-                    saveCsiParts   = csiParts;
-                    saveCurrent    = current;
-                    saveStepNumber = stepNumber;
-                    saveMeta       = meta;
-                    saveBfx        = bfx;
-                  } else if (pageNum == displayPageNum) {
+                  if (pageNum == displayPageNum) {
                     csiParts.clear();
                     ldrawFile.setNumSteps(current.modelName,stepNumber);
                     page.meta      = saveMeta;
