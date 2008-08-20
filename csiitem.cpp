@@ -25,6 +25,7 @@
  *
  ***************************************************************************/
 
+#include "lpub.h"
 #include "step.h"
 #include "ranges.h"
 #include "ranges_element.h"
@@ -322,6 +323,7 @@ void CsiItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
     positionChanged = false;
     position = pos();
   }
+  gui->showLine(step->topOfStep());
 }
 
 void CsiItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)

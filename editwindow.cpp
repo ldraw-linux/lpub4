@@ -113,6 +113,35 @@ void EditWindow::contentsChange(
   contentsChange(position, charsRemoved, addedChars);
 }
 
+void EditWindow::pageUpDown(
+  QTextCursor::MoveOperation op,
+  QTextCursor::MoveMode      moveMode)
+{
+  QTextCursor cursor = _textEdit->textCursor();
+  bool moved = false;
+  qreal lastY = _textEdit->cursorRect(cursor).top();
+  qreal distance = 0;
+  qreal delta;
+  // move using movePosition to keep the cursor's x
+  do {
+    qreal y = _textEdit->cursorRect(cursor).top();
+    delta = qAbs(y - lastY);
+    distance += delta;
+    lastY = y;
+    moved = cursor.movePosition(op, moveMode);
+  } while (moved && distance < _textEdit->viewport()->height());
+
+  if (moved) {
+    if (op == QTextCursor::Up) {
+      cursor.movePosition(QTextCursor::Down, moveMode);
+      _textEdit->verticalScrollBar()->triggerAction(QAbstractSlider::SliderPageStepAdd);
+    } else {
+      cursor.movePosition(QTextCursor::Up, moveMode);
+      _textEdit->verticalScrollBar()->triggerAction(QAbstractSlider::SliderPageStepSub);
+    }
+  }  
+}
+
 void EditWindow::showLine(int lineNumber)
 {
   _textEdit->moveCursor(QTextCursor::Start,QTextCursor::MoveAnchor);
@@ -121,6 +150,8 @@ void EditWindow::showLine(int lineNumber)
   }
   _textEdit->moveCursor(QTextCursor::EndOfLine,QTextCursor::KeepAnchor);
   _textEdit->ensureCursorVisible();
+  
+  pageUpDown(QTextCursor::Up, QTextCursor::KeepAnchor);
 }
 
 void EditWindow::displayFile(

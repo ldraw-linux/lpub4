@@ -31,6 +31,7 @@
 #define EDITWINDOW_H
 
 #include <QMainWindow>
+#include <QTextCursor>
 
 class QTextEdit;
 class LDrawFile;
@@ -74,6 +75,10 @@ private slots:
 public slots:
     void displayFile(LDrawFile *, const QString &fileName);
     void showLine(int);
+    void pageUpDown(
+      QTextCursor::MoveOperation op,
+      QTextCursor::MoveMode      moveMode);
+
 public:
 
     QTextEdit *textEdit() { return _textEdit; }
