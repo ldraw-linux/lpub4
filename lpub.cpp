@@ -387,8 +387,9 @@ Gui::Gui()
     connect(undoStack,  SIGNAL(cleanChanged(bool)),
             this,       SLOT(  cleanChanged(bool)));
 
-    connect(&watcher,   SIGNAL(fileChanged(const QString &)),
-             this,      SLOT(  fileChanged(const QString &)));
+//    FIXME:::::
+//    connect(&watcher,   SIGNAL(fileChanged(const QString &)),
+//             this,      SLOT(  fileChanged(const QString &)));
 
     setCurrentFile("");
 
