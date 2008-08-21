@@ -291,28 +291,23 @@ void CsiItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
                     1,allowLocal);
   } else if (selectedAction == marginsAction) {
 
+    MarginsMeta *margins;
+    
     switch (parentRelativeType) {
       case StepGroupType:
-        changeMargins("Assembly Margins",
-                      topOfStep, 
-                      bottomOfStep, 
-                      &meta->LPub.multiStep.csi.margin);
+        margins = &meta->LPub.multiStep.csi.margin;
       break;
       case CalloutType:
-        changeMargins("Assembly Margins",
-                      topOfStep, 
-                      bottomOfStep, 
-                      &meta->LPub.callout.csi.margin);
-      break;
-      case SingleStepType:
-        changeMargins("Assembly Margins",
-                      topOfStep, 
-                      bottomOfStep, 
-                      &meta->LPub.assem.margin);
+        margins = &meta->LPub.callout.csi.margin;
       break;
       default:
+        margins = &meta->LPub.assem.margin;
       break;
     }
+    changeMargins("Assembly Margins",
+                  topOfStep, 
+                  bottomOfStep, 
+                  margins);
   }
 }
 
