@@ -40,7 +40,6 @@ class Reserve : public AbstractRangeElement {
 
     Reserve(
       Where    &_here,
-
       LPubMeta &meta)
     {
       here = _here;
