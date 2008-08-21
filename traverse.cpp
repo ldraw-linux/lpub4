@@ -239,6 +239,7 @@ int Gui::drawPage(
   bool        multiStep   = false;
   bool        partsAdded  = false;
   int         numLines = ldrawFile.size(current.modelName);
+  
   Where topOfStep = current;
   Rc gprc = OkRc;
   Rc rc;
@@ -658,7 +659,7 @@ int Gui::drawPage(
 
             ranges->setBottomOfRanges(topOfStep);
             ranges->placement = ranges->meta.LPub.multiStep.placement;
-            showLine(ranges->topOfRanges());
+//            showLine(ranges->topOfRanges());
             addGraphicsPageItems(ranges, view, scene);
             return HitEndOfPage;
           }
@@ -745,7 +746,7 @@ int Gui::drawPage(
               } else {
                 ranges->setBottomOfRanges(current);
                 ranges->placement = ranges->meta.LPub.assem.placement;
-                showLine(topOfStep);
+//                showLine(topOfStep);
                 addGraphicsPageItems(ranges,view,scene);
                 return HitEndOfPage;
               }
@@ -810,7 +811,7 @@ int Gui::drawPage(
     ranges->setBottomOfRanges(current);
     ranges->placement = ranges->meta.LPub.multiStep.placement;
 
-    showLine(topOfStep);
+//    showLine(topOfStep);
     addGraphicsPageItems(ranges, view, scene);
     return HitEndOfPage;
   }
@@ -912,6 +913,7 @@ int Gui::findPage(
 
   Meta        tmpMeta;
   Meta        saveMeta = meta;
+  Meta        stepGroupMeta;
   Pli         pli;
 
   QHash<QString, QStringList> bfx;
@@ -991,6 +993,7 @@ int Gui::findPage(
             case StepGroupBeginRc:
               stepGroup = true;
               saveCurrent = topOfStep;
+              stepGroupMeta = meta;
             break;
             case StepGroupEndRc:
               if (stepGroup) {
@@ -998,7 +1001,6 @@ int Gui::findPage(
   
                 if (pageNum < displayPageNum) {
                   saveCsiParts   = csiParts;
-                  //saveCurrent    = topOfStep;
                   saveStepNumber = stepNumber;
                   saveMeta       = meta;
                   saveBfx        = bfx;
@@ -1012,6 +1014,7 @@ int Gui::findPage(
                   saveCsiParts.clear();
                 }
                 ++pageNum;
+                saveMeta = stepGroupMeta;
               }
             break;
   
