@@ -1377,8 +1377,8 @@ void PliBackgroundItem::contextMenuEvent(
         changePlacement(parentRelativeType,
                         PartsListType,
                         me+" Placement",
-                        top,
-                        bottom,
+                        topOfStep,
+                        bottomOfStep,
                         placementMeta,
                         1,local);
       } else if (selectedAction == backgroundAction) {
