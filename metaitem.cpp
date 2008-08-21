@@ -1292,7 +1292,13 @@ void MetaItem::convertToCallout(
 
   /* Now scan the lines following this line, to see if there is another
    * part just like this one that needs to be added as a callout
-   * multiplier */
+   * multiplier.
+   *
+   * We also want to scan backward for the same submodel.
+   *
+   * In either direction, we need to stop on STEP/ROTSTEP.  We also need
+   * top stop on other sub-models, or mirror images of the same sub-model.
+   */
 
   Where calledOut = meta->submodelStack[meta->submodelStack.size() - 1];
   QString firstLine = gui->readLine(calledOut);
@@ -1313,16 +1319,50 @@ void MetaItem::convertToCallout(
       break;
     } else if (argv.size() == 15 && argv[0] == "1") {
       if (gui->isSubmodel(argv[14])) {
-        if (equivalentAdds(firstLine,line)) {
+        if (argv[14] == modelName) {
+          if ( ! equivalentAdds(firstLine,line)) {
+            break;
+          }
         } else {
           break;
         }
+      } else {
+        break;
       }
     }
   }
+  
+  Where walkBack = calledOut - 1;
+  for (walkBack = calledOut - 1; walkBack.lineNumber >= 0; walkBack--) {
+    QString line = gui->readLine(walkBack);
+    QStringList argv;
+    split(line,argv);
+    if (argv.size() == 2 && argv[0] == "0") {
+      if (argv[1] == "STEP" || argv[1] == "ROTSTEP") {
+        break;
+      }
+    } else if (argv.size() >= 3 && argv[0] == "0"
+                                && (argv[1] == "LPUB" ||
+                                    argv[1] == "!LPUB")
+                                && argv[2] == "PLI") {
+      break;
+    } else if (argv.size() == 15 && argv[0] == "1") {
+      if (gui->isSubmodel(argv[14])) {
+        if (argv[14] == modelName) {
+          if ( ! equivalentAdds(firstLine,line)) {
+            break;
+          }
+        } else {
+          break;
+        }
+      } else {
+        break;
+      }
+    }    
+  }
 
-  insertMeta(walk,     "0 !LPUB CALLOUT END");
-  insertMeta(calledOut,"0 !LPUB CALLOUT BEGIN");
+  insertMeta(walk,    "0 !LPUB CALLOUT END");
+  appendMeta(walkBack,"0 !LPUB CALLOUT BEGIN");
   nestCallouts(modelName);
   endMacro();
 }
