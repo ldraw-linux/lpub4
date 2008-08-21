@@ -232,9 +232,9 @@ int LDGLite::renderPli(
   QStringList list;
   list = meta.LPub.pli.ldgliteParms.value().split("\\s+");
   for (int i = 0; i < list.size(); i++) {
-	if (list[i] != "" && list[i] != " ") {
+	  if (list[i] != "" && list[i] != " ") {
       arguments << list[i];
-	}
+	  }
   }
   arguments << mf;
   arguments << ldrName;
