@@ -1379,8 +1379,12 @@ void PliBackgroundItem::contextMenuEvent(
                         me+" Placement",
                         topOfStep,
                         bottomOfStep,
-                        placementMeta,
-                        1,local);
+                        placementMeta);
+      } else if (selectedAction == marginAction) {
+        changeMargins(me+" Margins",
+                      topOfStep,
+                      bottomOfStep,
+                      &margin);
       } else if (selectedAction == backgroundAction) {
         if (0 && bom) {
           changeBackground(me+" Background",
@@ -1405,11 +1409,6 @@ void PliBackgroundItem::contextMenuEvent(
                        bottom,
                        &meta->LPub.pli.border,1,local);
         }
-      } else if (selectedAction == marginAction) {
-        changeMargins(me+" Margins",
-                      top,
-                      bottom,
-                      &margin,1,local);
       }
   	}
   }
