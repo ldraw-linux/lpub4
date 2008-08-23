@@ -71,6 +71,7 @@ void Gui::endMacro()
 }
 
 void Gui::contentsChange(
+  const QString &fileName,
   int      position,
   int      _charsRemoved,
   const QString &charsAdded)
@@ -79,15 +80,15 @@ void Gui::contentsChange(
 
   /* Calculate the characters removed from the LDrawFile */
 
-  if (_charsRemoved && ldrawFile.contains(curSubFile)) {
+  if (_charsRemoved && ldrawFile.contains(fileName)) {
 
-    QString contents = ldrawFile.contents(curSubFile).join("\n");
+    QString contents = ldrawFile.contents(fileName).join("\n");
 
     charsRemoved = contents.mid(position,_charsRemoved);
   }
   
   undoStack->push(new ContentsChangeCommand(&ldrawFile,
-                                            curSubFile,
+                                            fileName,
                                             position,
                                             charsRemoved,
                                             charsAdded));
