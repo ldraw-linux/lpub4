@@ -38,7 +38,7 @@ QAction* CommonMenus::fontMenu(
 {
   QAction *action;
 
-  QString formatted = QString("Edit %1Font") .arg(name);
+  QString formatted = QString("Change %1Font") .arg(name);
   action = menu.addAction(formatted);
 
   formatted = QString(
@@ -55,7 +55,7 @@ QAction* CommonMenus::colorMenu(
 {
   QAction *action;
 
-  QString formatted = QString("Edit %1Color") .arg(name);
+  QString formatted = QString("Change %1Color") .arg(name);
   action = menu.addAction(formatted);
 
   formatted = QString("You can change the color of this %1") .arg(name);
@@ -70,7 +70,7 @@ QAction* CommonMenus::marginMenu(
 {
   QAction *action;
 
-  QString formatted = QString("Edit %1Margins") .arg(name);
+  QString formatted = QString("Change %1Margins") .arg(name);
   action = menu.addAction(formatted);
 
   formatted = QString("You can change how much empty space their is around this %1 number") .arg(name);
@@ -282,7 +282,7 @@ QAction* CommonMenus::backgroundMenu(
 {
   QAction *action;
 
-  QString formatted = QString("Edit %1Background") .arg(name);
+  QString formatted = QString("Change %1Background") .arg(name);
   action = menu.addAction(formatted);
 
   formatted = QString("You can change the color or use a picture for the %1background") .arg(name);
@@ -297,7 +297,7 @@ QAction* CommonMenus::borderMenu(
 {
   QAction *action;
 
-  QString formatted = QString("Edit %1Border") .arg(name);
+  QString formatted = QString("Change %1Border") .arg(name);
   action = menu.addAction(formatted);
 
   action->setWhatsThis("You can pick a square corner border, round corner border or no border at all");
@@ -325,7 +325,7 @@ QAction* CommonMenus::renderParmsMenu(
         QMenu   &menu, 
   const QString  name)
 {
-  QString formatted = QString("Edit %1Render Parameters") .arg(name);
+  QString formatted = QString("Change %1Render Parameters") .arg(name);
 
   QAction *action;
   action = menu.addAction(formatted);
