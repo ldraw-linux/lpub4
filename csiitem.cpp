@@ -114,7 +114,6 @@ void CsiItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
   QAction *allocAction = NULL;
 
   AllocEnc allocType = step->parent->allocType();
-
   if (parentRelativeType == StepGroupType || parentRelativeType == CalloutType) {
     if ((boundary & StartOfRange) && ! (boundary & StartOfRanges)) {
       if (allocType == Vertical) {
