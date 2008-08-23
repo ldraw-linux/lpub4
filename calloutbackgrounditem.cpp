@@ -81,7 +81,7 @@ void CalloutBackgroundItem::contextMenuEvent(
   QGraphicsSceneContextMenuEvent *event)
 {
   QMenu menu;
-  QString co = "this Callout ";
+  QString co = "Callout ";
 
   QAction *addPointerAction = menu.addAction("Add Pointer");
   addPointerAction->setWhatsThis("Add triangle shaped pointer from this callout to the step where it is used");
@@ -93,6 +93,22 @@ void CalloutBackgroundItem::contextMenuEvent(
   PlacementData placementData = callout->meta.LPub.callout.placement.value();
   placementAction->setWhatsThis(
     commonMenus.naturalLanguagePlacementWhatsThis(CalloutType,placementData,name));
+
+  QAction *allocAction;
+
+  if (callout->allocType() == Vertical) {
+    allocAction = menu.addAction("Display as Rows");
+    allocAction->setWhatsThis(
+      "Display as Rows:\n"
+      "  Change this whole set of steps from columns of steps\n"
+      "  to rows of steps");
+  } else {
+    allocAction = menu.addAction("Display as Columns");
+    allocAction->setWhatsThis(
+    "Display as Columns:\n"
+    "  Change this whole set of steps from rows of steps\n"
+    "  to columns of steps");
+  }
 
   QAction *perStepAction;
   if (callout->meta.LPub.callout.pli.perStep.value()) {
@@ -151,6 +167,10 @@ void CalloutBackgroundItem::contextMenuEvent(
     removeCallout(callout->modelName(),
                   callout->topOfCallout(),
                   callout->bottomOfCallout());
+  } else if (selectedAction == allocAction) {
+    changeAlloc(callout->topOfCallout(),
+                callout->bottomOfCallout(),
+                callout->allocMeta());
   }
 }
 
