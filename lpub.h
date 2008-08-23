@@ -459,7 +459,7 @@ public slots:
 
   /* The edit window sends us these */
 
-  void contentsChange(int position, int charsRemoved, const QString &charsAdded);
+  void contentsChange(const QString &fileName,int position, int charsRemoved, const QString &charsAdded);
 
   void parseError(QString errorMsg,Where &here)
   {
