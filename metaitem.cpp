@@ -339,7 +339,7 @@ void MetaItem::addPrevMultiStep(
     firstChange = false;
       
     Where prevTopOfRanges = topOfRanges-1;
-    scanBackward(prevTopOfRanges,StepGroupBeginRc);
+    scanBackward(prevTopOfRanges,StepGroupBeginMask);
     --prevTopOfRanges;
     scanBackward(prevTopOfRanges,StepMask);
     int removed = removeLastStep(prevTopOfRanges,topOfRanges); // shift by removal count
@@ -387,7 +387,7 @@ void MetaItem::addPrevMultiStep(
   
   appendMeta(prevStep,stepGroupBegin);
 
-  gui->displayPageNum--;
+//  gui->displayPageNum--;
   if ( ! firstChange) {
     endMacro();
   }
@@ -1024,7 +1024,6 @@ Rc  MetaItem::scanForward(
 {
   Meta tmpMeta;
   int  numLines  = gui->subFileSize(here.modelName);
-  Rc   rc;
   partsAdded = false;
 
   for ( ; here < numLines; here++) {
@@ -1034,29 +1033,21 @@ Rc  MetaItem::scanForward(
 
     split(line,tokens);
 
-    if (tokens.size() > 0 && tokens[0].size() == 1 &&
-        tokens[0][0] >= '1' && tokens[0][0] <= '5') {
+    bool token_1_5 = tokens.size() && tokens[0].size() == 1 && 
+         tokens[0] >= "1" && tokens[0] <= "5";
+
+    if (token_1_5) {
       partsAdded = true;
     } else {
-      rc = tmpMeta.parse(line,here);
-
-      if (rc == StepGroupEndRc && mask == StepGroupEndMask) {
-        return StepGroupEndRc;
-      } else if (rc < ClearRc) {
+      Rc rc = tmpMeta.parse(line,here);
       
-        int tmask = (1 << rc) & mask;
-      
-        if (tmask) {
+      if (rc == StepRc || rc == RotStepRc) {
+        if (((mask >> rc) & 1) && partsAdded) {
           return rc;
-        } else if ((mask & StepMask) && rc == StepRc || rc == RotStepRc) {
-          // ignore extra STEPS
-          if (partsAdded) {
-            if ((1 << rc) & mask) {
-              return rc;
-            }
-          }
-          partsAdded = false;
         }
+        partsAdded = false;
+      } else if (rc < ClearRc && ((mask >> rc) & 1)) {
+        return rc;
       }
     }
   }
@@ -1072,7 +1063,7 @@ Rc MetaItem::scanBackward(Where &here,int mask)
 
 Rc MetaItem::scanBackward(
   Where &here,
-  int    mask,
+  int    mask,  // What we stop on
   bool  &partsAdded)
 {
   Meta tmpMeta;
@@ -1086,18 +1077,20 @@ Rc MetaItem::scanBackward(
       return EndOfFileRc;
     }
     split(line,tokens);
+    
+    bool token_1_5 = tokens.size() && tokens[0].size() == 1 && tokens[0] >= "1" && tokens[0] <= "5";
 
-    if (tokens.size() > 0 && tokens[0].size() == 1 &&
-        tokens[0][0] >= '1' && tokens[0][0] <= '5') {
+    if (token_1_5) {
       partsAdded = true;
     } else {
       Rc rc = tmpMeta.parse(line,here);
-      if ((mask & StepMask) && rc == StepRc || rc == RotStepRc) {
-        if (partsAdded && ((1 << rc) & mask)) {
+      
+      if (rc == StepRc || rc == RotStepRc) {
+        if (((mask >> rc) & 1) && partsAdded) {
           return rc;
         }
         partsAdded = false;
-      } else if (rc < ClearRc && ((1 << rc) & mask)) {
+      } else if (rc < ClearRc && ((mask >> rc) & 1)) {
         return rc;
       }
     }
