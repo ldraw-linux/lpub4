@@ -374,8 +374,8 @@ Gui::Gui()
     connect(this,       SIGNAL(showLineSig(int)),
             editWindow, SLOT(  showLine(   int)));
 
-    connect(editWindow, SIGNAL(contentsChange(int,int,const QString &)),
-            this,       SLOT(  contentsChange(int,int,const QString &)));
+    connect(editWindow, SIGNAL(contentsChange(const QString &,int,int,const QString &)),
+            this,       SLOT(  contentsChange(const QString &,int,int,const QString &)));
 
     connect(editWindow, SIGNAL(redrawSig()),
             this,       SLOT(  redrawPage()));
