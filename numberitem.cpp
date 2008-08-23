@@ -200,9 +200,9 @@ void PageNumberItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
   placementAction->setWhatsThis(
     commonMenus.naturalLanguagePlacementWhatsThis(PageNumberType,placementData,name));
 
-  QAction *fontAction       = menu.addAction("Edit Page Number Font");
-  QAction *colorAction      = menu.addAction("Edit Page Number Color");
-  QAction *marginAction     = menu.addAction("Edit Page Number Margins");
+  QAction *fontAction       = menu.addAction("Change Page Number Font");
+  QAction *colorAction      = menu.addAction("Change Page Number Color");
+  QAction *marginAction     = menu.addAction("Change Page Number Margins");
   QAction *selectedAction   = menu.exec(event->screenPos());
 
   fontAction->setWhatsThis("You can change the font or the size of the page number");
