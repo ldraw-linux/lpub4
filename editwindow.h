@@ -56,6 +56,7 @@ private:
     QDockWidget *dock;
     QTextEdit   *_textEdit;
     Highlighter *highlighter;
+    QString      fileName;  // of file currently being displayed
 
     QMenu    *editMenu;
     QToolBar *editToolBar;
@@ -65,7 +66,7 @@ private:
     QAction  *redrawAct;
 
 signals:
-    void contentsChange(int position, int charsRemoved, const QString &charsAdded);
+    void contentsChange(const QString &, int position, int charsRemoved, const QString &charsAdded);
     void redrawSig();
 
 private slots:
