@@ -110,7 +110,7 @@ void EditWindow::contentsChange(
     addedChars = addedChars.mid(position,charsAdded);
   }
 
-  contentsChange(position, charsRemoved, addedChars);
+  contentsChange(fileName, position, charsRemoved, addedChars);
 }
 
 void EditWindow::pageUpDown(
@@ -156,8 +156,9 @@ void EditWindow::showLine(int lineNumber)
 
 void EditWindow::displayFile(
   LDrawFile     *ldrawFile,
-  const QString &fileName)
+  const QString &_fileName)
 {
+  fileName = _fileName;
   disconnect(_textEdit->document(), SIGNAL(contentsChange(int,int,int)),
              this,                  SLOT(  contentsChange(int,int,int)));
   if (fileName == "") {
@@ -168,6 +169,7 @@ void EditWindow::displayFile(
   _textEdit->document()->setModified(false);
   connect(_textEdit->document(), SIGNAL(contentsChange(int,int,int)),
           this,                  SLOT(  contentsChange(int,int,int)));
+  
 
 }
 
