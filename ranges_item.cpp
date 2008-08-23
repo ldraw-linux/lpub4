@@ -132,6 +132,22 @@ void MultiStepRangeBackgroundItem::contextMenuEvent(
       "No Parts List per Step" :
       "Parts List per Step");
 
+  QAction *allocAction;
+  
+  if (ranges->allocType() == Vertical) {
+    allocAction = menu.addAction("Display as Rows");
+    allocAction->setWhatsThis(
+      "Display as Rows:\n"
+      "  Change this whole set of steps from columns of steps\n"
+      "  to rows of steps");
+  } else {
+    allocAction = menu.addAction("Display as Columns");
+    allocAction->setWhatsThis(
+      "Display as Columns:\n"
+      "  Change this whole set of steps from rows of steps\n"
+      "  to columns of steps");
+  }
+
   QAction *marginAction = menu.addAction("Change Step Group Margins");
 
   marginAction->setWhatsThis("Change Step Group Margins:\n"
@@ -160,6 +176,10 @@ void MultiStepRangeBackgroundItem::contextMenuEvent(
                   ranges->topOfRanges(),
                   ranges->bottomOfRanges(),
                   margin);
+  } else if (selectedAction == allocAction) {
+    changeAlloc(ranges->topOfRanges(),
+                ranges->bottomOfRanges(),
+                ranges->allocMeta());
   }
 }
 
@@ -250,7 +270,7 @@ DividerItem::DividerItem(
 void DividerItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 {
   QMenu menu;
-  QAction *editAction     = menu.addAction("Edit Divider");
+  QAction *editAction     = menu.addAction("Change Divider");
   QAction *deleteAction   = menu.addAction("Delete Divider");
 
   editAction->setWhatsThis("Put the steps in this row together with the steps after this");
