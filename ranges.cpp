@@ -514,13 +514,18 @@ void Ranges::addGraphicsItemsVert(
 
         if (list.size() > 1 && i < list.size() - 1) {
           // add divider here
-          
-          DividerItem *divider = new DividerItem(
-                          dynamic_cast<Step *>(range->list[list.size()-1]),
-                         &meta,
-                          offset_x + offset[XX] + range->offset[XX] + range->size[XX],
-                          offset_y + offset[YY] + range->offset[YY]);
-          divider->setParentItem(parent);
+          int size = range->list.size();
+          if (size) {
+            Step *step = dynamic_cast<Step *>(range->list[size-1]);          
+            if (step) {
+              DividerItem *divider = new DividerItem(
+                              step,
+                             &meta,
+                              offset_x + offset[XX] + range->offset[XX] + range->size[XX],
+                              offset_y + offset[YY] + range->offset[YY]);
+              divider->setParentItem(parent);
+            }
+          }
         }
       }
     }
@@ -559,13 +564,19 @@ void Ranges::addGraphicsItemsHoriz(
           offset_x + offset[XX], offset_y + offset[YY], &meta, relativeType, rb);
 
         if (list.size() > 1 && i < list.size() - 1) {
-          // add divider here
-          DividerItem *divider = new DividerItem(
-                          dynamic_cast<Step *>(range->list[list.size()-1]),
-                         &meta,
+          int size = range->list.size();
+          
+          if (size) {
+            Step *step = dynamic_cast<Step *>(range->list[size-1]);
+            if (step) {
+              DividerItem *divider = new DividerItem(
+                         step,
+                        &meta,
                           offset_x + offset[XX] + range->offset[XX],
                           offset_y + offset[YY] + range->offset[YY] + range->size[YY]);
-          divider->setParentItem(parent);
+              divider->setParentItem(parent);
+            }
+          }
         }
       }
     }
