@@ -713,17 +713,17 @@ int Gui::drawPage(
 
               step->csiPixmap.pixmap = new QPixmap;
 
-             if (step->csiPixmap.pixmap == NULL) {
-               // fatal
-               exit(-1);
-             }
+              if (step->csiPixmap.pixmap == NULL) {
+                // fatal
+                exit(-1);
+              }
 
-             int rc = step->createCsi(
-              curFile,
-              addLine,
-              csiParts,
-              step->csiPixmap.pixmap,
-              ranges->meta);
+              int rc = step->createCsi(
+                curFile,
+                addLine,
+                csiParts,
+                step->csiPixmap.pixmap,
+                ranges->meta);
 
               statusBar()->showMessage("Processing " + current.modelName);
 
@@ -1002,7 +1002,7 @@ int Gui::findPage(
                 if (pageNum < displayPageNum) {
                   saveCsiParts   = csiParts;
                   saveStepNumber = stepNumber;
-                  saveMeta       = meta;
+                  saveMeta       = stepGroupMeta;
                   saveBfx        = bfx;
                 } else if (pageNum == displayPageNum) {
                   csiParts.clear();
@@ -1014,7 +1014,6 @@ int Gui::findPage(
                   saveCsiParts.clear();
                 }
                 ++pageNum;
-                saveMeta = stepGroupMeta;
               }
             break;
   
