@@ -122,6 +122,8 @@ void Pli::append(
     part->csiMargin    = meta->LPub.pli.part.margin;
     parts.insert(key,part);
   }
+  
+  
 
   parts[key]->instances.append(here);
 }
@@ -1521,7 +1523,7 @@ void PGraphicsPixmapItem::contextMenuEvent(
 #if 0
   QAction *scaleAction  = commonMenus.scaleMenu(menu,part);
 
-  QAction *orientationAction= menu.addAction("Edit Part Orientation");
+  QAction *orientationAction= menu.addAction("Change Part Orientation");
   orientationAction->setDisabled(true);
   orientationAction->setWhatsThis("This doesn't work right now");
 #endif
