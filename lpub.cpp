@@ -216,7 +216,7 @@ void Gui::displayFile(
   const QString &modelName, 
   bool force)
 {
-  if (force || modelName != curSubFile) {
+//  if (force || modelName != curSubFile) {
     for (int i = 0; i < mpdCombo->count(); i++) {
       if (mpdCombo->itemText(i) == modelName) {
         mpdCombo->setCurrentIndex(i);
@@ -225,7 +225,7 @@ void Gui::displayFile(
     }
     curSubFile = modelName;
     displayFileSig(ldrawFile, modelName);
-  }
+//  }
 }
 
 /*-----------------------------------------------------------------------------*/

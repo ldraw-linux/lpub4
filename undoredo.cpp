@@ -67,7 +67,6 @@ void Gui::endMacro()
   undoStack->endMacro();
   --macroNesting;
   displayPage();
-  displayFile(&ldrawFile,curSubFile,true);
 }
 
 void Gui::contentsChange(
@@ -100,7 +99,6 @@ void Gui::undo()
   undoStack->undo();
   macroNesting--;
   displayPage();
-  displayFile(&ldrawFile,curSubFile,true);
 }
 
 void Gui::redo()
@@ -109,7 +107,6 @@ void Gui::redo()
   undoStack->redo();
   macroNesting--;
   displayPage();
-  displayFile(&ldrawFile,curSubFile,true);
 }
 
 void Gui::canRedoChanged(bool enabled)

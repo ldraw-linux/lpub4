@@ -34,14 +34,13 @@ InsertLineCommand::InsertLineCommand(
 void InsertLineCommand::undo()
 {
   ldrawFile->deleteLine(here.modelName,here.lineNumber);
-  gui->displayFile(ldrawFile,here.modelName,true);
-  gui->displayPage();
+  gui->showLine(here);
 }
 
 void InsertLineCommand::redo()
 {
   ldrawFile->insertLine(here.modelName,here.lineNumber,line);
-  gui->displayFile(ldrawFile,here.modelName,true);
+  gui->showLine(here);
   gui->displayPage();
 }
 
@@ -61,14 +60,14 @@ AppendLineCommand::AppendLineCommand(
 void AppendLineCommand::undo()
 {
   ldrawFile->deleteLine(here.modelName,here.lineNumber+1);
-  gui->displayFile(ldrawFile,here.modelName,true);
+  gui->showLine(here);
   gui->displayPage();
 }
 
 void AppendLineCommand::redo()
 {
   ldrawFile->insertLine(here.modelName,here.lineNumber+1,line);
-  gui->displayFile(ldrawFile,here.modelName,true);
+  gui->showLine(here);
   gui->displayPage();
 }
 
@@ -86,7 +85,7 @@ DeleteLineCommand::DeleteLineCommand(
 void DeleteLineCommand::undo()
 {
   ldrawFile->insertLine(here.modelName,here.lineNumber,deletedLine);
-  gui->displayFile(ldrawFile,here.modelName,true);
+  gui->showLine(here);
   gui->displayPage();
 }
 
@@ -94,7 +93,7 @@ void DeleteLineCommand::redo()
 {
   deletedLine = ldrawFile->readLine(here.modelName, here.lineNumber);
   ldrawFile->deleteLine(here.modelName,here.lineNumber);
-  gui->displayFile(ldrawFile,here.modelName,true);
+  gui->showLine(here);
   gui->displayPage();
 }
 
@@ -115,7 +114,7 @@ ReplaceLineCommand::ReplaceLineCommand(
 void ReplaceLineCommand::undo()
 {
   ldrawFile->replaceLine(here.modelName,here.lineNumber,oldLine);
-  gui->displayFile(ldrawFile,here.modelName,true);
+  gui->showLine(here);
   gui->displayPage();
 }
 
@@ -124,7 +123,7 @@ void ReplaceLineCommand::redo()
   ldrawFile->replaceLine(here.modelName,
                          here.lineNumber,
                          newLine);
-  gui->displayFile(ldrawFile,here.modelName,true);
+  gui->showLine(here);
   gui->displayPage();
 }
 
@@ -158,7 +157,6 @@ void ContentsChangeCommand::redo()
     isRedo = true;
   } else {
     gui->maxPages = -1;
-    gui->displayFile(ldrawFile,modelName,true);
     gui->displayPage();
   }
 }
@@ -173,6 +171,5 @@ void ContentsChangeCommand::undo()
     position,
     addedChars.size(),
     removedChars);
-  gui->displayFile(ldrawFile,modelName,true);
   gui->displayPage();
 }

@@ -463,8 +463,7 @@ public slots:
 
   void parseError(QString errorMsg,Where &here)
   {
-    displayFileSig(&ldrawFile,here.modelName);
-    showLineSig(here.lineNumber);
+    showLine(here);
     if (1) {
       statusBarMsg(QString("%1 %2:%3") .arg(errorMsg) .arg(here.modelName) .arg(here.lineNumber));
     } else {
@@ -474,7 +473,7 @@ public slots:
   
   void showLine(const Where &topOfStep)
   {
-    displayFileSig(&ldrawFile,topOfStep.modelName);
+    displayFile(&ldrawFile,topOfStep.modelName);
     showLineSig(topOfStep.lineNumber);
   }
 
