@@ -659,7 +659,7 @@ int Gui::drawPage(
 
             ranges->setBottomOfRanges(topOfStep);
             ranges->placement = ranges->meta.LPub.multiStep.placement;
-//            showLine(ranges->topOfRanges());
+            showLine(ranges->topOfRanges());
             addGraphicsPageItems(ranges, view, scene);
             return HitEndOfPage;
           }
@@ -746,7 +746,7 @@ int Gui::drawPage(
               } else {
                 ranges->setBottomOfRanges(current);
                 ranges->placement = ranges->meta.LPub.assem.placement;
-//                showLine(topOfStep);
+                showLine(topOfStep);
                 addGraphicsPageItems(ranges,view,scene);
                 return HitEndOfPage;
               }
@@ -762,8 +762,7 @@ int Gui::drawPage(
           }
         break;
         case RangeErrorRc:
-          displayFileSig(&ldrawFile,current.modelName);
-          showLineSig(current.lineNumber);
+          showLine(current);
           QMessageBox::critical(NULL,
                                QMessageBox::tr("LPub"),
                                QMessageBox::tr("Parameter(s) out of range: %1:%2\n%3")
@@ -779,8 +778,7 @@ int Gui::drawPage(
       if (tokens.size() > 0) {
         QString foo = tokens[0];
       }
-      displayFileSig(&ldrawFile,current.modelName);
-      showLineSig(current.lineNumber);
+      showLine(current);
       QMessageBox::critical(NULL,
                             QMessageBox::tr("LPub"),
                             QMessageBox::tr("Invalid LDraw Line Type: %1:%2\n  %3")
@@ -792,8 +790,7 @@ int Gui::drawPage(
   }
 
   if (multiStep) {
-    displayFileSig(&ldrawFile,current.modelName);
-    showLineSig(current.lineNumber);
+    showLine(current);
     QMessageBox::critical(NULL,
                           QMessageBox::tr("LPub"),
                           QMessageBox::tr("End of %1 while multiStep pending")
@@ -811,7 +808,7 @@ int Gui::drawPage(
     ranges->setBottomOfRanges(current);
     ranges->placement = ranges->meta.LPub.multiStep.placement;
 
-//    showLine(topOfStep);
+    showLine(topOfStep);
     addGraphicsPageItems(ranges, view, scene);
     return HitEndOfPage;
   }
