@@ -34,13 +34,13 @@
  ***************************************************************************/
 
 MultiStepRangesBackgroundItem::MultiStepRangesBackgroundItem(
-  Ranges *_ranges,
+  Steps *_steps,
   QRectF rect, 
   QGraphicsItem *parent, 
   Meta *_meta)
 {
   meta = _meta;
-  ranges = _ranges;
+  ranges = dynamic_cast<Ranges *>(_steps);
   setRect(rect);
   setPen(Qt::NoPen);
   setBrush(Qt::NoBrush);
@@ -77,19 +77,19 @@ void MultiStepRangesBackgroundItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *
     placementData.offsets[1] += newPosition.y()/meta->LPub.page.size.value(1);
     meta->LPub.multiStep.placement.setValue(placementData);
 
-    changePlacementOffset(ranges->topOfRanges(),&meta->LPub.multiStep.placement,false);
+    changePlacementOffset(ranges->topOfSteps(),&meta->LPub.multiStep.placement,false);
   }
 }
 
 MultiStepRangeBackgroundItem::MultiStepRangeBackgroundItem(
-  Ranges *_ranges,
+  Steps *_steps,
   Range  *_range,
   Meta   *_meta,
   int     _offset_x,
   int     _offset_y,
   QGraphicsItem *parent)
 {
-  ranges = _ranges;
+  ranges = dynamic_cast<Ranges *>(_steps);
 
   meta = _meta;
 
@@ -103,7 +103,7 @@ MultiStepRangeBackgroundItem::MultiStepRangeBackgroundItem(
   subModelFont      = &multiStep->subModelFont;
   subModelFontColor = &multiStep->subModelFontColor;
   perStep           = &multiStep->pli.perStep;
-  relativeType      = _ranges->relativeType;
+  relativeType      = ranges->relativeType;
 
   int tx = _offset_x+_range->offset[XX];
   int ty = _offset_y+_range->offset[YY];
@@ -163,22 +163,22 @@ void MultiStepRangeBackgroundItem::contextMenuEvent(
     changePlacement(PageType,
                     relativeType,
                     "Step Group Placement",
-                    ranges->topOfRanges(),
-                    ranges->bottomOfRanges(),
+                    ranges->topOfSteps(),
+                    ranges->bottomOfSteps(),
                     &meta->LPub.multiStep.placement,
                     1,false);
   } else if (selectedAction == perStepAction) {
-    changeBool(ranges->topOfRanges(),
-               ranges->bottomOfRanges(),
+    changeBool(ranges->topOfSteps(),
+               ranges->bottomOfSteps(),
               &meta->LPub.multiStep.pli.perStep);
   } else if (selectedAction == marginAction) {
     changeMargins("Step Group Margins",
-                  ranges->topOfRanges(),
-                  ranges->bottomOfRanges(),
+                  ranges->topOfSteps(),
+                  ranges->bottomOfSteps(),
                   margin);
   } else if (selectedAction == allocAction) {
-    changeAlloc(ranges->topOfRanges(),
-                ranges->bottomOfRanges(),
+    changeAlloc(ranges->topOfSteps(),
+                ranges->bottomOfSteps(),
                 ranges->allocMeta());
   }
 }
@@ -191,14 +191,14 @@ DividerItem::DividerItem(
 {
   step = _step;
   AllocEnc allocEnc;
-  Ranges *ranges = step->grandparent();
-  Range  *range  = step->range();
-  parentRelativeType = ranges->relativeType;
+  Steps  *steps = step->grandparent();
+  Range  *range = step->range();
+  parentRelativeType = steps->relativeType;
   
   if (parentRelativeType == CalloutType) {
-    allocEnc = ranges->meta.LPub.callout.alloc.value();
+    allocEnc = steps->meta.LPub.callout.alloc.value();
   } else {
-    allocEnc = ranges->meta.LPub.multiStep.alloc.value();
+    allocEnc = steps->meta.LPub.multiStep.alloc.value();
   }
 
   SepData sepData = range->sepMeta.value();
@@ -210,11 +210,11 @@ DividerItem::DividerItem(
             offsetY,
            2*sepData.margin[XX]
            +sepData.thickness,
-            ranges->size[YY]);
+            steps->size[YY]);
   } else {
     setRect(offsetX,
             offsetY,
-            ranges->size[XX],
+            steps->size[XX],
            2*sepData.margin[YY]
            +sepData.thickness);
   }
@@ -226,7 +226,7 @@ DividerItem::DividerItem(
 
   BorderData borderData;
 
-  if (ranges->relativeType == CalloutType) {
+  if (steps->relativeType == CalloutType) {
     borderData = _meta->LPub.callout.border.value();
   } else {
     borderData.margin[0] = 0;
@@ -243,7 +243,7 @@ DividerItem::DividerItem(
                         offsetY,
                         left,
                         offsetY
-                       +ranges->size[YY]
+                       +steps->size[YY]
                        -2*borderData.thickness
                        -2*borderData.margin[YY]);
     } else {
@@ -252,7 +252,7 @@ DividerItem::DividerItem(
       lineItem->setLine(offsetX,
                         top,
                         offsetX
-                       +ranges->size[XX]
+                       +steps->size[XX]
                        -2*sepData.thickness
                        -2*sepData.margin[XX],
                         top);

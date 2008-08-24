@@ -25,7 +25,7 @@
  *
  * The top of tree is the Meta class that is the interface to the traverse
  * function that walks the LDraw model higherarchy.  Meta also tracks
- * locations in files like topOfModel, bottomOfModel, topOfRanges,topOfRange,
+ * locations in files like topOfModel, bottomOfModel, bottomOfSteps,topOfRange,
  * bottomOfRange, topOfStep, bottomOfStep, etc.
  *
  * Please see lpub.h for an overall description of how the files in LPub
@@ -1188,44 +1188,415 @@ void SepMeta::doc(QTextStream &out, QString preamble)
 }
 
 /* ------------------ */ 
-Rc InsertMeta::parse(QStringList &argv, int index,Where &here)
+
+/* INSERT
+ *   ((TOP|BOTTOM) (LEFT|CENTER|RIGHT)|
+ *    (LEFT|RIGHT) (TOP|CENTER|BOTTOM)|
+ *    (TOP_LEFT|TOP_RIGHT|BOTTOM_RIGHT|BOTTOM_LEFT))
+ *      (PAGE|ASSEM|STEP_NUMBER|STEP_GROUP|....) (INSIDE|OUTSIDE) (OFFSET X Y) (MARGIN X Y)
+ *        (PICTURE "name" (SCALE x))|
+ *         TEXT |
+ *         ARROW HX HY TX TY |
+ *         BOM)
+ *
+ *              . ' (hox hoy) (hafting outside)
+ *          . '  /
+ *      . '     /---------------------------------------+
+ *   tx--------- hix (hafting center)                   | shaft
+ *      ` .     \---------------------------------------+
+ *          ` .  \
+ *              ` .
+ *  TEXT
+ *    FONT
+ *    COLOR
+ *    ALIGNMENT
+ *
+ *  ARROW
+ *    HEAD
+ *    SHAFT
+ *    COLOR
+ *    END (ROUND|SQUARE)
+ *
+ *  Picture takes up    area (placement)  PictureItem (ImageMeta?)
+ *  BOM     takes up    area (placement)  Pli
+ *  Text    takes up no area (placement)  TextItem
+ *  Arrows  take  up no area (placement)  ArrowItem (GroupItem)
+ *
+ *  STEP INSERT PART STEP (build a list of inserts, append to Step)
+ *    PICTURE relativeTo (STEP_NUM|PLI|ASSEM|STEP_GROUP|PAGE)
+ *    TEXT relativeTo    (STEP_NUM|PLI|ASSEM|STEP_GROUP|PAGE)
+ *    ARROW relativeTo   (STEP_NUM|PLI|ASSEM|STEP_GROUP|PAGE)
+ *    BOM relativeTo     (STEP_NUM|PLI|ASSEM|STEP_GROUP|PAGE)
+ */
+ 
+Rc InsertMeta::parse(QStringList &argv, int index, Where &here)
 {
+  PlacementEnc   _placement, _justification;
+  PlacementType  _relativeTo;
+  PrepositionEnc _preposition;
+  float _offsets[2];
   Rc rc = FailureRc;
-  if (argv.size() - index == 3) {
-    bool ok[2];
-    argv[index+1].toFloat(&ok[0]);
-    argv[index+2].toFloat(&ok[1]);
-    if (ok[0] && ok[1]) {
-      PicMeta pic;
-      pic.fileName = argv[index];
-      pic.position[0] = argv[index+1].toFloat(&ok[0]);
-      pic.position[1] = argv[index+2].toFloat(&ok[1]);
-      pic.here       = here;
-      list << pic;
-      rc = OkRc;
+
+  _placement     = _value[pushed].placement;
+  _justification = _value[pushed].justification;
+  _relativeTo    = _value[pushed].relativeTo;
+  _preposition   = _value[pushed].preposition;
+  _offsets[0]    = 0;
+  _offsets[1]    = 0;
+
+  QRegExp rx("^(TOP|BOTTOM)$");
+  if (argv[index].contains(rx)) {
+    _placement = PlacementEnc(tokenMap[argv[index++]]);
+    if (index < argv.size()) {
+      rx.setPattern("^(LEFT|CENTER|RIGHT)$");
+      if (argv[index].contains(rx)) {
+        _justification = PlacementEnc(tokenMap[argv[index++]]);
+        rc = OkRc;
+      }
+    } 
+  } else {
+    rx.setPattern("^(LEFT|RIGHT)$");
+    if (argv[index].contains(rx)) {
+      _placement = PlacementEnc(tokenMap[argv[index++]]);
+      if (index < argv.size()) {
+        rx.setPattern("^(TOP|CENTER|BOTTOM)$");
+        if (argv[index].contains(rx)) {
+          _justification = PlacementEnc(tokenMap[argv[index++]]);
+          rc = OkRc;
+        }
+      }
+    } else {
+      rx.setPattern("^(TOP_LEFT|TOP_RIGHT|BOTTOM_LEFT|BOTTOM_RIGHT|CENTER)$");
+      if (argv[index].contains(rx)) {
+        _placement = PlacementEnc(tokenMap[argv[index++]]);
+        _justification = Center;
+        rc = OkRc;
+      }
     }
   }
+
+  if (rc == OkRc && index < argv.size()) {
+    rx.setPattern("^(PAGE|ASSEM|MULTI_STEP|STEP_NUMBER|PLI|CALLOUT)$");
+    if (argv[index].contains(rx)) {
+      _relativeTo = PlacementType(tokenMap[argv[index++]]);
+      if (_relativeTo == PageType) {
+        _preposition = Inside;
+      } else {
+        _preposition = Outside;
+      }
+      if (index < argv.size()) {
+        rx.setPattern("^(INSIDE|OUTSIDE)$");
+        if (argv[index].contains(rx)) {
+          _preposition = PrepositionEnc(tokenMap[argv[index++]]);
+          rc = OkRc;
+        } 
+      } else {
+        rc = OkRc;
+      }
+    }
+  }
+  
+  if (rc == OkRc) {
+    if (argv[index] == "OFFSET") {
+      index++;
+      if (argv.size() - index > 2) {
+        bool ok[2];
+        argv[index  ].toFloat(&ok[0]);
+        argv[index+1].toFloat(&ok[1]);
+        if (ok[0] && ok[1]) {
+          _value[pushed].offsets[0] = argv[index++].toFloat(&ok[0]);
+          _value[pushed].offsets[1] = argv[index++].toFloat(&ok[1]);
+          _here[pushed] = here;
+        }
+      } else {
+        rc = FailureRc;
+      }
+    }
+  }
+  
+  if (rc == OkRc) {
+    if (argv[index] == "MARGIN") {
+      index++;
+      if (argv.size() - index > 2) {
+        bool ok[2];
+        argv[index  ].toFloat(&ok[0]);
+        argv[index+1].toFloat(&ok[1]);
+        if (ok[0] && ok[1]) {
+          _value[pushed].offsets[0] = argv[index++].toFloat(&ok[0]);
+          _value[pushed].offsets[1] = argv[index++].toFloat(&ok[1]);
+          _here[pushed] = here;
+        }
+      } else {
+        rc = FailureRc;
+      }
+    }
+  }
+  
+  InsertType  type =       _value[pushed].type;
+  QString     picName =    _value[pushed].picName;
+  qreal       picScale =   _value[pushed].picScale;
+  QStringList text =       _value[pushed].text;
+  QPointF     arrow[2];
+  
+  arrow[0] = _value[pushed].arrow[0];
+  arrow[1] = _value[pushed].arrow[1];
+  
+  bool good, ok;
+    
+  if (rc == OkRc) {
+    QString picName;
+           if (argv.size() - index >= 2 && argv[index] == "PICTURE") {
+      type = InsertPicture;
+      picName = argv[++index];
+      ++index;
+      if (argv.size() - index >= 2 && argv[index] == "SCALE") {
+        picScale = argv[++index].toFloat(&good);
+        if (rc != good) {
+          rc = FailureRc;
+        }
+      }
+    } else if (argv.size() - index >= 2 && argv[index] == "TEXT") {
+      type = InsertText;
+      ++index;
+      int j;
+      for (j = 0; index < argv.size(); ) {
+        text[j++] = argv[index++];
+      }
+    } else if (argv.size() - index >= 5 && argv[index] == "ARROW") {
+      type = InsertArrow;
+       
+      arrow[0].setX(argv[++index].toFloat(&good));
+      arrow[0].setY(argv[++index].toFloat(&ok));
+      good &= ok;
+      arrow[1].setX(argv[++index].toFloat(&ok));
+      good &= ok;
+      arrow[1].setY(argv[++index].toFloat(&ok));
+      good &= ok;
+      if ( ! good) {
+        rc = FailureRc;
+      }
+      ++index;
+    } else if (argv[index] == "BOM"     && argv.size() - index == 1) {
+      type = InsertBom;
+    }
+  }
+
+  if (rc == OkRc) {
+    _value[pushed].placement     = _placement;
+    _value[pushed].justification = _justification;
+    _value[pushed].relativeTo    = _relativeTo;
+    _value[pushed].preposition   = _preposition;
+    _value[pushed].offsets[0]    = _offsets[0];
+    _value[pushed].offsets[1]    = _offsets[1];
+    _value[pushed].type          = type;
+    _value[pushed].picName       = picName;
+    _value[pushed].picScale      = picScale;
+    _value[pushed].text          = text;
+    _value[pushed].arrow[0]      = arrow[0];
+    _value[pushed].arrow[1]      = arrow[1];
+
+    _here[pushed] = here;
+  }
+  
+  if (rc != OkRc) {
+    QMessageBox::warning(NULL,
+      QMessageBox::tr("LPub"),
+      QMessageBox::tr("Malformed Insert metacommand \"%1\"") .arg(argv.join(" ")));
+  } 
   return rc;
 }
 
 QString InsertMeta::format(bool local, bool global)
 {
-  return LeafMeta::format(local,global,"");
+  QString foo;
+
+  switch (_value[pushed].placement) {
+    case Top:
+    case Bottom:
+    case Right:
+    case Left:
+      foo = placementNames[_value[pushed].placement] + " "
+          + placementNames[_value[pushed].justification] + " "
+          + relativeNames [_value[pushed].relativeTo] + " "
+          + prepositionNames[_value[pushed].preposition];
+    break;
+    default:
+      foo = placementNames[_value[pushed].placement] + " "
+          + relativeNames [_value[pushed].relativeTo] + " "
+          + prepositionNames[_value[pushed].preposition];
+  }
+  if (_value[pushed].offsets[0] || _value[pushed].offsets[1]) {
+    foo += QString(" OFFSET %1 %2") .arg(_value[pushed].offsets[0]) 
+                                   .arg(_value[pushed].offsets[1]);
+  }
+  if (_value[pushed].offsets[0] || _value[pushed].offsets[1]) {
+    foo += QString(" MARGIN %1 %2") .arg(_value[pushed].offsets[0]) 
+                                    .arg(_value[pushed].offsets[1]);
+  }
+  switch (_value[pushed].type) {
+    case InsertPicture:
+      foo += " PICTURE \"" + _value[pushed].picName + "\"";
+      if (_value[pushed].picScale) {
+        foo += QString(" SCALE %1") .arg(_value[pushed].picScale);
+      }
+    break;
+    case InsertText:
+      foo += " TEXT";
+      for (int i = 0; i < _value[pushed].text.size(); i++) {
+        foo += " \"" + _value[pushed].text[i] + "\"";
+      }
+    break;
+    case InsertArrow:
+      foo += " ARROW";
+      foo += QString(" %1") .arg(_value[pushed].arrow[0].rx());
+      foo += QString(" %1") .arg(_value[pushed].arrow[0].ry());
+      foo += QString(" %1") .arg(_value[pushed].arrow[1].rx());      
+      foo += QString(" %1") .arg(_value[pushed].arrow[1].ry());
+    break;
+    case InsertBom:
+      foo += " BOM";
+    break;
+  }
+    
+  return LeafMeta::format(local,global,foo);
 }
 
-QString InsertMeta::format(bool local,  bool global, int i)
+void InsertMeta::doc(QTextStream &out, QString preamble)
+{
+  out << preamble << " <placement> (PICTURE \"name\"|ARROW x y x y |BOM|TEXT \"\" \"\"" << endl;
+}
+
+/* ------------------ */
+  
+Rc AlignmentMeta::parse(QStringList &argv, int index, Where &here)
+{
+  if (argv.size() - index == 1) {
+    if (argv[index] == "LEFT") {
+      _value[pushed] = Qt::AlignLeft;
+    } else if (argv[index] == "CENTER") {
+      _value[pushed] = Qt::AlignCenter;
+    } else if (argv[index] == "RIGHT") {
+      _value[pushed] = Qt::AlignRight;
+    }
+    _here[pushed] = here;
+    return OkRc;
+  } else {
+    return FailureRc;
+  }
+}
+
+QString AlignmentMeta::format(bool local, bool global)
 {
   QString foo;
   
-  if (i < list.size()) {
-    foo = QString(" %1 %2") 
-            .arg(list[i].position[0]) .arg(list[i].position[1]);
+  switch (_value[pushed]) {
+    case Qt::AlignLeft:
+      foo = " LEFT";
+    break;
+    case Qt::AlignCenter:
+      foo = " CENTER";
+    break;
+    default:
+      foo = " RIGHT";
+  }
+  
+  return LeafMeta::format(local,global,foo);
+}
+
+void AlignmentMeta::doc(QTextStream &out, QString preamble)
+{
+  out << preamble << "(LEFT|CENTER|RIGHT)";
+}
+
+/* ------------------ */ 
+
+void TextMeta::init(BranchMeta *parent, QString name)
+{
+  AbstractMeta::init(parent,name);
+  font.init(     this,"FONT");
+  color.init(    this,"COLOR");
+  alignment.init(this,"ALIGNMENT");
+}
+
+/* ------------------ */
+
+Rc ArrowHeadMeta::parse(QStringList &argv, int index, Where &here)
+{
+  if (argv.size() - index == 4) {
+    qreal head[4];
+    bool  good, ok;
+    
+    head[0] = argv[index].toFloat(&good);
+    head[1] = argv[index+1].toFloat(&ok);
+    good &= ok;
+    head[2] = argv[index+2].toFloat(&ok);
+    good &= ok;
+    head[3] = argv[index+3].toFloat(&ok);
+    good &= ok;
+    
+    if ( ! good) {
+      return FailureRc;
+    }
+    
+    _value[pushed][0] = head[0];
+    _value[pushed][1] = head[1];
+    _value[pushed][2] = head[2];
+    _value[pushed][3] = head[3];
+    _here[pushed] = here;
+    
+    return OkRc;
+  }
+  return FailureRc;
+}
+
+QString ArrowHeadMeta::format(bool local, bool global)
+{
+  QString foo;
+  foo  = QString(" %1 %2 %3 %4") .arg(_value[pushed][0]);
+  foo += QString(" %1 %2 %3 %4") .arg(_value[pushed][1]);
+  foo += QString(" %1 %2 %3 %4") .arg(_value[pushed][2]);
+  foo += QString(" %1 %2 %3 %4") .arg(_value[pushed][3]);
+  return LeafMeta::format(local,global,foo);
+}
+
+void ArrowHeadMeta::doc(QTextStream &out, QString preamble)
+{
+  out << preamble << "TipX HaftingInsideX HaftingOutsideX HaftingOutsideY";
+}
+
+/* ------------------ */ 
+
+Rc ArrowEndMeta::parse(QStringList &argv, int index, Where &here)
+{
+  if (argv.size() - index == 1) {
+    if (argv[0] == "SQUARE") {
+      _value[pushed] = false;
+    } else if (argv[0] == "ROUND") {
+      _value[pushed] = true;
+    } else {
+      return FailureRc;
+    }
+    _here[pushed] = here;
+    return OkRc;
+  }
+  return FailureRc;
+}
+
+QString ArrowEndMeta::format(bool local, bool global)
+{
+  QString foo;
+  
+  if (_value[pushed]) {
+    foo = "ROUND";
+  } else {
+    foo = "SQUARE";
   }
   return LeafMeta::format(local,global,foo);
 }
-void InsertMeta::doc(QTextStream &out, QString preamble)
+
+void ArrowEndMeta::doc(QTextStream &out, QString preamble)
 {
-  out << preamble << " <\"filename\"> <floatX> <floatY>" << endl;
+  out << preamble << "(SQUARE|ROUND)";
 }
 
 /* ------------------ */ 
@@ -1502,11 +1873,13 @@ void PageMeta::init(BranchMeta *parent, QString name)
   margin.init       (this, "MARGINS");
   border.init       (this, "BORDER");
   background.init   (this, "BACKGROUND");
-  inserts.init      (this, "INSERT");
   dpn.init          (this, "DISPLAY_PAGE_NUMBER");
   togglePnPlacement.init(this,"TOGGLE_PAGE_NUMBER_PLACEMENT");
   number.init       (this, "NUMBER");
-  subModelColor.init(this,"SUBMODEL_BACKGROUND_COLOR");
+  subModelColor.init(this, "SUBMODEL_BACKGROUND_COLOR");
+
+  begin.init        (this, "BEGIN",   PageBeginRc);
+  end.init          (this, "END",     PageEndRc);
 }
 
 /* ------------------ */ 
@@ -1799,6 +2172,7 @@ void LPubMeta::init(BranchMeta *parent, QString name)
   reserve                .init(this,"RESERVE", ReserveSpaceRc);
   partSub                .init(this,"PART");
   resolution             .init(this,"RESOLUTION");
+  insert                 .init(this,"INSERT");
 }
 
 /* ------------------ */ 

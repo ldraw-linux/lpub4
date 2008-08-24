@@ -29,7 +29,7 @@
 #include "ranges_element.h"
 #include "ranges.h"
 
-Ranges *AbstractRangesElement::grandparent()
+Steps *AbstractRangesElement::grandparent()
 {
   return parent;
 }
@@ -101,14 +101,14 @@ AbstractRangeElement *AbstractRangesElement::nextElement(
 }
 
 
-const Where &AbstractRangesElement::topOfRanges()
+const Where &AbstractRangesElement::topOfSteps()
 {
-  return parent->topOfRanges();
+  return parent->topOfSteps();
 }  
 
-const Where &AbstractRangesElement::bottomOfRanges()
+const Where &AbstractRangesElement::bottomOfSteps()
 {
-  return parent->bottomOfRanges();
+  return parent->bottomOfSteps();
 }  
 
 
@@ -137,29 +137,29 @@ Boundary AbstractRangesElement::boundary(AbstractRangeElement *me)
   Boundary myBoundary = parent->boundary(this);
 
   switch (myBoundary) {
-    case StartOfRanges:
+    case StartOfSteps:
       if (list.size() == 1) {
-        return Boundary(StartOfRanges|StartOfRange|EndOfRange);
+        return Boundary(StartOfSteps|StartOfRange|EndOfRange);
       }
       if (list[0] == me) {
-        return Boundary(StartOfRanges|StartOfRange);
+        return Boundary(StartOfSteps|StartOfRange);
       }
     break;
-    case EndOfRanges:
+    case EndOfSteps:
       if (list.size() == 1) {
-        return Boundary(StartOfRange|EndOfRange|EndOfRanges);
+        return Boundary(StartOfRange|EndOfRange|EndOfSteps);
       }
       if (list[list.size()-1] == me) {
-        return Boundary(EndOfRange|EndOfRanges);
+        return Boundary(EndOfRange|EndOfSteps);
       }
     break;
-    case StartAndEndOfRanges:
+    case StartAndEndOfSteps:
       if (list.size() == 1) {
-        return StartAndEndOfRanges;
+        return StartAndEndOfSteps;
       } else if (list[0] == me) {
-        return Boundary(StartOfRanges|StartOfRange);
+        return Boundary(StartOfSteps|StartOfRange);
       } else if (list[list.size()-1] == me) {
-        return Boundary(EndOfRange|EndOfRanges);
+        return Boundary(EndOfRange|EndOfSteps);
       }
     break;
     default:

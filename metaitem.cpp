@@ -97,10 +97,10 @@ Rc MetaItem::scanBackwardStepGroup(Where &here)
 //   STEP (END) xxxxx PART STEP           (BEGIN) PART STEP DIVIDER
 
 int MetaItem::removeFirstStep(
-  const Where &topOfRanges)
+  const Where &topOfSteps)
 {
   int sum = 0;
-  Where secondStep = topOfRanges + 1;         // STEP
+  Where secondStep = topOfSteps + 1;         // STEP
 
   Rc rc = scanForwardStepGroup(secondStep);
   if (rc == StepGroupEndRc) {                 // (END)
@@ -142,8 +142,8 @@ int MetaItem::removeFirstStep(
 }
 
 void MetaItem::addNextMultiStep(
-  const Where &topOfRanges,
-  const Where &bottomOfRanges)  // always add at end
+  const Where &topOfSteps,
+  const Where &bottomOfSteps)  // always add at end
 {
   Rc rc1;
   
@@ -162,7 +162,7 @@ void MetaItem::addNextMultiStep(
   // STEP END PART STEP
   // STEP     PART STEP END
 
-  Where walk = bottomOfRanges + 1;
+  Where walk = bottomOfSteps + 1;
   rc1 = scanForward(walk,StepMask|StepGroupMask);
   Where end;
   if (rc1 == StepGroupEndRc) {                            // END
@@ -172,12 +172,12 @@ void MetaItem::addNextMultiStep(
   if (rc1 == StepGroupBeginRc) {                          // BEGIN
     firstChange = false;
     beginMacro("addNextStep1");
-    removeFirstStep(bottomOfRanges);                      // remove BEGIN
+    removeFirstStep(bottomOfSteps);                      // remove BEGIN
     partsAdded = false;
     rc1 = scanForwardStepGroup(walk,partsAdded);
   }
 
-  // bottomOfRanges - STEP
+  // bottomOfSteps - STEP
   // end            - StepGroupEnd
   // walk           - (STEP || EOF)
     
@@ -192,12 +192,14 @@ void MetaItem::addNextMultiStep(
   if (end.lineNumber) {
     deleteMeta(end);
   } else {
-    walk = topOfRanges + 1;
+    walk = topOfSteps + 1;
     rc1 = scanForward(walk,StepMask|StepGroupMask);
     if (rc1 == StepGroupEndRc) {
       appendMeta(walk,stepGroupBegin);
     } else {
-      appendMeta(topOfRanges,stepGroupBegin);
+      walk = topOfSteps;
+      scanPastGlobal(walk);
+      appendMeta(walk,stepGroupBegin);
     }
   }
   endMacro();
@@ -217,13 +219,13 @@ void MetaItem::addNextMultiStep(
 // $$$$$                $$$  $$$$$$$                 $$$
 
 int MetaItem::removeLastStep(
-  const Where &topOfRanges,                       // STEP
-  const Where &bottomOfRanges)
+  const Where &topOfSteps,                       // STEP
+  const Where &bottomOfSteps)
 {
   int sum = 0;
   
   // Find the top of us
-  Where walk = topOfRanges + 1;
+  Where walk = topOfSteps + 1;
   Rc rc = scanForwardStepGroup(walk);
   
   if (rc == StepGroupEndRc) {
@@ -252,7 +254,7 @@ int MetaItem::removeLastStep(
       
   //-----------------------------------------------------
   
-      Where lastStep = bottomOfRanges - 1;
+      Where lastStep = bottomOfSteps - 1;
       rc = scanBackward(lastStep,StepMask);
  
       if (rc == StepRc || rc == RotStepRc) {        // STEP
@@ -316,17 +318,17 @@ int MetaItem::removeLastStep(
 // BEGIN PART STEP PART STEP (END)   (BEGIN) PART STEP xxx PART     (STEP) (END)
 
 void MetaItem::addPrevMultiStep(
-  const Where &topOfRangesIn,
-  const Where &bottomOfRangesIn)
+  const Where &topOfStepsIn,
+  const Where &bottomOfStepsIn)
 {
   Rc rc1;
 
   bool  firstChange = true;
   bool  partsAdded;
-  Where topOfRanges = topOfRangesIn;
-  Where bottomOfRanges = bottomOfRangesIn;
+  Where topOfSteps = topOfStepsIn;
+  Where bottomOfSteps = bottomOfStepsIn;
 
-  Where walk = topOfRanges + 1;
+  Where walk = topOfSteps + 1;
   rc1 = scanForward(walk,StepMask|StepGroupMask,partsAdded);
     
     //                           TOS  end begin                BOR
@@ -338,14 +340,14 @@ void MetaItem::addPrevMultiStep(
     beginMacro("AddPreviousStep");
     firstChange = false;
       
-    Where prevTopOfRanges = topOfRanges-1;
-    scanBackward(prevTopOfRanges,StepGroupBeginMask);
-    --prevTopOfRanges;
-    scanBackward(prevTopOfRanges,StepMask);
-    int removed = removeLastStep(prevTopOfRanges,topOfRanges); // shift by removal count
-    topOfRanges.lineNumber += removed + 1;
-    bottomOfRanges.lineNumber += removed;
-    walk = topOfRanges + 1;                            // skip past 
+    Where prevTopOfSteps = topOfSteps-1;
+    scanBackward(prevTopOfSteps,StepGroupBeginMask);
+    --prevTopOfSteps;
+    scanBackward(prevTopOfSteps,StepMask);
+    int removed = removeLastStep(prevTopOfSteps,topOfSteps); // shift by removal count
+    topOfSteps.lineNumber += removed + 1;
+    bottomOfSteps.lineNumber += removed;
+    walk = topOfSteps + 1;                            // skip past 
     rc1 = scanForwardStepGroup(walk, partsAdded);
   }
   
@@ -374,7 +376,7 @@ void MetaItem::addPrevMultiStep(
     appendMeta(walk,stepGroupEnd);
   }
   
-  Where prevStep = topOfRanges - 1;
+  Where prevStep = topOfSteps - 1;
   scanBackward(prevStep,StepMask);
 
   if (begin.lineNumber) {
@@ -394,19 +396,19 @@ void MetaItem::addPrevMultiStep(
 }
 
 void MetaItem::deleteFirstMultiStep(
-  const Where &topOfRanges)
+  const Where &topOfSteps)
 {
   beginMacro("removeFirstStep");
-  removeFirstStep(topOfRanges);
+  removeFirstStep(topOfSteps);
   endMacro();
 }
 
 void MetaItem::deleteLastMultiStep(
-  const Where &topOfRanges,
-  const Where &bottomOfRanges)
+  const Where &topOfSteps,
+  const Where &bottomOfSteps)
 {
   beginMacro("deleteLastMultiStep");
-  removeLastStep(topOfRanges,bottomOfRanges);
+  removeLastStep(topOfSteps,bottomOfSteps);
   endMacro();
 }
 
@@ -719,8 +721,8 @@ void MetaItem::changePlacement(
   PlacementType  parentType,
   PlacementType  relativeType,
   QString        title,
-  const Where   &topOfRanges,
-  const Where   &bottomOfRanges,
+  const Where   &topOfSteps,
+  const Where   &bottomOfSteps,
   PlacementMeta *placement,
   int            append,
   bool           useLocal) 
@@ -732,7 +734,7 @@ void MetaItem::changePlacement(
 
   if (ok) {
     placement->setValue(placementData);
-    setMetaTopOf(topOfRanges,bottomOfRanges,placement,append,useLocal);
+    setMetaTopOf(topOfSteps,bottomOfSteps,placement,append,useLocal);
   }
 }
 
@@ -969,14 +971,14 @@ void MetaItem::changeBorder(
 }
 
 void MetaItem::changeBool(
-  const Where &topOfRanges,
-  const Where &bottomOfRanges,
+  const Where &topOfSteps,
+  const Where &bottomOfSteps,
   BoolMeta    *boolMeta,
   int          append,
   bool         local)   // allow local metas
 {
   boolMeta->setValue( ! boolMeta->value());
-  setMetaTopOf(topOfRanges,bottomOfRanges,boolMeta,append,local);
+  setMetaTopOf(topOfSteps,bottomOfSteps,boolMeta,append,local);
 }
 
 
@@ -998,17 +1000,36 @@ void MetaItem::changeDivider(
 }
 
 void MetaItem::changeAlloc(
-  const Where &topOfRanges,
-  const Where &bottomOfRanges,
+  const Where &topOfSteps,
+  const Where &bottomOfSteps,
   AllocMeta   &alloc,
   int          append)
 {
   AllocEnc allocType = alloc.value();
   alloc.setValue(allocType == Vertical ? Horizontal : Vertical);
-  setMetaTopOf(topOfRanges,bottomOfRanges,&alloc,append,false);
+  setMetaTopOf(topOfSteps,bottomOfSteps,&alloc,append,false);
 }
 
 /***************************************************************************/
+
+void MetaItem::scanPastGlobal(
+  Where &topOfStep)
+{
+  Where walk = topOfStep + 1;
+  
+  int  numLines  = gui->subFileSize(walk.modelName);
+  QString line = gui->readLine(walk);
+  QRegExp globalLine("^\\s*0\\s+!LPUB\\s+.*GLOBAL");
+  if (line.contains(globalLine)) {
+    for ( ++walk; walk < numLines; ++walk) {
+      line = gui->readLine(walk);
+      if ( ! line.contains(globalLine)) {
+        topOfStep = walk - 1;
+        break;
+      }
+    }
+  }
+}  
 
 Rc MetaItem::scanForward(Where &here,int mask)
 {
@@ -1025,9 +1046,10 @@ Rc  MetaItem::scanForward(
   Meta tmpMeta;
   int  numLines  = gui->subFileSize(here.modelName);
   partsAdded = false;
-
+  
+  scanPastGlobal(here);
+      
   for ( ; here < numLines; here++) {
-
     QString line = gui->readLine(here);
     QStringList tokens;
 
@@ -1074,6 +1096,7 @@ Rc MetaItem::scanBackward(
     QStringList tokens;
 
     if (isHeader(line)) {
+      scanPastGlobal(here);
       return EndOfFileRc;
     }
     split(line,tokens);

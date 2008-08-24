@@ -213,8 +213,7 @@ void Gui::statusBarMsg(QString msg)
 
 void Gui::displayFile(
   LDrawFile     *ldrawFile, 
-  const QString &modelName, 
-  bool force)
+  const QString &modelName)
 {
 //  if (force || modelName != curSubFile) {
     for (int i = 0; i < mpdCombo->count(); i++) {

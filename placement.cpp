@@ -151,17 +151,17 @@ int Placement::relativeToMs(
 {
   if (placement->relativeType == CalloutType ||
       placement->relativeType == StepGroupType) {
-    Ranges *ranges = dynamic_cast<Ranges *>(placement);
+    Steps *steps = dynamic_cast<Steps *>(placement);
 
-    if (ranges) {
-      if (ranges->pli.tsize() && 
-          ranges->pli.placement.value().relativeTo == relativeType) {
-        placeRelative(&ranges->pli);
-        appendRelativeTo(&ranges->pli);
+    if (steps) {
+      if (steps->pli.tsize() && 
+          steps->pli.placement.value().relativeTo == relativeType) {
+        placeRelative(&steps->pli);
+        appendRelativeTo(&steps->pli);
       }
-      for (int i = 0; i < ranges->list.size(); i++) {
-        if (ranges->list[i]->relativeType == RangeType) {
-          Range *range = dynamic_cast<Range *>(ranges->list[i]);
+      for (int i = 0; i < steps->list.size(); i++) {
+        if (steps->list[i]->relativeType == RangeType) {
+          Range *range = dynamic_cast<Range *>(steps->list[i]);
           for (int i = 0; i < range->list.size(); i++) {
             if (range->list[i]->relativeType == StepType) {
               Step *step = dynamic_cast<Step *>(range->list[i]);
@@ -191,7 +191,7 @@ int Placement::relativeToMs(
     /* try to find relation for things relative to us */
 
     for (int i = 0; i < relativeToList.size(); i++) {
-      if (relativeToList[i]->relativeToMs(ranges)) {
+      if (relativeToList[i]->relativeToMs(steps)) {
         return -1;
       }
     }

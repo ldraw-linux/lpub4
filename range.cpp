@@ -32,7 +32,7 @@
 #include <QMenu>
 
 Range::Range(
-  Ranges       *_parent,
+  Steps        *_parent,
   AllocEnc      _allocType,
   FreeFormMeta  _freeform)
 {

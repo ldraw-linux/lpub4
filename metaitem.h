@@ -62,11 +62,11 @@ public:
   void updatePointer(          const Where &,   PointerMeta *pointer);
   void deletePointer(          const Where &);
 
-  void addNextMultiStep(       const Where &topOfRanges, const Where &bottomOfRanges);
-  void addPrevMultiStep(       const Where &topOfRanges, const Where &bottomOfRanges); 
+  void addNextMultiStep(       const Where &topOfSteps, const Where &bottomOfSteps);
+  void addPrevMultiStep(       const Where &topOfSteps, const Where &bottomOfSteps); 
 
-  int  removeFirstStep(        const Where &topOfRanges);
-  int  removeLastStep(         const Where &topOfRanges, const Where &lastStep);
+  int  removeFirstStep(        const Where &topOfSteps);
+  int  removeLastStep(         const Where &topOfSteps, const Where &lastStep);
 
   void deleteFirstMultiStep(   const Where &);
   void deleteLastMultiStep(    const Where &, const Where &);
@@ -211,6 +211,8 @@ public:
   Rc   scanForward( Where &here, int mask);
   Rc   scanForwardStepGroup(Where &here, bool & partsAdded);
   Rc   scanForwardStepGroup(Where &here);
+
+  void scanPastGlobal(Where &);
 
   Rc   scanBackward(Where &here, int mask, bool &partsAdded);
   Rc   scanBackward(Where &here, int mask);

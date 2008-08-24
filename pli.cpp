@@ -58,13 +58,13 @@ const Where &Pli::bottomOfStep()
 {
   return step->bottomOfStep();
 }
-const Where &Pli::topOfRanges()
+const Where &Pli::topOfSteps()
 {
-  return ranges->topOfRanges();
+  return ranges->topOfSteps();
 }
-const Where &Pli::bottomOfRanges()
+const Where &Pli::bottomOfSteps()
 {
-  return ranges->bottomOfRanges();
+  return ranges->bottomOfSteps();
 }
 const Where &Pli::topOfCallout()
 {
@@ -1350,10 +1350,10 @@ void PliBackgroundItem::contextMenuEvent(
   
       switch (parentRelativeType) {
         case StepGroupType:
-          top    = pli->topOfRanges();
+          top    = pli->topOfSteps();
           MetaItem mi;
           mi.scanForward(top,StepGroupMask);
-          bottom = pli->bottomOfRanges();
+          bottom = pli->bottomOfSteps();
           local = false;
         break;
         case CalloutType:
@@ -1438,10 +1438,10 @@ void AnnotateTextItem::contextMenuEvent(
   
   switch (parentRelativeType) {
     case StepGroupType:
-      top    = pli->topOfRanges();
+      top    = pli->topOfSteps();
       MetaItem mi;
       mi.scanForward(top,StepGroupMask);
-      bottom = pli->bottomOfRanges();
+      bottom = pli->bottomOfSteps();
     break;
     case CalloutType:
       top    = pli->topOfCallout();
@@ -1488,10 +1488,10 @@ void InstanceTextItem::contextMenuEvent(
   
   switch (parentRelativeType) {
     case StepGroupType:
-      top    = pli->topOfRanges() + 1;
+      top    = pli->topOfSteps() + 1;
       MetaItem mi;
       mi.scanForward(top,StepGroupMask);
-      bottom = pli->bottomOfRanges();
+      bottom = pli->bottomOfSteps();
     break;
     case CalloutType:
       top    = pli->topOfCallout();

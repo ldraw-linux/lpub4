@@ -30,7 +30,7 @@
 #include "ranges.h"
 #include "callout.h"
 
-Ranges *AbstractRangeElement::grandparent()
+Steps *AbstractRangeElement::grandparent()
 {
   return parent->grandparent();
 }
@@ -66,14 +66,14 @@ AbstractRangeElement *AbstractRangeElement::nextElement(
   return parent->nextElement(me);
 }
 
-const Where &AbstractRangeElement::topOfRanges()
+const Where &AbstractRangeElement::topOfSteps()
 {
-  return parent->topOfRanges();
+  return parent->topOfSteps();
 }
 
-const Where &AbstractRangeElement::bottomOfRanges()
+const Where &AbstractRangeElement::bottomOfSteps()
 {
-  return parent->bottomOfRanges();
+  return parent->bottomOfSteps();
 }
 const Where &AbstractRangeElement::topOfCallout()
 {

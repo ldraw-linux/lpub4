@@ -54,13 +54,13 @@ class QGraphicsScene;
 //---------------------------------------------------------------------------
 
 enum Boundary {
-  StartOfRanges       = 1,
-  StartOfRange        = 2,
-  EndOfRange          = 4,
-  EndOfRanges         = 8,
-  StartAndEndOfRanges = 9,
-  StartAndEndOfRange  = 6,
-  Middle              = 16
+  StartOfSteps       = 1,
+  StartOfRange       = 2,
+  EndOfRange         = 4,
+  EndOfSteps         = 8,
+  StartAndEndOfSteps = 9,
+  StartAndEndOfRange = 6,
+  Middle             = 16
 };
 
 enum {
@@ -137,6 +137,7 @@ class Placement : QObject {
 class PlacementImage : public Placement {
   public:
     QImage    *image;
+    qreal      scale;
     PlacementImage()
     {
     }

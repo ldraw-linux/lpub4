@@ -25,7 +25,7 @@
  *
  * The top of tree is the Meta class that is the interface to the traverse
  * function that walks the LDraw model higherarchy.  Meta also tracks
- * locations in files like topOfModel, bottomOfModel, topOfRanges,topOfRange,
+ * locations in files like topOfModel, bottomOfModel, bottomOfSteps,topOfRange,
  * bottomOfRange, topOfStep, bottomOfStep, etc.
  *
  * Please see lpub.h for an overall description of how the files in LPub
@@ -98,6 +98,11 @@ enum Rc {
          SynthEndRc,
 
          ResolutionRc,
+         
+         InsertRc,
+         
+         PageBeginRc,
+         PageEndRc,
 
          EndOfFileRc,
 };
@@ -1042,46 +1047,92 @@ public:
 };
 
 /*
- * This meta parses picture file names
- */
-
-class PicMeta // : public LeafMeta
-{
-public:
-  Where   here;
-  float   position[2];
-  QString fileName;
-  PicMeta()
-  {
-    position[0] = 0;
-    position[1] = 0;
-  }
-  PicMeta(QString _fileName, Where &_here)
-  {
-    fileName = _fileName;
-    here = _here;
-    position[0] = 0;
-    position[1] = 0;
-  }
-    
-  virtual ~PicMeta() {}
-};
-
-/*
- * This meta parses INSERT meta
+ * INSERT
+ *   ((TOP|BOTTOM) (LEFT|CENTER|RIGHT)|
+ *     (LEFT|RIGHT) (TOP|CENTER|BOTTOM)|
+ *     (TOP_LEFT|TOP_RIGHT|BOTTOM_RIGHT|BOTTOM_LEFT))
+ *       (PAGE|ASSEM|STEP_NUMBER|STEP_GROUP|....) (INSIDE|OUTSIDE) (OFFSET X Y) (MARGIN X Y)
+ *         (PICTURE "name" (SCALE x))|
+ *          TEXT|
+ *          ARROW HX HY TX TY|
+ *          BOM)
+ *
+ *              . ' (hox hoy) (hafting outside)
+ *          . '  /
+ *      . '     /
+ *   tx---------hix (hafting center)
+ *      ` .     \ 
+ *          ` .  \
+ *              ` .
  */
 
 class InsertMeta : public LeafMeta
 {
+private:
+  InsertData _value[2];
 public:
-  QList<PicMeta> list;
   InsertMeta() 
   {
   }
   virtual ~InsertMeta() {}
   Rc parse(QStringList &argv, int index, Where &here);
   QString format(bool,bool);
-  QString format(bool,bool,int);
+  virtual void doc(QTextStream &out, QString preamble);
+};
+
+class AlignmentMeta : public LeafMeta
+{
+private:
+  Qt::Alignment _value[2];
+public:
+  AlignmentMeta()
+  {
+    _value[0] = Qt::AlignLeft;
+  }
+  Rc parse(QStringList &argv, int index, Where &here);
+  QString format(bool,bool);
+  virtual void doc(QTextStream &out, QString preamble);
+};
+
+class TextMeta : public BranchMeta
+{
+public:
+  FontMeta       font;
+  StringMeta     color;
+  AlignmentMeta  alignment;
+
+  TextMeta();
+  virtual ~TextMeta() {}
+  virtual void init(BranchMeta *parent, QString name);
+};
+
+class ArrowHeadMeta : LeafMeta
+{
+private:
+  qreal _value[2][4];
+public:
+  ArrowHeadMeta()
+  {
+    _value[0][0] = 0.0;
+    _value[0][1] = 0.25;
+    _value[0][2] = 3.0/8;
+    _value[0][3] = 0.25;
+  }
+  Rc parse(QStringList &argv, int index, Where &here);
+  QString format(bool,bool);
+  virtual void doc(QTextStream &out, QString preamble);
+};
+
+class ArrowEndMeta : public LeafMeta
+{
+  bool _value[2]; // false = square, true = round
+public:
+  ArrowEndMeta()
+  {
+    _value[pushed] = false;
+  }
+  Rc parse(QStringList &argv, int index, Where &here);
+  QString format(bool,bool);
   virtual void doc(QTextStream &out, QString preamble);
 };
 
@@ -1414,11 +1465,13 @@ public:
   MarginsMeta    margin;
   BorderMeta     border;
   BackgroundMeta background;
-  InsertMeta     inserts;
   BoolMeta       dpn;
   BoolMeta       togglePnPlacement;
   NumberPlacementMeta number;
   StringListMeta subModelColor;
+  RcMeta         begin;
+  RcMeta         end;
+
   PageMeta();
   virtual ~PageMeta() {}
   virtual void init(BranchMeta *parent, QString name);
@@ -1613,6 +1666,7 @@ public:
   RemoveMeta     remove;
   FloatMeta      reserve;
   PartIgnMeta    partSub;
+  InsertMeta     insert;
   LPubMeta();
   virtual ~LPubMeta() {};
   virtual void init(BranchMeta *parent, QString name);

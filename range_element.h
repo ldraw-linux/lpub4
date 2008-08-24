@@ -35,7 +35,7 @@
  * This is the base class for step and reserve
  */
 
-class Ranges;
+class Steps;
 class Callout;
 class AbstractRangesElement;
 class AllocMeta;
@@ -56,13 +56,13 @@ class AbstractRangeElement : public Placement {
     const Where &bottomOfStep();
     const Where &topOfRange();
     const Where &bottomOfRange();
-    const Where &topOfRanges();
-    const Where &bottomOfRanges();
+    const Where &topOfSteps();
+    const Where &bottomOfSteps();
     const Where &topOfCallout();
     const Where &bottomOfCallout();
           AbstractRangeElement *nextElement(const AbstractRangeElement *);
     
-    Ranges *grandparent();
+    Steps   *grandparent();
     Callout *callout();
     
     AllocMeta &allocMeta();

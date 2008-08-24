@@ -87,7 +87,7 @@
  *          A callout can contain multiple rows or columns.
  *   Pointer - a visual indicator starting at a callout, and ending at the
  *          assembly image to which the callout belongs.
- *   Ranges - the interal representation for both multi-steps and callouts.
+ *   ranges.h - the interal representation for both multi-steps and callouts.
  *          A ranges is a list of one or more individual range(s).
  *   Range - one row or column in a multi-step or callout. A range contains
  *          one or more steps.
@@ -196,10 +196,10 @@
  *   and implemented in traverse.cpp.
  *
  *   The LDraw structure tree is composed of classes including:
- *     Ranges  - ranges.(h,cpp), ranges_element.(h,cpp)
- *       By itself, Ranges represents multi-step.  Single step per page
- *       is represented by Ranges that contains one range, that contains
- *       one step.  Ranges is the top of structure tree provided by
+ *     ranges.h  - ranges.(h,cpp), ranges_element.(h,cpp)
+ *       By itself, ranges.h represents multi-step.  Single step per page
+ *       is represented by ranges.h that contains one range, that contains
+ *       one step.  ranges.h is the top of structure tree provided by
  *       traverse.
  *     Range   - range.(h,cpp), range_element.(h,cpp)
  *     Step    - step.(h,cpp)
@@ -212,7 +212,7 @@
  *   what they are placed next to, and how they are placed relative
  *   to that thing.  See placement.(h,cpp).
  *
- *   Each of these items (Ranges, Range, Step, Callout, Pli, etc.)
+ *   Each of these items (ranges.h, Range, Step, Callout, Pli, etc.)
  *   knows how to size itself (in pixels).  Once sizes are known, these
  *   things can be placed relative to the things they are relative to.
  *   At the top level, one or more things are placed relative to the page.
@@ -433,7 +433,7 @@ public:
   void beginMacro (QString name);
   void endMacro   ();
 
-  void displayFile(LDrawFile *ldrawFile, const QString &modelName, bool force = false);
+  void displayFile(LDrawFile *ldrawFile, const QString &modelName);
 
   bool isMpd() { return ldrawFile.isMpd(); }
   bool isOlder(const QStringList &foo,const QDateTime &lastModified)
@@ -510,8 +510,8 @@ signals:
 private:    
   Ranges          page;            // the abstract version of page contents
 
-  QGraphicsScene *KpageScene;       // top of displayed page's graphics items
-  LGraphicsView  *KpageView;        // the visual representation of the scene
+  QGraphicsScene *KpageScene;      // top of displayed page's graphics items
+  LGraphicsView  *KpageView;       // the visual representation of the scene
 
   LDrawFile       ldrawFile;       // contains MPD or all files used in model
   QString         curFile;         // the file name for MPD, or top level file
@@ -542,7 +542,7 @@ private:
   int drawPage(                    // process the page of interest and any callouts
     LGraphicsView  *view,
 	  QGraphicsScene *scene,
-    Ranges        *ranges,
+    Steps          *ranges,
     int            stepNum,
 	  QString const &addLine,
     Where         &current,
@@ -552,9 +552,15 @@ private:
     bool           calledOut = false);
 
   int addGraphicsPageItems(        // this converts the abstract page into
-    Ranges         *ranges,        // a graphics view
+    Steps          *ranges,        // a graphics view
 	  LGraphicsView  *view, 
     QGraphicsScene *scene);
+
+  int drawPage(
+    LGraphicsView  *view,
+    QGraphicsScene *scene,
+    Steps          *page,
+    Where          &current);
 
 private slots:
     void open();

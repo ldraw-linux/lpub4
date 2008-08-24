@@ -124,7 +124,7 @@ class PliPart {
 #define INSTANCE_SEP ":"
 
 class Step;
-class Ranges;
+class Steps;
 class Callout;
 
 class Pli : public Placement {
@@ -141,8 +141,8 @@ class Pli : public Placement {
     bool               bom;
     ConstrainMeta      constraint;
     
-    Ranges            *ranges;  // topOfRanges()
-                                // bottomOfRanges()
+    Steps             *ranges;  // topOfSteps()
+                                // bottomOfSteps()
     Callout           *callout; // topOfCallout()
                                 // bottomOfCallout()                              
     Step              *step;    // topOfStep()
@@ -166,8 +166,8 @@ class Pli : public Placement {
     
     const Where &topOfStep();
     const Where &bottomOfStep();
-    const Where &topOfRanges();
-    const Where &bottomOfRanges();
+    const Where &topOfSteps();
+    const Where &bottomOfSteps();
     const Where &topOfCallout();
     const Where &bottomOfCallout();
     

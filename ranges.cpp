@@ -37,20 +37,20 @@
 #include "lpub.h"
 #include "dividerdialog.h"
 
-Ranges::Ranges()
+Steps::Steps()
 {
   relativeType  = SingleStepType;
   pli.ranges = this;
   pli.callout = NULL;
 }
-Ranges::Ranges(Step *_parent,Meta &_meta,QGraphicsView *_view)
+
+Steps::Steps(Meta &_meta,QGraphicsView *_view)
 {
-  parent = _parent;
   meta = _meta;
   view = _view;
 }
 
-Ranges::~Ranges()
+Steps::~Steps()
 {
   for (int i = 0; i < list.size(); i++) {
     delete list[i];
@@ -58,12 +58,12 @@ Ranges::~Ranges()
   list.clear();
 }
 
-QString Ranges::modelName()
+QString Steps::modelName()
 {
   return bottom.modelName;
 }
 
-QString Ranges::path()
+QString Steps::path()
 {
   QString thePath;
   for (int i = 0; i < meta.submodelStack.size(); i++) {
@@ -73,7 +73,7 @@ QString Ranges::path()
   return thePath;
 }
 
-const Where &Ranges::bottomOfStep(
+const Where &Steps::bottomOfStep(
   AbstractRangesElement *me)
 {
   for (int i = 0; i < list.size(); i++) {
@@ -86,7 +86,7 @@ const Where &Ranges::bottomOfStep(
   return bottom;
 }
 
-AbstractRangesElement *Ranges::nextRange(
+AbstractRangesElement *Steps::nextRange(
   const AbstractRangesElement *me)
 {
   int size = list.size();
@@ -104,20 +104,20 @@ AbstractRangesElement *Ranges::nextRange(
 }
   
 
-const Where &Ranges::topOfRanges()
+const Where &Steps::topOfSteps()
 {
   return list[0]->topOfRange();
 }
-const Where &Ranges::bottomOfRanges()
+const Where &Steps::bottomOfSteps()
 {
   return bottom;
 }
-void Ranges::setBottomOfRanges(const Where &bos)
+void Steps::setBottomOfSteps(const Where &bos)
 {
   bottom = bos;
 }
 
-QString Ranges::csiName()
+QString Steps::csiName()
 {
   QString thePath;
   
@@ -130,7 +130,7 @@ QString Ranges::csiName()
   return thePath;
 }
 
-QStringList Ranges::submodelStack()
+QStringList Steps::submodelStack()
 {
   QStringList submodelStack;
   Where filename;
@@ -140,25 +140,25 @@ QStringList Ranges::submodelStack()
   return submodelStack;
 }
 
-void Ranges::append(AbstractRangesElement *re)
+void Steps::append(AbstractRangesElement *re)
 {
   list.append(re);
 }
 
-AllocEnc Ranges::allocType()
+AllocEnc Steps::allocType()
 {
   return meta.LPub.multiStep.alloc.value();
 }
 
-AllocMeta &Ranges::allocMeta()
+AllocMeta &Steps::allocMeta()
 {
   return meta.LPub.multiStep.alloc;
 }
 /*********************************************
  *
- * Ranges function
+ * ranges.h function
  *
- * Ranges
+ * ranges.h
  *
  * ranges are used for two reasons
  *   1) single step/multi step pages
@@ -169,7 +169,7 @@ AllocMeta &Ranges::allocMeta()
 
 /* This destorys everything in its list, but not itself. */
 
-void Ranges::freeRanges()
+void Steps::freeSteps()
 {
   for (int i = 0; i < list.size(); i++) {
     AbstractRangesElement *re = list[i];
@@ -180,7 +180,7 @@ void Ranges::freeRanges()
   relativeToList.clear();
 }
 
-void Ranges::sizeIt(void)
+void Steps::sizeIt(void)
 {
   FreeFormData freeFormData;
   AllocEnc     allocEnc;
@@ -211,7 +211,7 @@ void Ranges::sizeIt(void)
  * This provides Vertical packing
  */
 
-void Ranges::sizeitVert(void)
+void Steps::sizeitVert(void)
 {
   if (relativeType == CalloutType && list.size() == 1) {
     if (list[0]->relativeType == RangeType) {
@@ -296,7 +296,7 @@ void Ranges::sizeitVert(void)
  * This provides Horizontal packing
  */
 
-void Ranges::sizeitHoriz(void)
+void Steps::sizeitHoriz(void)
 {
   if (relativeType == CalloutType && list.size() == 1) {
     if (list[0]->relativeType == RangeType) {
@@ -376,7 +376,7 @@ void Ranges::sizeitHoriz(void)
   }
 }
 
-void Ranges::sizeitFreeform(
+void Steps::sizeitFreeform(
   int xx,
   int yy)
 {
@@ -453,7 +453,7 @@ void Ranges::sizeitFreeform(
   }
 }
 
-void Ranges::addGraphicsItems(
+void Steps::addGraphicsItems(
   int ox,
   int oy,
   QGraphicsItem *parent)
@@ -485,7 +485,7 @@ void Ranges::addGraphicsItems(
  *       TransparentRect
  */
 
-void Ranges::addGraphicsItemsVert(
+void Steps::addGraphicsItemsVert(
   int offset_x,
   int offset_y,
   QGraphicsItem *parent)
@@ -536,7 +536,7 @@ void Ranges::addGraphicsItemsVert(
  *
  */
 
-void Ranges::addGraphicsItemsHoriz(
+void Steps::addGraphicsItemsHoriz(
   int offset_x,
   int offset_y,
   QGraphicsItem *parent)
@@ -583,16 +583,16 @@ void Ranges::addGraphicsItemsHoriz(
   }
 }
 
-Boundary Ranges::boundary(AbstractRangesElement *me)
+Boundary Steps::boundary(AbstractRangesElement *me)
 {
   if (list.size() == 1) {
-    return StartAndEndOfRanges;
+    return StartAndEndOfSteps;
   } else {
     if (list[0] == me) {
-      return StartOfRanges;
+      return StartAndEndOfSteps;
     }
     if (list[list.size()-1] == me) {
-      return EndOfRanges;
+      return EndOfSteps;
     }
   }
   return Middle;

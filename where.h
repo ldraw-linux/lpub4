@@ -26,7 +26,7 @@
  ***************************************************************************/
 
 /*
- *  Ranges (submodel, multistep, callout)
+ *  ranges.h (submodel, multistep, callout)
  *    top, bottom
  *  Range
  *    top, bottom

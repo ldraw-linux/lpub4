@@ -102,8 +102,8 @@ void PageBackgroundItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
     convertToIgnore(&page->meta);
 
   } else if (selectedAction == addNextAction) {
-    addNextMultiStep(lastStep->topOfRanges(),lastStep->bottomOfRanges());
+    addNextMultiStep(lastStep->topOfSteps(),lastStep->bottomOfSteps());
   } else if (selectedAction == addPrevAction) {
-    addPrevMultiStep(firstStep->topOfRanges(),firstStep->bottomOfRanges());
+    addPrevMultiStep(firstStep->topOfSteps(),firstStep->bottomOfSteps());
   }
 }

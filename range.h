@@ -42,7 +42,10 @@ class Range : public AbstractRangesElement {
     SepMeta      sepMeta;
     int          leftAdjust;  // for freeform multi_step only
 
-    Range(Ranges       *_parent,
+    Range(Steps        *_parent,
+          AllocEnc      _allocType);
+
+    Range(Steps        *_parent,
           AllocEnc      _allocType,
           FreeFormMeta  _freeform);
 

@@ -32,6 +32,7 @@
 #include "where.h"
 
 class Ranges;
+class Steps;
 
 class MultiStepRangesBackgroundItem : public QGraphicsRectItem, public MetaItem
 {
@@ -42,7 +43,7 @@ class MultiStepRangesBackgroundItem : public QGraphicsRectItem, public MetaItem
 
 public:
   MultiStepRangesBackgroundItem(
-    Ranges *_ranges,
+    Steps *_steps,
     QRectF rect, 
     QGraphicsItem *parent, 
     Meta *_meta);
@@ -72,7 +73,7 @@ public:
     Ranges         *ranges;
 
     MultiStepRangeBackgroundItem(
-      Ranges        *_ranges,
+      Steps         *_steps,
       Range         *_range,
       Meta          *_meta,
       int            _offset_x,

@@ -41,12 +41,12 @@
  * this is the base class for a range of steps
  */
 
-class Ranges;
+class Steps;
 class AbstractRangeElement;
 
 class AbstractRangesElement : public Placement {
 public:
-  Ranges *parent;
+  Steps *parent;
 
   QList<AbstractRangeElement *> list;
 
@@ -63,13 +63,13 @@ public:
   AllocEnc      allocType();
 
   const Where &bottomOfStep(AbstractRangeElement *me);
-  const Where &topOfRanges();
-  const Where &bottomOfRanges();
+  const Where &topOfSteps();
+  const Where &bottomOfSteps();
   const Where &topOfRange();
   const Where &bottomOfRange();
         AbstractRangeElement *nextElement(const AbstractRangeElement *me);
 
-  Ranges *grandparent();
+  Steps *grandparent();
 };
 
 #endif

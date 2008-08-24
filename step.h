@@ -34,6 +34,7 @@
 #include <QStringList>
 #include "range_element.h"
 #include "pli.h"
+#include "meta.h"
 
 class Meta;
 class Callout;
@@ -43,13 +44,14 @@ enum PlacementType;
 class Step : public AbstractRangeElement
 {
   public: 
-    bool             calledOut;
-    QList<Callout *> list;
-    Pli              pli;
-    PlacementPixmap  csiPixmap;
-    PlacementNum     stepNumber;
-    int              submodelLevel;
-    bool             pliPerStep;
+    bool              calledOut;
+    QList<Callout *>  list;
+    QList<InsertMeta> inserts;
+    Pli               pli;
+    PlacementPixmap   csiPixmap;
+    PlacementNum      stepNumber;
+    int               submodelLevel;
+    bool              pliPerStep;
 
     Step(
       Where                 &topOfStep,
@@ -72,36 +74,37 @@ class Step : public AbstractRangeElement
     Range *range();
 
     int  createCsi(
-	       QString const     &fileName,
-		   QString const     &addLine,
+	         QString const     &fileName,
+		       QString const     &addLine,
            QStringList const &csiParts,
            QPixmap          *pixmap,
            Meta             &meta);
 
+    void setInserts(QList<InsertMeta> _inserts) {
+      inserts = _inserts;
+    }
+    
     int  sizeitVert(int  rows[],
-                int  cols[],
-                int  rowsMargin[][2],
-                int  colsMargin[][2]);
+                    int  cols[],
+                    int  rowsMargin[][2],
+                    int  colsMargin[][2]);
 
     void vertMargin(int &top, int &bot);
 
-    void placeitVert(
-               int rows[],
-               int rowsMargin[][2],
-               int y);
+    void placeitVert(int rows[],
+                     int rowsMargin[][2],
+                     int y);
 
-    int  sizeitHoriz(
-                int  rows[],
-                int  cols[],
-                int  rowsMargin[][2],
-                int  colsMargin[][2]);
+    int  sizeitHoriz(int  rows[],
+                     int  cols[],
+                     int  rowsMargin[][2],
+                     int  colsMargin[][2]);
 
     void horizMargin(int &top, int &bot);
 
-    void placeitHoriz(
-               int rows[],
-               int rowsMargin[][2],
-               int x);
+    void placeitHoriz(int rows[],
+                      int rowsMargin[][2],
+                      int x);
 
     void placeInside();
 

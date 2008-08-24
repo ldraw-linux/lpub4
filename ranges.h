@@ -41,36 +41,26 @@ class Step;
 class AbstractRangesElement;
 class Where;
 
-class Ranges : public Placement {
+class Steps : public Placement {
   public:
     Meta           meta;
-
     QList<AbstractRangesElement *> list;  // of range and/or PLI
-    Step          *parent;
     QGraphicsView *view;
-
     Pli            pli;
-    
     Where          bottom;
 
-    Ranges();
-    Ranges(Step *_parent,Meta &_meta,QGraphicsView *_view);
-
-    ~Ranges();
+    Steps();
+    Steps(Meta &_meta,QGraphicsView *_view);
+   ~Steps();
 
     QString modelName();
-
     QString path();
 	  QString csiName();
-
     QStringList submodelStack();
-
-    void freeRanges();
-
+    void freeSteps();
     void append(AbstractRangesElement *re);
 
     virtual AllocEnc allocType();
-
     virtual AllocMeta &allocMeta();
       
     /* size ranges and place each range */
@@ -89,9 +79,14 @@ class Ranges : public Placement {
     Boundary boundary(AbstractRangesElement *);
 
     const Where &bottomOfStep(AbstractRangesElement *me);
-    const Where &topOfRanges();
-    const Where &bottomOfRanges();
-    void  setBottomOfRanges(const Where &bos);
+    const Where &topOfSteps();
+    const Where &bottomOfSteps();
+          void  setBottomOfSteps(const Where &bos);
           AbstractRangesElement *nextRange(const AbstractRangesElement *me);    
+};
+
+class Ranges : public Steps {
+  public:
+    QList<InsertMeta> inserts;
 };
 #endif
