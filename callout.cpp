@@ -55,7 +55,7 @@ Callout::Callout(
 
 Callout::~Callout()
 {
-  list.clear();
+  Steps::list.clear();
   pointerList.clear();
 }
 
@@ -94,7 +94,7 @@ void Callout::sizeIt()
 
 void Callout::sizeitVert()
 {
-  Ranges::sizeitVert();
+  Steps::sizeitVert();
   BorderData borderData = meta.LPub.callout.border.value();
 
   size[XX] += borderData.margin[XX];
@@ -154,7 +154,7 @@ void Callout::sizeitVert()
 
 void Callout::sizeitHoriz()
 {
-  Ranges::sizeitHoriz();
+  Steps::sizeitHoriz();
   BorderData borderData = meta.LPub.callout.border.value();
 
   size[XX] += borderData.margin[XX];
@@ -293,7 +293,7 @@ void Callout::addGraphicsItemsVert(
     item->setPos(offsetX + instanceCount.offset[0], offsetY + instanceCount.offset[1]);
   }
 
-  Ranges::addGraphicsItemsVert(offsetX,
+  Steps::addGraphicsItemsVert(offsetX,
                                offsetY,
                                parent);
 }
@@ -329,16 +329,16 @@ void Callout::addGraphicsItemsHoriz(
     item->setPos(offsetX + instanceCount.offset[0], offsetY + instanceCount.offset[1]);
   }
 
-  Ranges::addGraphicsItemsHoriz(offsetX,
-                                offsetY,
-                                parent);
+  Steps::addGraphicsItemsHoriz(offsetX,
+                               offsetY,
+                               parent);
 }
 
 void Callout::sizeitFreeform(
   int xx,
   int yy)
 {
-  Ranges::sizeitFreeform(xx,yy);
+  Steps::sizeitFreeform(xx,yy);
 
   size[XX] += 2*meta.LPub.callout.border.value().thickness;
   size[YY] += 2*meta.LPub.callout.border.value().thickness;

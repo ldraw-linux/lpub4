@@ -46,14 +46,14 @@
  *   Changes can come from Menu->dialogs, people editing the file.
  *
  * Gui tracks modified, so whenever things go modified, we need to
- * delete all the GraphicsItems and do a freeRanges.
+ * delete all the GraphicsItems and do a freeranges.h.
  */
 
 void Gui::clearPage(
   LGraphicsView  *view,
   QGraphicsScene * /* scene - unused */)
 {
-  page.freeRanges();
+  page.freeSteps();
   page.pli.clear();
 
   if (view->pageBackgroundItem) {
@@ -64,16 +64,17 @@ void Gui::clearPage(
 
 /*********************************************
  *
- * given a Ranges for a page, format the
+ * given a ranges.h for a page, format the
  * entire page.
  *
  ********************************************/
 
 int Gui::addGraphicsPageItems(
-  Ranges         *ranges,
+  Steps          *steps,
   LGraphicsView  *view,
   QGraphicsScene *scene)
 {
+  Ranges *ranges = dynamic_cast<Ranges *>(steps);
   statusBarMsg("Displaying Page");
 
   PageBackgroundItem *pageBg = new PageBackgroundItem(ranges);

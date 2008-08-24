@@ -84,7 +84,7 @@ void CsiItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
   QAction *addNextAction = NULL;
   if (step->stepNumber.number != numSteps &&
      (parentRelativeType == SingleStepType ||
-     (parentRelativeType == StepGroupType &&  (boundary & EndOfRanges)))) {
+     (parentRelativeType == StepGroupType &&  (boundary & EndOfSteps)))) {
     addNextAction = menu.addAction("Add Next Step");
     addNextAction->setWhatsThis("Add Next Step:\n  Add the first step of the next page to this page");
   }
@@ -92,16 +92,16 @@ void CsiItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
   QAction *addPrevAction = NULL;
   if ( step->stepNumber.number > 1 &&
      (parentRelativeType == SingleStepType ||
-     (parentRelativeType == StepGroupType && (boundary & StartOfRanges)))) {
+     (parentRelativeType == StepGroupType && (boundary & StartOfSteps)))) {
     addPrevAction = menu.addAction("Add Previous Step");
     addPrevAction->setWhatsThis("Add Previous Step:\n  Add the last step of the previous page to this page");
   }
 
   QAction *removeAction = NULL;
   if (parentRelativeType == StepGroupType &&
-     (boundary & (StartOfRanges | EndOfRanges))) {
+     (boundary & (StartOfSteps | EndOfSteps))) {
     removeAction = menu.addAction("Remove this Step");
-    if (boundary & StartOfRanges) {
+    if (boundary & StartOfSteps) {
       removeAction->setWhatsThis("Remove this Step:\n  Move this step from this page to the previous page");
     } else {
       removeAction->setWhatsThis("Remove this Step:\n  Move this step from this page to the next page");
@@ -115,7 +115,7 @@ void CsiItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 
   AllocEnc allocType = step->parent->allocType();
   if (parentRelativeType == StepGroupType || parentRelativeType == CalloutType) {
-    if ((boundary & StartOfRange) && ! (boundary & StartOfRanges)) {
+    if ((boundary & StartOfRange) && ! (boundary & StartOfSteps)) {
       if (allocType == Vertical) {
         movePrevAction = menu.addAction("Add to Previous Column");
         movePrevAction->setWhatsThis(
@@ -129,7 +129,7 @@ void CsiItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
       }
     }
 
-    if ((boundary & EndOfRange) && ! (boundary & EndOfRanges)) {
+    if ((boundary & EndOfRange) && ! (boundary & EndOfSteps)) {
       if (allocType == Vertical) {
         moveNextAction = menu.addAction("Add to Next Column");
         moveNextAction->setWhatsThis(
@@ -144,7 +144,7 @@ void CsiItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
           "  and put it in the row above");
       }
     }
-    if ( ! (boundary & EndOfRange) && ! (boundary & EndOfRanges)) {
+    if ( ! (boundary & EndOfRange) && ! (boundary & EndOfSteps)) {
       addDividerAction = menu.addAction("Add Divider After Step");
       if (allocType == Vertical) {
         addDividerAction->setWhatsThis(
@@ -230,9 +230,9 @@ void CsiItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
   
   Where topOfStep    = step->topOfStep();
   Where bottomOfStep = step->bottomOfStep();
-  Where topOfRanges  = step->topOfRanges();
-  Where bottomOfRanges = step->bottomOfRanges();
-  Where begin = topOfRanges;
+  Where topOfSteps  = step->topOfSteps();
+  Where bottomOfSteps = step->bottomOfSteps();
+  Where begin = topOfSteps;
   
   if (parentRelativeType == StepGroupType) {
     MetaItem mi;
@@ -240,16 +240,16 @@ void CsiItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
   }
 
   if (selectedAction == addPrevAction) {
-    addPrevMultiStep(topOfRanges,bottomOfRanges);
+    addPrevMultiStep(topOfSteps,bottomOfSteps);
 
   } else if (selectedAction == addNextAction) {
-    addNextMultiStep(topOfRanges,bottomOfRanges);
+    addNextMultiStep(topOfSteps,bottomOfSteps);
 
   } else if (selectedAction == removeAction) {
-    if (boundary & StartOfRanges) {
-      deleteFirstMultiStep(topOfRanges);
+    if (boundary & StartOfSteps) {
+      deleteFirstMultiStep(topOfSteps);
     } else {
-      deleteLastMultiStep(topOfRanges,bottomOfRanges);
+      deleteLastMultiStep(topOfSteps,bottomOfSteps);
     }
   } else if (selectedAction == movePrevAction) {
 
@@ -264,7 +264,7 @@ void CsiItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
   } else if (selectedAction == allocAction) {
     if (parentRelativeType == StepGroupType) {
       changeAlloc(begin,
-                  bottomOfRanges,
+                  bottomOfSteps,
                   step->allocMeta());
     } else {
       changeAlloc(callout->topOfCallout(),
@@ -285,7 +285,7 @@ void CsiItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
     changeFloatSpin("Assembly",
                     "Model Size",
                     begin, 
-                    bottomOfRanges, 
+                    bottomOfSteps, 
                     &meta->LPub.assem.modelScale, 
                     1,allowLocal);
   } else if (selectedAction == marginsAction) {

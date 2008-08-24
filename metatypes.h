@@ -29,6 +29,8 @@
 #define METATYPES_H
 
 #include <QString>
+#include <QStringList>
+#include <QPointF>
 
 enum AllocEnc {
   Horizontal = 0,
@@ -177,5 +179,29 @@ public:
   QString color;
   float   margin[2];  // in units
 };
+
+enum InsertType
+{
+  InsertPicture,
+  InsertText,
+  InsertArrow,
+  InsertBom
+};
+
+class InsertData
+{
+public:
+  PlacementEnc   placement;
+  PlacementEnc   justification;
+  PlacementType  relativeTo;
+  PrepositionEnc preposition;
+  float          offsets[2];
+  InsertType     type;
+  QString        picName;
+  qreal          picScale;
+  QStringList    text;
+  QPointF        arrow[2];
+};
+
   
 #endif

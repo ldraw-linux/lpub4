@@ -214,24 +214,24 @@ void PageNumberItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
     changePlacement(PageType,
                     PageNumberType,
                     "Page Number Placement",
-                    ranges->topOfRanges(),
-                    ranges->bottomOfRanges(),
+                    ranges->topOfSteps(),
+                    ranges->bottomOfSteps(),
                     placement);
 
   } else if (selectedAction == fontAction) {
 
-    changeFont(ranges->topOfRanges(),ranges->bottomOfRanges(),font);
+    changeFont(ranges->topOfSteps(),ranges->bottomOfSteps(),font);
 
   } else if (selectedAction == colorAction) {
 
-    changeColor(ranges->topOfRanges(),ranges->bottomOfRanges(),color);
+    changeColor(ranges->topOfSteps(),ranges->bottomOfSteps(),color);
 
   } else if (selectedAction == marginAction) {
 
     QString foo = PlacementDialog::relativeToName(relativeType);
 
     changeMargins("Page Number Margins",
-                  ranges->topOfRanges(),ranges->bottomOfRanges(),
+                  ranges->topOfSteps(),ranges->bottomOfSteps(),
                   margin);
   }
 }
@@ -271,8 +271,8 @@ void StepNumberItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
   
   Where topOfStep = step->topOfStep();
   Where bottomOfStep = step->bottomOfStep();
-  Where topOfRanges = step->topOfRanges();
-  Where bottomOfRanges = step->bottomOfRanges();
+  Where topOfSteps = step->topOfSteps();
+  Where bottomOfSteps = step->bottomOfSteps();
   
   Where top, bottom;
   bool  local;
@@ -280,9 +280,9 @@ void StepNumberItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
   
   switch (parentRelativeType) {
     case StepGroupType:
-      top    = step->topOfRanges();
+      top    = step->topOfSteps();
       mi.scanForward(top,StepGroupMask);
-      bottom = step->bottomOfRanges();
+      bottom = step->bottomOfSteps();
       local  = false;
     break;
     case CalloutType:

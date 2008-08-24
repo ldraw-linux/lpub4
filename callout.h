@@ -50,7 +50,7 @@ class QGraphicsView;
  */
 
 class AbstractRangeElement;
-class Callout : public Ranges {
+class Callout : public Steps {
   public:
     AbstractRangeElement  *parent;
     PlacementType          parentRelativeType;
