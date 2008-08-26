@@ -38,30 +38,30 @@ class PageBackgroundItem : public BackgroundItem
   private:
     PlacementType  relativeType;
     QPixmap *pixmap;
-    Ranges  *page;
+    Page    *page;
 
   public:
     PageBackgroundItem(
-      Ranges   *ranges)
+      Page   *_page)
     {
-      page = ranges;
+      page = _page;
 
       int width,height;
 
-      relativeType = ranges->relativeType;
-      width = ranges->meta.LPub.page.size.value(0);
-      height= ranges->meta.LPub.page.size.value(1);
+      relativeType = page->relativeType;
+      width = page->meta.LPub.page.size.value(0);
+      height= page->meta.LPub.page.size.value(1);
       pixmap = new QPixmap(width,height);
 
       QString toolTip("");
       setBackground(pixmap,
                     PageType,
-                   &ranges->meta,
-                    ranges->meta.LPub.page.background,
-                    ranges->meta.LPub.page.border,
-                    ranges->meta.LPub.page.margin,
-                    ranges->meta.LPub.page.subModelColor,
-                    ranges->meta.submodelStack.size(),
+                   &page->meta,
+                    page->meta.LPub.page.background,
+                    page->meta.LPub.page.border,
+                    page->meta.LPub.page.margin,
+                    page->meta.LPub.page.subModelColor,
+                    page->meta.submodelStack.size(),
                     toolTip);
       setPixmap(*pixmap);
       delete pixmap;

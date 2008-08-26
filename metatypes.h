@@ -60,6 +60,7 @@ enum PlacementType {
   StepGroupType,
   StepNumberType,
   PartsListType,
+  BomType,
   CalloutType,
   PageNumberType,
   SingleStepType,

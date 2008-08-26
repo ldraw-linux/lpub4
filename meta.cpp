@@ -1236,6 +1236,10 @@ Rc InsertMeta::parse(QStringList &argv, int index, Where &here)
   PrepositionEnc _preposition;
   float _offsets[2];
   Rc rc = FailureRc;
+  
+  if (argv.size() - index == 1 && argv[index] == "PAGE") {
+    return InsertPageRc;
+  }
 
   _placement     = _value[pushed].placement;
   _justification = _value[pushed].justification;
@@ -1351,7 +1355,7 @@ Rc InsertMeta::parse(QStringList &argv, int index, Where &here)
       ++index;
       if (argv.size() - index >= 2 && argv[index] == "SCALE") {
         picScale = argv[++index].toFloat(&good);
-        if (rc != good) {
+        if (! good) {
           rc = FailureRc;
         }
       }
@@ -1398,12 +1402,15 @@ Rc InsertMeta::parse(QStringList &argv, int index, Where &here)
     _here[pushed] = here;
   }
   
-  if (rc != OkRc) {
+  if (rc == OkRc) {
+    return InsertRc;
+  } else {
     QMessageBox::warning(NULL,
       QMessageBox::tr("LPub"),
       QMessageBox::tr("Malformed Insert metacommand \"%1\"") .arg(argv.join(" ")));
+    return FailureRc;
   } 
-  return rc;
+  
 }
 
 QString InsertMeta::format(bool local, bool global)
@@ -1877,9 +1884,6 @@ void PageMeta::init(BranchMeta *parent, QString name)
   togglePnPlacement.init(this,"TOGGLE_PAGE_NUMBER_PLACEMENT");
   number.init       (this, "NUMBER");
   subModelColor.init(this, "SUBMODEL_BACKGROUND_COLOR");
-
-  begin.init        (this, "BEGIN",   PageBeginRc);
-  end.init          (this, "END",     PageEndRc);
 }
 
 /* ------------------ */ 

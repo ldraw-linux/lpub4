@@ -141,7 +141,7 @@ class Pli : public Placement {
     bool               bom;
     ConstrainMeta      constraint;
     
-    Steps             *ranges;  // topOfSteps()
+    Steps             *steps;   // topOfSteps()
                                 // bottomOfSteps()
     Callout           *callout; // topOfCallout()
                                 // bottomOfCallout()                              
@@ -154,7 +154,7 @@ class Pli : public Placement {
       meta = NULL;
       bom = _bom;
       initAnnotationString();
-      ranges = NULL;
+      steps = NULL;
       callout = NULL;
       step = NULL;
     }

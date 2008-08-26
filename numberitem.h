@@ -35,7 +35,7 @@
 #include "metaitem.h"
 
 class Where;
-class Ranges;
+class Page;
 class Step;
 
 class NumberItem : public QGraphicsTextItem, public MetaItem
@@ -130,10 +130,10 @@ protected:
 
 class PageNumberItem : public NumberPlacementItem
 {
-  Ranges *ranges;
+  Page *page;
 public:
   PageNumberItem(
-    Ranges        *ranges,
+    Page          *page,
     Meta          *meta,
     NumberPlacementMeta &number,
     const char    *format,

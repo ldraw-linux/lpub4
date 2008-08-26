@@ -109,8 +109,8 @@ Step::Step(
     pliPerStep           = false;
   }
   pli = _pli;
-  pli.ranges = grandparent();
-  pli.step   = this;
+  pli.steps = grandparent();
+  pli.step  = this;
 }
 
 /* step destructor destroys all callouts */

@@ -171,14 +171,14 @@ void NumberPlacementItem::setAttributes(
 }
 
 PageNumberItem::PageNumberItem(
-  Ranges        *_ranges,
+  Page          *_page,
   Meta          *_meta,
   NumberPlacementMeta &_number,
   const char    *_format,
   int            _value,
   QGraphicsItem *_parent)
 {
-  ranges = _ranges;
+  page = _page;
   QString toolTip("Page Number");
   setAttributes(PageNumberType,
                 SingleStepType,
@@ -214,24 +214,24 @@ void PageNumberItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
     changePlacement(PageType,
                     PageNumberType,
                     "Page Number Placement",
-                    ranges->topOfSteps(),
-                    ranges->bottomOfSteps(),
+                    page->topOfSteps(),
+                    page->bottomOfSteps(),
                     placement);
 
   } else if (selectedAction == fontAction) {
 
-    changeFont(ranges->topOfSteps(),ranges->bottomOfSteps(),font);
+    changeFont(page->topOfSteps(),page->bottomOfSteps(),font);
 
   } else if (selectedAction == colorAction) {
 
-    changeColor(ranges->topOfSteps(),ranges->bottomOfSteps(),color);
+    changeColor(page->topOfSteps(),page->bottomOfSteps(),color);
 
   } else if (selectedAction == marginAction) {
 
     QString foo = PlacementDialog::relativeToName(relativeType);
 
     changeMargins("Page Number Margins",
-                  ranges->topOfSteps(),ranges->bottomOfSteps(),
+                  page->topOfSteps(),page->bottomOfSteps(),
                   margin);
   }
 }

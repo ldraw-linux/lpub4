@@ -40,7 +40,7 @@
 Steps::Steps()
 {
   relativeType  = SingleStepType;
-  pli.ranges = this;
+  pli.steps = this;
   pli.callout = NULL;
 }
 

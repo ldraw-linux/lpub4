@@ -85,7 +85,7 @@ class Steps : public Placement {
           AbstractRangesElement *nextRange(const AbstractRangesElement *me);    
 };
 
-class Ranges : public Steps {
+class Page : public Steps {
   public:
     QList<InsertMeta> inserts;
 };

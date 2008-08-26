@@ -31,12 +31,12 @@
 #include "metaitem.h"
 #include "where.h"
 
-class Ranges;
+class Page;
 class Steps;
 
 class MultiStepRangesBackgroundItem : public QGraphicsRectItem, public MetaItem
 {
-  Ranges *ranges;
+  Page   *page;
   Meta   *meta;
   bool    positionChanged;
   QPointF position;
@@ -70,7 +70,7 @@ public:
     FreeFormMeta   *freeform;
     FontListMeta   *subModelFont;
     StringListMeta *subModelFontColor;
-    Ranges         *ranges;
+    Page           *page;
 
     MultiStepRangeBackgroundItem(
       Steps         *_steps,

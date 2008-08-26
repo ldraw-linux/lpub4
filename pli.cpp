@@ -60,11 +60,11 @@ const Where &Pli::bottomOfStep()
 }
 const Where &Pli::topOfSteps()
 {
-  return ranges->topOfSteps();
+  return steps->topOfSteps();
 }
 const Where &Pli::bottomOfSteps()
 {
-  return ranges->bottomOfSteps();
+  return steps->bottomOfSteps();
 }
 const Where &Pli::topOfCallout()
 {

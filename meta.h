@@ -100,9 +100,7 @@ enum Rc {
          ResolutionRc,
          
          InsertRc,
-         
-         PageBeginRc,
-         PageEndRc,
+         InsertPageRc,
 
          EndOfFileRc,
 };
@@ -1469,8 +1467,6 @@ public:
   BoolMeta       togglePnPlacement;
   NumberPlacementMeta number;
   StringListMeta subModelColor;
-  RcMeta         begin;
-  RcMeta         end;
 
   PageMeta();
   virtual ~PageMeta() {}

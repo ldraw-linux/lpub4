@@ -508,7 +508,7 @@ signals:
   void displayFileSig(LDrawFile *ldrawFile, const QString &subFile);
   void showLineSig(int lineNumber);
 private:    
-  Ranges          page;            // the abstract version of page contents
+  Page            page;            // the abstract version of page contents
 
   QGraphicsScene *KpageScene;      // top of displayed page's graphics items
   LGraphicsView  *KpageView;       // the visual representation of the scene
@@ -542,7 +542,7 @@ private:
   int drawPage(                    // process the page of interest and any callouts
     LGraphicsView  *view,
 	  QGraphicsScene *scene,
-    Steps          *ranges,
+    Steps          *steps,
     int            stepNum,
 	  QString const &addLine,
     Where         &current,
@@ -552,15 +552,9 @@ private:
     bool           calledOut = false);
 
   int addGraphicsPageItems(        // this converts the abstract page into
-    Steps          *ranges,        // a graphics view
+    Steps          *steps,         // a graphics view
 	  LGraphicsView  *view, 
     QGraphicsScene *scene);
-
-  int drawPage(
-    LGraphicsView  *view,
-    QGraphicsScene *scene,
-    Steps          *page,
-    Where          &current);
 
 private slots:
     void open();
@@ -715,7 +709,7 @@ public:
   LGraphicsView(QGraphicsScene *scene)
   {
     setScene(scene);
-	pageBackgroundItem = NULL;
+	  pageBackgroundItem = NULL;
   }
   PageBackgroundItem *pageBackgroundItem;
 

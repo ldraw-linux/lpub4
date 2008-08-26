@@ -40,7 +40,7 @@ MultiStepRangesBackgroundItem::MultiStepRangesBackgroundItem(
   Meta *_meta)
 {
   meta = _meta;
-  ranges = dynamic_cast<Ranges *>(_steps);
+  page = dynamic_cast<Page *>(_steps);
   setRect(rect);
   setPen(Qt::NoPen);
   setBrush(Qt::NoBrush);
@@ -77,7 +77,7 @@ void MultiStepRangesBackgroundItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *
     placementData.offsets[1] += newPosition.y()/meta->LPub.page.size.value(1);
     meta->LPub.multiStep.placement.setValue(placementData);
 
-    changePlacementOffset(ranges->topOfSteps(),&meta->LPub.multiStep.placement,false);
+    changePlacementOffset(page->topOfSteps(),&meta->LPub.multiStep.placement,false);
   }
 }
 
@@ -89,7 +89,7 @@ MultiStepRangeBackgroundItem::MultiStepRangeBackgroundItem(
   int     _offset_y,
   QGraphicsItem *parent)
 {
-  ranges = dynamic_cast<Ranges *>(_steps);
+  page = dynamic_cast<Page *>(_steps);
 
   meta = _meta;
 
@@ -103,7 +103,7 @@ MultiStepRangeBackgroundItem::MultiStepRangeBackgroundItem(
   subModelFont      = &multiStep->subModelFont;
   subModelFontColor = &multiStep->subModelFontColor;
   perStep           = &multiStep->pli.perStep;
-  relativeType      = ranges->relativeType;
+  relativeType      = page->relativeType;
 
   int tx = _offset_x+_range->offset[XX];
   int ty = _offset_y+_range->offset[YY];
@@ -134,7 +134,7 @@ void MultiStepRangeBackgroundItem::contextMenuEvent(
 
   QAction *allocAction;
   
-  if (ranges->allocType() == Vertical) {
+  if (page->allocType() == Vertical) {
     allocAction = menu.addAction("Display as Rows");
     allocAction->setWhatsThis(
       "Display as Rows:\n"
@@ -163,23 +163,23 @@ void MultiStepRangeBackgroundItem::contextMenuEvent(
     changePlacement(PageType,
                     relativeType,
                     "Step Group Placement",
-                    ranges->topOfSteps(),
-                    ranges->bottomOfSteps(),
+                    page->topOfSteps(),
+                    page->bottomOfSteps(),
                     &meta->LPub.multiStep.placement,
                     1,false);
   } else if (selectedAction == perStepAction) {
-    changeBool(ranges->topOfSteps(),
-               ranges->bottomOfSteps(),
+    changeBool(page->topOfSteps(),
+               page->bottomOfSteps(),
               &meta->LPub.multiStep.pli.perStep);
   } else if (selectedAction == marginAction) {
     changeMargins("Step Group Margins",
-                  ranges->topOfSteps(),
-                  ranges->bottomOfSteps(),
+                  page->topOfSteps(),
+                  page->bottomOfSteps(),
                   margin);
   } else if (selectedAction == allocAction) {
-    changeAlloc(ranges->topOfSteps(),
-                ranges->bottomOfSteps(),
-                ranges->allocMeta());
+    changeAlloc(page->topOfSteps(),
+                page->bottomOfSteps(),
+                page->allocMeta());
   }
 }
 
