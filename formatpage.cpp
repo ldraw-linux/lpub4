@@ -74,35 +74,36 @@ int Gui::addGraphicsPageItems(
   LGraphicsView  *view,
   QGraphicsScene *scene)
 {
-  Ranges *ranges = dynamic_cast<Ranges *>(steps);
+  Page *page = dynamic_cast<Page *>(steps);
+  
   statusBarMsg("Displaying Page");
 
-  PageBackgroundItem *pageBg = new PageBackgroundItem(ranges);
+  PageBackgroundItem *pageBg = new PageBackgroundItem(page);
 
   view->pageBackgroundItem = pageBg;
 
   Placement plPage;
   plPage.relativeType = PageType;
-  plPage.size[XX] = ranges->meta.LPub.page.size.value(0);
-  plPage.size[YY] = ranges->meta.LPub.page.size.value(1);
-  plPage.margin   = ranges->meta.LPub.page.margin;
+  plPage.size[XX] = page->meta.LPub.page.size.value(0);
+  plPage.size[YY] = page->meta.LPub.page.size.value(1);
+  plPage.margin   = page->meta.LPub.page.margin;
   plPage.offset[XX] = 0;
   plPage.offset[YY] = 0;
 
-  if (ranges->meta.LPub.page.dpn.value()) {
+  if (page->meta.LPub.page.dpn.value()) {
 
     // allocate QGraphicsTextItem for page number
 
     PageNumberItem  *pageNumber = 
       new PageNumberItem(
-                      ranges,
-                     &ranges->meta, 
-                      ranges->meta.LPub.page.number, 
+                      page,
+                     &page->meta, 
+                      page->meta.LPub.page.number, 
                      "%d", 
                      displayPageNum,
                      pageBg);
 
-    PlacementData placementData = ranges->meta.LPub.page.number.placement.value();
+    PlacementData placementData = page->meta.LPub.page.number.placement.value();
 
     Placement pn;
 
@@ -110,9 +111,9 @@ int Gui::addGraphicsPageItems(
     pn.relativeType = PageNumberType;
     pn.size[XX]     = (int) pageNumber->document()->size().width();
     pn.size[YY]     = (int) pageNumber->document()->size().height();
-    pn.margin       = ranges->meta.LPub.page.number.margin;
+    pn.margin       = page->meta.LPub.page.number.margin;
 
-    if (ranges->meta.LPub.page.togglePnPlacement.value() && ! (displayPageNum & 1)) {
+    if (page->meta.LPub.page.togglePnPlacement.value() && ! (displayPageNum & 1)) {
       switch (placementData.placement) {
         case TopLeft:
           placementData.placement = TopRight;
@@ -156,21 +157,23 @@ int Gui::addGraphicsPageItems(
     pageNumber->setPos(pn.offset[XX],pn.offset[YY]);
   }
 
-  if (ranges->relativeType == SingleStepType) {
-    if (ranges->list.size()) {
-      Range *range = dynamic_cast<Range *>(ranges->list[0]);
+  if (page->relativeType == SingleStepType) {
+    if (page->list.size()) {
+      Range *range = dynamic_cast<Range *>(page->list[0]);
       if (range->relativeType == RangeType) {
         Step *step= dynamic_cast<Step *>(range->list[0]);
         if (step && step->relativeType == StepType) {
 
           step->stepNumber.sizeit();
 
-          step->pli.addPli(&ranges->meta, step->submodelLevel, pageBg);
+          step->pli.addPli(&page->meta, step->submodelLevel, pageBg);
 
           /* Size the callouts */
           for (int i = 0; i < step->list.size(); i++) {
             step->list[i]->sizeIt();
           }
+          
+          /* Size the inserts : FIXME */
 
           plPage.relativeTo(step);      // place everything
 
@@ -180,11 +183,11 @@ int Gui::addGraphicsPageItems(
           CsiItem *csiItem = NULL;
           if (step->csiPixmap.pixmap) {
             csiItem = new CsiItem(step,
-                                 &ranges->meta, 
+                                 &page->meta, 
                                  *step->csiPixmap.pixmap,
                                   step->submodelLevel,
                                   pageBg, 
-                                  ranges->relativeType);
+                                  page->relativeType);
             csiItem->setPos(step->csiPixmap.offset[XX],
                             step->csiPixmap.offset[YY]);
           } else {
@@ -193,12 +196,12 @@ int Gui::addGraphicsPageItems(
 
           // allocate QGraphicsTextItem for step number
 
-          if (ldrawFile.numSteps(ranges->bottom.modelName) > 1) {
+          if (ldrawFile.numSteps(page->bottom.modelName) > 1) {
             StepNumberItem *stepNumber = 
               new StepNumberItem(step,
-                                 ranges->relativeType,
-                                &ranges->meta, 
-                                 ranges->meta.LPub.stepNumber, 
+                                 page->relativeType,
+                                &page->meta, 
+                                 page->meta.LPub.stepNumber, 
                                  "%d", 
                                  step->stepNumber.number,
                                  pageBg);
@@ -206,6 +209,8 @@ int Gui::addGraphicsPageItems(
             stepNumber->setPos(step->stepNumber.offset[XX],
                                step->stepNumber.offset[YY]);
           }
+          
+          // foreach callout
 
           for (int i = 0; i < step->list.size(); i++) {
             Callout *callout = step->list[i];
@@ -213,6 +218,8 @@ int Gui::addGraphicsPageItems(
                              step->csiPixmap.offset[YY]-callout->offset[YY],
                              step->csiPixmap.size[XX], 
                              step->csiPixmap.size[YY]);
+                             
+            // foreach pointer
 
             callout->addGraphicsItems(0,0,csiRect,pageBg);
             for (int i = 0; i < callout->pointerList.size(); i++) {
@@ -226,6 +233,12 @@ int Gui::addGraphicsPageItems(
                                               pointer,
                                               callout->background);
             }
+          }
+          
+          // foreach insert
+          
+          for (int i = 0; i < step->inserts.size(); i++) {
+            // picture, text, arrows, BOM
           }
         } else {
           QMessageBox::warning(
@@ -245,22 +258,23 @@ int Gui::addGraphicsPageItems(
         QMessageBox::tr("LPub"),
         QMessageBox::tr("drawPage(): not a valid ranges"));
     }
-  } else {
-    PlacementData data = ranges->meta.LPub.multiStep.placement.value();
-    ranges->placement.setValue(data);
-    ranges->sizeIt();
-    plPage.placeRelative(ranges); // place multi-step relative to the page
-    ranges->relativeToMs(ranges); // place callouts relative to MULTI_STEP
-    plPage.relativeToMs(ranges);    // place callouts relative to PAGE
-    ranges->addGraphicsItems(0,0,pageBg);
-  }
+  } else if (page->relativeType == StepGroupType) {
+    PlacementData data = page->meta.LPub.multiStep.placement.value();
+    page->placement.setValue(data);
+    page->sizeIt();
+    plPage.placeRelative(page); // place multi-step relative to the page
+    page->relativeToMs(page); // place callouts relative to MULTI_STEP
+    plPage.relativeToMs(page);    // place callouts relative to PAGE
+    page->addGraphicsItems(0,0,pageBg);
+  } 
+  
   scene->addItem(pageBg);
 
-  view->setSceneRect(0,0,ranges->meta.LPub.page.size.value(0),
-                             ranges->meta.LPub.page.size.value(1));
+  view->setSceneRect(0,0,page->meta.LPub.page.size.value(0),
+                             page->meta.LPub.page.size.value(1));
 
-  view->horizontalScrollBar()->setRange(0,ranges->meta.LPub.page.size.value(0));
-  view->verticalScrollBar()->setRange(0,ranges->meta.LPub.page.size.value(1));
+  view->horizontalScrollBar()->setRange(0,page->meta.LPub.page.size.value(0));
+  view->verticalScrollBar()->setRange(0,page->meta.LPub.page.size.value(1));
 
   if (fitMode == FitWidth) {
     fitWidth(view);
@@ -292,7 +306,7 @@ int Gui::addGraphicsPageItems(
     }
   }
 #endif
-  ranges->relativeType = SingleStepType;
+  page->relativeType = SingleStepType;
   statusBarMsg("");
   return 0;
 }
