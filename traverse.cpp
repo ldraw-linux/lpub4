@@ -249,7 +249,7 @@ int Gui::drawPage(
   statusBar()->showMessage("Processing " + current.modelName);
 
   /*
-   * do until end of file
+   * do until end of page
    */
   for ( ; current <= numLines; current++) {
 
@@ -591,6 +591,10 @@ int Gui::drawPage(
             range->append(reserve);
           }
         break;
+        
+        case InsertPageRc:
+          partsAdded = true;
+        break;
 
         case CalloutBeginRc:
           if (callout) {
@@ -728,6 +732,8 @@ int Gui::drawPage(
                 csiParts,
                 step->csiPixmap.pixmap,
                 steps->meta);
+                
+              step->setInserts(inserts);
 
               statusBar()->showMessage("Processing " + current.modelName);
 
@@ -738,6 +744,16 @@ int Gui::drawPage(
               if (pliPerStep) {
                 pli.clear();
               }
+              
+              /*
+               * Only pages or step can have inserts.... no callouts
+               */
+              if ( ! multiStep && ! calledOut) {
+                Page *page = dynamic_cast<Page *>(steps);
+                if (page) {
+                  page->inserts = inserts;
+                }
+              }
             }
 
             if ( ! multiStep && ! calledOut) {
@@ -746,14 +762,13 @@ int Gui::drawPage(
                * Simple step
                */
               if (steps->list.size() == 0) {
-                return 0;
-              } else {
-                steps->setBottomOfSteps(current);
-                steps->placement = steps->meta.LPub.assem.placement;
-                showLine(topOfStep);
-                addGraphicsPageItems(steps,view,scene);
-                return HitEndOfPage;
+                steps->relativeType = PageType;
               }
+              steps->setBottomOfSteps(current);
+              steps->placement = steps->meta.LPub.assem.placement;
+              showLine(topOfStep);
+              addGraphicsPageItems(steps,view,scene);
+              return HitEndOfPage;
             }
             steps->meta.pop();
             if (partsAdded) {
@@ -902,7 +917,6 @@ int Gui::findPage(
 {
   bool stepGroup = false;
   bool partIgnore = false;
-  bool pageBegin = false;
   int  partsAdded = 0;
   int  stepNumber = 1;
   Rc   rc;
@@ -1018,28 +1032,6 @@ int Gui::findPage(
               ++pageNum;
             }
           break;
-          
-          // STEP PAGE_BEGIN * PAGE_END PARTS STEP
-          //                 +-- INSERT (PICTURE "name"|BOM|ARROW X Y X Y|TEXT "") TOP_LEFT PAGE INSIDE XX YY
-          
-          case PageBeginRc:
-            if (partsAdded) {
-            } else {
-              pageBegin = true;
-              saveCurrent = current;
-            }
-          break;
-          case PageEndRc:
-            if (pageBegin) {
-              if (pageNum == displayPageNum) {
-                //
-                // So what we end up with is a list of inserts attached to page.
-                //
-                drawPage(view,scene,&page,saveCurrent);
-              }
-              pageBegin = false;
-            }
-          break;
 
           case StepRc:
           case RotStepRc:
@@ -1088,6 +1080,11 @@ int Gui::findPage(
               }
             } while (rc != CalloutEndRc && current.lineNumber < numLines);
           break;
+          
+          case InsertPageRc:
+            partsAdded = true;
+          break;
+          
           case PartBeginIgnRc:
             partIgnore = true;
           break;
@@ -1160,14 +1157,5 @@ int Gui::findPage(
   }
   saveCurrent.modelName.clear();
   saveCsiParts.clear();
-  return 0;
-}
-
-int Gui::drawPage(
-  LGraphicsView  * /* unused view */,
-  QGraphicsScene * /* unused scene */,
-  Steps          * /* unused page */,
-  Where          & /* unused current */)
-{
   return 0;
 }
