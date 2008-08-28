@@ -243,6 +243,7 @@ int Gui::drawPage(
   QList<InsertMeta> inserts;
   
   Where topOfStep = current;
+  Where topOfPage = current;
   Rc gprc = OkRc;
   Rc rc;
 
@@ -666,7 +667,7 @@ int Gui::drawPage(
 
             steps->setBottomOfSteps(topOfStep);
             steps->placement = steps->meta.LPub.multiStep.placement;
-            showLine(steps->bottomOfSteps());
+            showLine(topOfPage);
             addGraphicsPageItems(steps, view, scene);
             return HitEndOfPage;
           }
@@ -727,13 +728,10 @@ int Gui::drawPage(
               }
 
               int rc = step->createCsi(
-                curFile,
                 addLine,
                 csiParts,
                 step->csiPixmap.pixmap,
                 steps->meta);
-                
-              step->setInserts(inserts);
 
               statusBar()->showMessage("Processing " + current.modelName);
 
@@ -766,7 +764,7 @@ int Gui::drawPage(
               }
               steps->setBottomOfSteps(current);
               steps->placement = steps->meta.LPub.assem.placement;
-              showLine(topOfStep);
+              showLine(topOfPage);
               addGraphicsPageItems(steps,view,scene);
               return HitEndOfPage;
             }
@@ -809,6 +807,7 @@ int Gui::drawPage(
     }
   }
 
+#if 0
   if (multiStep) {
     showLine(current);
     QMessageBox::critical(NULL,
@@ -828,10 +827,11 @@ int Gui::drawPage(
     steps->setBottomOfSteps(current);
     steps->placement = steps->meta.LPub.multiStep.placement;
 
-    showLine(topOfStep);
+    showLine(topOfPage);
     addGraphicsPageItems(steps, view, scene);
     return HitEndOfPage;
   }
+#endif
   return 0;
 }
 
@@ -926,6 +926,7 @@ int Gui::findPage(
   QStringList csiParts;
   QStringList saveCsiParts;
   Where       saveCurrent = current;
+  Where       stepGroupCurrent;
   int         saveStepNumber = 1;
 
   Meta        tmpMeta;
@@ -1039,11 +1040,13 @@ int Gui::findPage(
               ++stepNumber;
               meta.pop();
               if (pageNum < displayPageNum) {
-                saveCsiParts   = csiParts;
-                saveCurrent    = current;
-                saveStepNumber = stepNumber;
-                saveMeta       = meta;
-                saveBfx        = bfx;
+                if ( ! stepGroup) {
+                  saveCsiParts   = csiParts;
+                  saveCurrent    = current;
+                  saveStepNumber = stepNumber;
+                  saveMeta       = meta;
+                  saveBfx        = bfx;
+                }
               }
               if ( ! stepGroup) {
                 if (pageNum == displayPageNum) {
