@@ -55,7 +55,7 @@
 
 Step::Step(
   Where   &topOfStep,
-  AbstractRangesElement *_parent,
+  AbstractStepsElement *_parent,
   int      num,            // step number as seen by the user
   Meta    &meta,           // the current state of the meta-commands
   bool     calledOut_,     // if we're a callout
@@ -144,17 +144,14 @@ Range *Step::range()
  */
 
 int Step::createCsi(
-  QString const     &topLevelFile,
   QString const     &addLine,
   QStringList const &csiParts,  // the partially assembles model
   QPixmap           *pixmap,
   Meta              &meta)
 {
-  int         modelScale = meta.LPub.assem.modelScale.value();
+  qreal       modelScale = meta.LPub.assem.modelScale.value();
   int         sn = stepNumber.number;
-  QFileInfo   topInfo(topLevelFile);
-  QString key = QString("%1_%2_%3_%4_%5_%6_%7")
-                        .arg(topInfo.baseName())
+  QString key = QString("%1_%2_%3_%4_%5_%6")
                         .arg(csiName())
                         .arg(sn)
                         .arg(meta.LPub.page.size.value(0))

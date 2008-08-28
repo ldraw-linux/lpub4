@@ -269,9 +269,11 @@ int Gui::addGraphicsPageItems(
   } 
   
   scene->addItem(pageBg);
+  
+  int width = page->meta.LPub.page.size.value(0);
+  int height = page->meta.LPub.page.size.value(1);
 
-  view->setSceneRect(0,0,page->meta.LPub.page.size.value(0),
-                             page->meta.LPub.page.size.value(1));
+  view->setSceneRect(0,0,width,height);
 
   view->horizontalScrollBar()->setRange(0,page->meta.LPub.page.size.value(0));
   view->verticalScrollBar()->setRange(0,page->meta.LPub.page.size.value(1));

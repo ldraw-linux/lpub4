@@ -38,13 +38,13 @@
  * callouts.
  */
 class Step;
-class AbstractRangesElement;
+class AbstractStepsElement;
 class Where;
 
 class Steps : public Placement {
   public:
     Meta           meta;
-    QList<AbstractRangesElement *> list;  // of range and/or PLI
+    QList<AbstractStepsElement *> list;  // of range and/or PLI
     QGraphicsView *view;
     Pli            pli;
     Where          bottom;
@@ -58,7 +58,7 @@ class Steps : public Placement {
 	  QString csiName();
     QStringList submodelStack();
     void freeSteps();
-    void append(AbstractRangesElement *re);
+    void append(AbstractStepsElement *re);
 
     virtual AllocEnc allocType();
     virtual AllocMeta &allocMeta();
@@ -76,13 +76,13 @@ class Steps : public Placement {
 
     void sizeitFreeform(int xx, int yy);
 
-    Boundary boundary(AbstractRangesElement *);
+    Boundary boundary(AbstractStepsElement *);
 
-    const Where &bottomOfStep(AbstractRangesElement *me);
+    const Where &bottomOfStep(AbstractStepsElement *me);
     const Where &topOfSteps();
     const Where &bottomOfSteps();
           void  setBottomOfSteps(const Where &bos);
-          AbstractRangesElement *nextRange(const AbstractRangesElement *me);    
+          AbstractStepsElement *nextRange(const AbstractStepsElement *me);    
 };
 
 class Page : public Steps {

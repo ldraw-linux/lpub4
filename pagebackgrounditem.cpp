@@ -45,7 +45,7 @@ void PageBackgroundItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
   QAction *addNextAction = NULL;
 
   Step    *lastStep = NULL;
-  AbstractRangesElement *range = page->list[page->list.size()-1];
+  AbstractStepsElement *range = page->list[page->list.size()-1];
   if (range->relativeType == RangeType) {
     AbstractRangeElement *rangeElement = range->list[range->list.size()-1];
     if (rangeElement->relativeType == StepType) {

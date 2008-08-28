@@ -1328,10 +1328,9 @@ void MetaItem::convertToCallout(
       if (argv[1] == "STEP" || argv[1] == "ROTSTEP") {
         break;
       }
-    } else if (argv.size() >= 3 && argv[0] == "0"
+    } else if (argv.size() >= 2 && argv[0] == "0"
                                 && (argv[1] == "LPUB" ||
-                                    argv[1] == "!LPUB")
-                                && argv[2] == "PLI") {
+                                    argv[1] == "!LPUB")) {
       break;
     } else if (argv.size() == 15 && argv[0] == "1") {
       if (gui->isSubmodel(argv[14])) {
@@ -1359,8 +1358,7 @@ void MetaItem::convertToCallout(
       }
     } else if (argv.size() >= 3 && argv[0] == "0"
                                 && (argv[1] == "LPUB" ||
-                                    argv[1] == "!LPUB")
-                                && argv[2] == "PLI") {
+                                    argv[1] == "!LPUB")) {
       break;
     } else if (argv.size() == 15 && argv[0] == "1") {
       if (gui->isSubmodel(argv[14])) {

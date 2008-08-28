@@ -37,12 +37,12 @@
 
 class Steps;
 class Callout;
-class AbstractRangesElement;
+class AbstractStepsElement;
 class AllocMeta;
 
 class AbstractRangeElement : public Placement {
   public:
-    AbstractRangesElement *parent;
+    AbstractStepsElement *parent;
     Where   top;
 
     AbstractRangeElement()

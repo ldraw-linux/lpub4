@@ -55,7 +55,7 @@ class Step : public AbstractRangeElement
 
     Step(
       Where                 &topOfStep,
-      AbstractRangesElement *_parent,
+      AbstractStepsElement *_parent,
       int                    num, 
       Meta                  &meta, 
       bool                   calledOut, 
@@ -74,7 +74,6 @@ class Step : public AbstractRangeElement
     Range *range();
 
     int  createCsi(
-	         QString const     &fileName,
 		       QString const     &addLine,
            QStringList const &csiParts,
            QPixmap          *pixmap,

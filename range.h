@@ -35,7 +35,7 @@
 class QGraphicsItem;
 class AbstractRangeElement;
 
-class Range : public AbstractRangesElement {
+class Range : public AbstractStepsElement {
   public:
     int          allocType;
     FreeFormMeta freeform;

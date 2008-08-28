@@ -44,7 +44,7 @@
 class Steps;
 class AbstractRangeElement;
 
-class AbstractRangesElement : public Placement {
+class AbstractStepsElement : public Placement {
 public:
   Steps *parent;
 

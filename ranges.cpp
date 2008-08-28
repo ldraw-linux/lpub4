@@ -60,7 +60,7 @@ Steps::~Steps()
 
 QString Steps::modelName()
 {
-  return bottom.modelName;
+  return list[0]->topOfRange().modelName;
 }
 
 QString Steps::path()
@@ -73,8 +73,21 @@ QString Steps::path()
   return thePath;
 }
 
+QString Steps::csiName()
+{
+  QString thePath;
+
+  for (int i = 0; i < meta.submodelStack.size(); i++) {
+    QString lineNum = QString("%1") .arg(meta.submodelStack[i].lineNumber);
+    thePath += "_" + QFileInfo(meta.submodelStack[i].modelName).baseName() + "_" + lineNum;
+  }
+  
+  thePath += "_" + QFileInfo(modelName()).baseName();
+  return thePath;
+}
+
 const Where &Steps::bottomOfStep(
-  AbstractRangesElement *me)
+  AbstractStepsElement *me)
 {
   for (int i = 0; i < list.size(); i++) {
     if (list[i] == me) {
@@ -86,8 +99,8 @@ const Where &Steps::bottomOfStep(
   return bottom;
 }
 
-AbstractRangesElement *Steps::nextRange(
-  const AbstractRangesElement *me)
+AbstractStepsElement *Steps::nextRange(
+  const AbstractStepsElement *me)
 {
   int size = list.size();
   
@@ -117,19 +130,6 @@ void Steps::setBottomOfSteps(const Where &bos)
   bottom = bos;
 }
 
-QString Steps::csiName()
-{
-  QString thePath;
-  
-  thePath = QFileInfo(modelName()).baseName();
-
-  for (int i = 0; i < meta.submodelStack.size(); i++) {
-    QString lineNum = QString("%1") .arg(meta.submodelStack[i].lineNumber);
-    thePath += "_" + QFileInfo(meta.submodelStack[i].modelName).baseName() + "_" + lineNum;
-  }
-  return thePath;
-}
-
 QStringList Steps::submodelStack()
 {
   QStringList submodelStack;
@@ -140,7 +140,7 @@ QStringList Steps::submodelStack()
   return submodelStack;
 }
 
-void Steps::append(AbstractRangesElement *re)
+void Steps::append(AbstractStepsElement *re)
 {
   list.append(re);
 }
@@ -172,7 +172,7 @@ AllocMeta &Steps::allocMeta()
 void Steps::freeSteps()
 {
   for (int i = 0; i < list.size(); i++) {
-    AbstractRangesElement *re = list[i];
+    AbstractStepsElement *re = list[i];
     delete re;
   }
   list.clear();
@@ -583,7 +583,7 @@ void Steps::addGraphicsItemsHoriz(
   }
 }
 
-Boundary Steps::boundary(AbstractRangesElement *me)
+Boundary Steps::boundary(AbstractStepsElement *me)
 {
   if (list.size() == 1) {
     return StartAndEndOfSteps;

@@ -29,17 +29,17 @@
 #include "ranges_element.h"
 #include "ranges.h"
 
-Steps *AbstractRangesElement::grandparent()
+Steps *AbstractStepsElement::grandparent()
 {
   return parent;
 }
 
-AllocEnc AbstractRangesElement::allocType()
+AllocEnc AbstractStepsElement::allocType()
 {
   return parent->allocType();
 }
 
-AllocMeta &AbstractRangesElement::allocMeta()
+AllocMeta &AbstractStepsElement::allocMeta()
 {
   return parent->allocMeta();
 }
@@ -49,7 +49,7 @@ AllocMeta &AbstractRangesElement::allocMeta()
  * to find the next step's top.....
  */
 
-const Where &AbstractRangesElement::bottomOfStep(
+const Where &AbstractStepsElement::bottomOfStep(
   AbstractRangeElement *me)
 {
   int size = list.size();
@@ -67,17 +67,17 @@ const Where &AbstractRangesElement::bottomOfStep(
   return nowhere;
 }
 
-const Where &AbstractRangesElement::topOfRange()
+const Where &AbstractStepsElement::topOfRange()
 {
   return list[0]->topOfStep();
 }
 
-const Where &AbstractRangesElement::bottomOfRange()
+const Where &AbstractStepsElement::bottomOfRange()
 {
   return parent->bottomOfStep(this);
 }
 
-AbstractRangeElement *AbstractRangesElement::nextElement(
+AbstractRangeElement *AbstractStepsElement::nextElement(
   const AbstractRangeElement *me)
 {
   int size = list.size();
@@ -87,7 +87,7 @@ AbstractRangeElement *AbstractRangesElement::nextElement(
       if (i < size - 1) {
         return list[i+1];
       } else {
-        const AbstractRangesElement *range;
+        const AbstractStepsElement *range;
         range = parent->nextRange(this);
         if (range) {
           return range->list[0];
@@ -101,38 +101,38 @@ AbstractRangeElement *AbstractRangesElement::nextElement(
 }
 
 
-const Where &AbstractRangesElement::topOfSteps()
+const Where &AbstractStepsElement::topOfSteps()
 {
   return parent->topOfSteps();
 }  
 
-const Where &AbstractRangesElement::bottomOfSteps()
+const Where &AbstractStepsElement::bottomOfSteps()
 {
   return parent->bottomOfSteps();
 }  
 
 
-QString AbstractRangesElement::path()
+QString AbstractStepsElement::path()
 {
   return parent->path();
 }
 
-QString AbstractRangesElement::csiName()
+QString AbstractStepsElement::csiName()
 {
   return parent->csiName();
 }
 
-QStringList AbstractRangesElement::submodelStack()
+QStringList AbstractStepsElement::submodelStack()
 {
   return parent->submodelStack();
 }
 
-QString AbstractRangesElement::modelName()
+QString AbstractStepsElement::modelName()
 {
   return parent->modelName();
 }
 
-Boundary AbstractRangesElement::boundary(AbstractRangeElement *me)
+Boundary AbstractStepsElement::boundary(AbstractRangeElement *me)
 {
   Boundary myBoundary = parent->boundary(this);
 
