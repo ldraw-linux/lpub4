@@ -190,7 +190,7 @@ int LDGLite::renderCsi(
       return -1;
     }
   }
-  QFile::remove(ldrName);
+  //QFile::remove(ldrName);
   return 0;
 }
 
@@ -380,7 +380,7 @@ int LDView::renderCsi(
       return -1;
     }
   }
-  QFile::remove(ldrName);
+  //QFile::remove(ldrName);
   return 0;
 }
 
