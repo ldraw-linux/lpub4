@@ -41,7 +41,6 @@ Steps::Steps()
 {
   relativeType  = SingleStepType;
   pli.steps = this;
-  pli.callout = NULL;
 }
 
 Steps::Steps(Meta &_meta,QGraphicsView *_view)

@@ -82,7 +82,7 @@ void MultiStepRangesBackgroundItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *
 }
 
 MultiStepRangeBackgroundItem::MultiStepRangeBackgroundItem(
-  Steps  *steps,
+  Steps  *_steps,
   Range  *_range,
   Meta   *_meta,
   int     _offset_x,
@@ -90,7 +90,8 @@ MultiStepRangeBackgroundItem::MultiStepRangeBackgroundItem(
   QGraphicsItem *parent)
 {
   meta = _meta;
-
+  page = dynamic_cast<Page *>(_steps);
+  
   MultiStepMeta *multiStep = &_meta->LPub.multiStep;
   background        = NULL;
   border            = NULL;
@@ -101,7 +102,7 @@ MultiStepRangeBackgroundItem::MultiStepRangeBackgroundItem(
   subModelFont      = &multiStep->subModelFont;
   subModelFontColor = &multiStep->subModelFontColor;
   perStep           = &multiStep->pli.perStep;
-  relativeType      = steps->relativeType;
+  relativeType      = page->relativeType;
 
   int tx = _offset_x+_range->offset[XX];
   int ty = _offset_y+_range->offset[YY];
