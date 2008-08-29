@@ -135,11 +135,11 @@ class Pli : public Placement {
     QList<QString>           sortedKeys;
 
   public:
-    Meta              *meta;
     PlacementType      parentRelativeType;
     PliBackgroundItem *background;
     bool               bom;
-    ConstrainMeta      constraint;
+    PliMeta            pliMeta;
+    Meta              *meta;
     
     Steps             *steps;   // topOfSteps()
                                 // bottomOfSteps()
@@ -151,7 +151,6 @@ class Pli : public Placement {
     Pli(bool _bom = false)
     {
       relativeType = PartsListType;
-      meta = NULL;
       bom = _bom;
       initAnnotationString();
       steps = NULL;
@@ -198,10 +197,10 @@ class Pli : public Placement {
     bool initAnnotationString();
     void getAnnotate(QString &, QString &);
     void partClass(QString &, QString &);
-    int  createPartImage(QString &, QString &, QString &, QPixmap*, Meta *);
+    int  createPartImage(QString &, QString &, QString &, QPixmap*);
     QString orient(QString &color, QString part);
 
-    int  addPli (Meta *, int, QGraphicsItem *);
+    int  addPli (int, QGraphicsItem *);
     int  sizePli(Meta *, PlacementType);
 
     void operator= (Pli& from)
@@ -225,15 +224,12 @@ class PliBackgroundItem : public PlacementBackgroundItem
 public:
   Pli *pli;
   PlacementType  parentRelativeType;
-  ConstrainMeta  constraint;
   bool           bom;
-  Meta           meta;
 
   PliBackgroundItem(
     Pli           *_pli,
     int            width,
     int            height,
-    Meta          *_meta,
     PlacementType  _parentRelativeType,
     int            submodelLevel, 
     QGraphicsItem *parent);

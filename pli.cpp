@@ -280,10 +280,9 @@ int Pli::createPartImage(
   QString  &partialKey,
   QString  &type,
   QString  &color,
-  QPixmap  *pixmap,
-  Meta     *meta)
+  QPixmap  *pixmap)
 {
-  float modelScale = meta->LPub.pli.modelScale.value();
+  float modelScale = pliMeta.modelScale.value();
   ResolutionType resolutionType = meta->LPub.resolution.type();
   QString        unitsName = resolutionType ? "DPI" : "DPCM";
   float          resolution    = meta->LPub.resolution.value();
@@ -294,8 +293,8 @@ int Pli::createPartImage(
                     .arg(resolution)
                     .arg(resolutionType == DPI ? "DPI" : "DPCM")
                     .arg(modelScale)
-                    .arg(meta->LPub.pli.angle.value(0))
-                    .arg(meta->LPub.pli.angle.value(1));
+                    .arg(pliMeta.angle.value(0))
+                    .arg(pliMeta.angle.value(1));
   QString imageName = QDir::currentPath() + "/" +
                       Paths::partsDir + "/" + key + ".png";
   QString ldrName = QDir::currentPath() + "/" + 
@@ -369,9 +368,7 @@ int Pli::placePli(
 {
   // Place the first row
   BorderData borderData;
-  borderData = bom ? meta->LPub.bom.border.value()
-                   : meta->LPub.pli.border.value();
-
+  borderData = pliMeta.border.value();
   int left = 0;
   int nPlaced = 0;
   int tallest = 0;
@@ -653,8 +650,7 @@ void Pli::placeCols(
 
   // Place the first row
   BorderData borderData;
-  borderData = bom ? meta->LPub.bom.border.value()
-                   : meta->LPub.pli.border.value();
+  borderData = pliMeta.border.value();
 
   float topMargin = qMax(borderData.margin[1]+borderData.thickness,parts[keys[0]]->topMargin);
   float botMargin = qMax(borderData.margin[1]+borderData.thickness,parts[keys[0]]->instanceMeta.margin.value(YY));
@@ -737,27 +733,26 @@ void Pli::getRightEdge(
 int Pli::sizePli(Meta *_meta, PlacementType _parentRelativeType)
 {
   meta = _meta;
+  switch (_parentRelativeType) {
+    case StepGroupType:
+      placement = meta->LPub.multiStep.pli.placement;
+    break;
+    case CalloutType:
+      placement = meta->LPub.callout.pli.placement;
+    break;
+    default:
+      placement = meta->LPub.pli.placement;
+    break;
+  }
   parentRelativeType = _parentRelativeType;
 
   margin.setValueUnits(0,0);
 
-  QString instanceFont;
-  QString annotateFont;
-  QString instanceColor;
-  QString annotateColor;
-
   if (bom) {
-    instanceFont  = _meta->LPub.bom.instance.font.value();
-    annotateFont  = _meta->LPub.bom.annotate.font.value();
-    instanceColor = _meta->LPub.bom.instance.color.value();
-    annotateColor = _meta->LPub.bom.annotate.color.value();
-    constraint    = _meta->LPub.bom.constrain;
+    pliMeta = meta->LPub.bom;
+    
   } else {
-    instanceFont  = _meta->LPub.pli.instance.font.value();
-    annotateFont  = _meta->LPub.pli.annotate.font.value();
-    instanceColor = _meta->LPub.pli.instance.color.value();
-    annotateColor = _meta->LPub.pli.annotate.color.value();
-    constraint    = _meta->LPub.pli.constrain;
+    pliMeta = meta->LPub.pli;
   }
 
   QString key;
@@ -783,7 +778,7 @@ int Pli::sizePli(Meta *_meta, PlacementType _parentRelativeType)
 
       QPixmap *pixmap = new QPixmap();
 
-      if (createPartImage(key,part->type,part->color,pixmap,_meta)) {
+      if (createPartImage(key,part->type,part->color,pixmap)) {
         QMessageBox::warning(NULL,QMessageBox::tr("LPub"),
         QMessageBox::tr("Failed to load %1")
         .arg(imageName));
@@ -806,8 +801,13 @@ int Pli::sizePli(Meta *_meta, PlacementType _parentRelativeType)
       QString descr;
 
       descr = QString("%1x") .arg(part->instances.size(),0,10);
-
-      part->instanceText = new InstanceTextItem(this,part,descr,instanceFont,instanceColor,parentRelativeType);
+      
+      QString font = pliMeta.instance.font.value();
+      QString color = pliMeta.instance.color.value();
+      
+      part->instanceText = 
+        new InstanceTextItem(this,part,descr,font,color,parentRelativeType);
+        
       part->instanceText->size(part->textWidth,part->textHeight);
 
       // if text width greater than image width
@@ -823,8 +823,10 @@ int Pli::sizePli(Meta *_meta, PlacementType _parentRelativeType)
 
       if (descr.size()) {
 
-        part->annotateText = 
-          new AnnotateTextItem(this,part,descr,annotateFont,annotateColor,parentRelativeType);
+        font = pliMeta.annotate.font.value();
+        color = pliMeta.annotate.color.value();
+         part->annotateText = 
+          new AnnotateTextItem(this,part,descr,font,color,parentRelativeType);
 
         part->annotateText->size(part->annotWidth,part->annotHeight);
 
@@ -867,7 +869,7 @@ int Pli::sizePli(Meta *_meta, PlacementType _parentRelativeType)
 
       part->height = part->leftEdge.size();
 
-      if (bom && _meta->LPub.bom.sort.value()) {
+      if (bom && pliMeta.sort.value()) {
         QString pclass;
         partClass(part->type,pclass);
         part->sort = QString("%1%2%3%%4")
@@ -914,19 +916,11 @@ int Pli::sizePli(Meta *_meta, PlacementType _parentRelativeType)
   //   Constrain Square
 
   int cols, height;
-  bool packSubs;
-  bool sortType;
+  bool packSubs = pliMeta.pack.value();
+  bool sortType = pliMeta.sort.value();
   int pliWidth,pliHeight;
 
-  if (bom) {
-    packSubs       = _meta->LPub.bom.pack.value();
-    sortType       = _meta->LPub.bom.sort.value();
-  } else {
-    packSubs       = true;
-    sortType       = false;
-  }
-
-  ConstrainData constrainData = constraint.value();
+  ConstrainData constrainData = pliMeta.constrain.value();
 
   if (constrainData.type == PliConstrainHeight) {
     int cols;
@@ -941,11 +935,7 @@ int Pli::sizePli(Meta *_meta, PlacementType _parentRelativeType)
                   pliHeight);
     if (rc == -2) {
       Where here;
-      if (bom) {
-        here = _meta->LPub.bom.constrain.here();
-      } else {
-        here = _meta->LPub.pli.constrain.here();
-      }
+      here = pliMeta.constrain.here();
       gui->parseError("Error: Packing PLI failed. Part taller than constraint",here);
       clear();
       return -1;
@@ -1137,7 +1127,6 @@ int Pli::sizePli(Meta *_meta, PlacementType _parentRelativeType)
 }
 
 int Pli::addPli(
-  Meta      *_meta,
   int       submodelLevel,
   QGraphicsItem *parent)
 {
@@ -1149,7 +1138,6 @@ int Pli::addPli(
           this,
           width,
           height,
-          _meta,
           parentRelativeType,
           submodelLevel,
           parent);
@@ -1220,47 +1208,38 @@ PliBackgroundItem::PliBackgroundItem(
   Pli           *_pli,
   int            width,
   int            height,
-  Meta          *_meta,
   PlacementType  _parentRelativeType,
   int            submodelLevel, 
   QGraphicsItem *parent)
 {
-  meta      = *_meta;
   pli       = _pli;
   placement = _pli->placement;
 
   parentRelativeType = _parentRelativeType;
 
   QPixmap *pixmap = new QPixmap(width,height);
-
-  constraint = pli->constraint;
     
+  QString toolTip;
+
   if (_pli->bom) {
-    QString toolTip("Bill Of Materials");
-    setBackground( pixmap,
-                   PartsListType,
-                  _parentRelativeType,
-                  _meta->LPub.bom.placement,
-                  _meta->LPub.bom.background,
-                  _meta->LPub.bom.border,
-                  _meta->LPub.bom.margin,
-                  _meta->LPub.pli.subModelColor,
-                  0,
-                  toolTip);
+    toolTip = "Bill Of Materials";
   } else {
-    QString toolTip("Part List");
-    setBackground( pixmap,
-                   PartsListType,
-                   _parentRelativeType,
-                   _meta->LPub.pli.placement,
-                   _meta->LPub.pli.background,
-                   _meta->LPub.pli.border,
-                   _meta->LPub.pli.margin,
-                   _meta->LPub.pli.subModelColor,
-                   submodelLevel,
-                   toolTip);
+    toolTip = "Part List";
   }
-  placement = meta.LPub.pli.placement;
+
+  placement = pli->pliMeta.placement;
+
+  setBackground( pixmap,
+                 PartsListType,
+                 _parentRelativeType,
+                 pli->placement,
+                 pli->pliMeta.background,
+                 pli->pliMeta.border,
+                 pli->pliMeta.margin,
+                 pli->pliMeta.subModelColor,
+                 submodelLevel,
+                 toolTip);
+
   setPixmap(*pixmap);
   setParentItem(parent);
   if (parentRelativeType != SingleStepType) {
@@ -1281,8 +1260,8 @@ void PliBackgroundItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     if (newPosition.x() || newPosition.y()) {
       positionChanged = true;
       PlacementData placementData = placement.value();
-      placementData.offsets[0] += newPosition.x()/meta.LPub.page.size.value(0);
-      placementData.offsets[1] += newPosition.y()/meta.LPub.page.size.value(1);
+      placementData.offsets[0] += newPosition.x()/pli->meta->LPub.page.size.value(0);
+      placementData.offsets[1] += newPosition.y()/pli->meta->LPub.page.size.value(1);
       placement.setValue(placementData);
 
       changePlacementOffset(pli->topOfStep(),&placement);
@@ -1294,124 +1273,94 @@ void PliBackgroundItem::contextMenuEvent(
   QGraphicsSceneContextMenuEvent *event)
 {
   if (pli) {
-    if (pli->meta != NULL) {
-      QMenu menu;
+    QMenu menu;
       
-      QAction *constrainAction  = menu.addAction("Change Shape");
-      constrainAction->setWhatsThis(             "Change Shape:\n"
-        "  You can change the shape of this parts list.  One way, is\n"
-        "  is to ask the computer to make the parts list as small as\n"
-        "  possible (area). Another way is to ask the computer to\n"
-        "  make it as close to square as possible.  You can also pick\n"
-        "  how wide you want it, and the computer will make it as\n"
-        "  tall as is needed.  Another way is to pick how tall you\n"
-        "  and it, and the computer will make it as wide as it needs.\n"
-        "  The last way is to tell the computer how many columns it\n"
-        "  can have, and then it will try to make all the columns the\n"
-                                                 "  same height\n");
-      PlacementMeta *placementMeta;
+    QAction *constrainAction  = menu.addAction("Change Shape");
+    constrainAction->setWhatsThis(             "Change Shape:\n"
+      "  You can change the shape of this parts list.  One way, is\n"
+      "  is to ask the computer to make the parts list as small as\n"
+      "  possible (area). Another way is to ask the computer to\n"
+      "  make it as close to square as possible.  You can also pick\n"
+      "  how wide you want it, and the computer will make it as\n"
+      "  tall as is needed.  Another way is to pick how tall you\n"
+      "  and it, and the computer will make it as wide as it needs.\n"
+      "  The last way is to tell the computer how many columns it\n"
+      "  can have, and then it will try to make all the columns the\n"
+                                               "  same height\n");
+                                               
+    PlacementData placementData = pli->placement.value();
 
-      switch (parentRelativeType) {
-        case StepGroupType:
-          placementMeta = &meta.LPub.multiStep.pli.placement;
-        break;
-        case CalloutType:
-          placementMeta = &meta.LPub.callout.pli.placement;
-        break;
-        default:
-          placementMeta = &meta.LPub.pli.placement;
-        break;
-      }
+    QString name = "Move Parts List";
+    QAction *placementAction  = menu.addAction(name);
+    placementAction->setWhatsThis(
+      commonMenus.naturalLanguagePlacementWhatsThis(PartsListType,placementData,name));
 
-      PlacementData placementData = placementMeta->value();
-
-      QString name = "Move Parts List";
-      QAction *placementAction  = menu.addAction(name);
-      placementAction->setWhatsThis(
-        commonMenus.naturalLanguagePlacementWhatsThis(PartsListType,placementData,name));
-
-      QString pl = "Parts List ";
-      QAction *backgroundAction = commonMenus.backgroundMenu(menu,pl);
-      QAction *borderAction     = commonMenus.borderMenu(menu,pl);
-      QAction *marginAction     = commonMenus.marginMenu(menu,pl);
+    QString pl = "Parts List ";
+    QAction *backgroundAction = commonMenus.backgroundMenu(menu,pl);
+    QAction *borderAction     = commonMenus.borderMenu(menu,pl);
+    QAction *marginAction     = commonMenus.marginMenu(menu,pl);
      
-      QAction *selectedAction   = menu.exec(event->screenPos());
+    QAction *selectedAction   = menu.exec(event->screenPos());
 
-      if (selectedAction == NULL) {
-        return;
-      }
+    if (selectedAction == NULL) {
+      return;
+    }
   
-      Where top;
-      Where bottom;
-      bool  local;
+    Where top;
+    Where bottom;
+    bool  local;
       
-      Where topOfStep = pli->topOfStep();
-      Where bottomOfStep = pli->bottomOfStep();
+    Where topOfStep = pli->topOfStep();
+    Where bottomOfStep = pli->bottomOfStep();
   
-      switch (parentRelativeType) {
-        case StepGroupType:
-          top    = pli->topOfSteps();
-          MetaItem mi;
-          mi.scanForward(top,StepGroupMask);
-          bottom = pli->bottomOfSteps();
-          local = false;
-        break;
-        case CalloutType:
-          top    = pli->topOfCallout();
-          bottom = pli->bottomOfCallout();
-          local = false;
-        break;
-        default:
-          top    = topOfStep;
-          bottom = bottomOfStep;
-          local = true;
-        break;
-      }
+    switch (parentRelativeType) {
+      case StepGroupType:
+        top    = pli->topOfSteps();
+        MetaItem mi;
+        mi.scanForward(top,StepGroupMask);
+        bottom = pli->bottomOfSteps();
+        local = false;
+      break;
+      case CalloutType:
+        top    = pli->topOfCallout();
+        bottom = pli->bottomOfCallout();
+        local = false;
+      break;
+      default:
+        top    = topOfStep;
+        bottom = bottomOfStep;
+        local = true;
+      break;
+    }
 
-      Meta *meta = pli->meta;
-      QString me = pli->bom ? "BOM" : "PLI";
-      if (selectedAction == constrainAction) {
-        changeConstraint(me+" Constraint",
-                         topOfStep,
-                         bottomOfStep,
-                         &constraint);
-      } else if (selectedAction == placementAction) {
-        changePlacement(parentRelativeType,
-                        PartsListType,
-                        me+" Placement",
-                        topOfStep,
-                        bottomOfStep,
-                        placementMeta);
-      } else if (selectedAction == marginAction) {
-        changeMargins(me+" Margins",
+    QString me = pli->bom ? "BOM" : "PLI";
+    if (selectedAction == constrainAction) {
+      changeConstraint(me+" Constraint",
+                       topOfStep,
+                       bottomOfStep,
+                       &pli->pliMeta.constrain);
+    } else if (selectedAction == placementAction) {
+      changePlacement(parentRelativeType,
+                      PartsListType,
+                      me+" Placement",
                       topOfStep,
                       bottomOfStep,
-                      &margin);
-      } else if (selectedAction == backgroundAction) {
-        if (0 && bom) {
-          changeBackground(me+" Background",
-                           top,
-                           bottom,
-                           &meta->LPub.bom.background);
-        } else {
-          changeBackground(me+" Background",
-                           top,
-                           bottom,
-                           &meta->LPub.pli.background,1,local);
-        }
-      } else if (selectedAction == borderAction) {
-        if (0 && bom) {
-          changeBorder(me+" Border",
+                    &pli->placement);
+    } else if (selectedAction == marginAction) {
+      changeMargins(me+" Margins",
+                    topOfStep,
+                    bottomOfStep,
+                    &pli->pliMeta.margin);
+    } else if (selectedAction == backgroundAction) {
+      changeBackground(me+" Background",
                        top,
                        bottom,
-                       &meta->LPub.bom.border);
-        } else {
-          changeBorder(me+" Border",
-                       top,
-                       bottom,
-                       &meta->LPub.pli.border,1,local);
-        }
-      }
+                       &pli->pliMeta.background);
+    } else if (selectedAction == borderAction) {
+      changeBorder(me+" Border",
+                   top,
+                   bottom,
+                   &pli->pliMeta.border);
   	}
   }
 }
@@ -1452,17 +1401,18 @@ void AnnotateTextItem::contextMenuEvent(
       bottom = pli->bottomOfStep();
     break;
   }
- 
-  Meta *meta = pli->meta;
+
   if (selectedAction == fontAction) {
-    changeFont(top,bottom,&meta->LPub.pli.annotate.font);
+    changeFont(top,bottom,&pli->pliMeta.annotate.font);
+
+
   } else if (selectedAction == colorAction) {
-    changeColor(top,bottom,&meta->LPub.pli.annotate.color);
+    changeColor(top,bottom,&pli->pliMeta.annotate.color);
   } else if (selectedAction == marginAction) {
     changeMargins("Part Length Margins",
                   top,
                   bottom,
-                  &meta->LPub.pli.annotate.margin);
+                  &pli->pliMeta.annotate.margin);
   }
 }
 
@@ -1502,14 +1452,13 @@ void InstanceTextItem::contextMenuEvent(
       bottom = pli->bottomOfStep();
     break;
   }
-  
-  Meta *meta = pli->meta;
+
   if (selectedAction == fontAction) {
-    changeFont(top,bottom,&meta->LPub.pli.instance.font,1,false);
+    changeFont(top,bottom,&pli->pliMeta.instance.font,1,false);
   } else if (selectedAction == colorAction) {
-    changeColor(top,bottom,&meta->LPub.pli.instance.color,1,false);
+    changeColor(top,bottom,&pli->pliMeta.instance.color,1,false);
   } else if (selectedAction == marginAction) {
-    changeMargins("Margins",top,bottom,&meta->LPub.pli.instance.margin,1,false);
+    changeMargins("Margins",top,bottom,&pli->pliMeta.instance.margin,1,false);
   }
 }
 
@@ -1534,12 +1483,11 @@ void PGraphicsPixmapItem::contextMenuEvent(
     return;
   }
 
-  Meta *meta = pli->meta;
   if (selectedAction == marginAction) {
     changeMargins("Parts List Part Margins",
                   pli->topOfStep(),
                   pli->bottomOfStep(),
-                  &meta->LPub.pli.part.margin);
+                  &pli->pliMeta.part.margin);
 #if 0
   } else if (selectedAction == scaleAction) {
     changeFloatSpinTop(

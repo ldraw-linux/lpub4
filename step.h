@@ -52,6 +52,7 @@ class Step : public AbstractRangeElement
     PlacementNum      stepNumber;
     int               submodelLevel;
     bool              pliPerStep;
+    PlacementMeta     placement;
 
     Step(
       Where                 &topOfStep,

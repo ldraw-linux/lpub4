@@ -243,7 +243,6 @@ int Gui::drawPage(
   QList<InsertMeta> inserts;
   
   Where topOfStep = current;
-  Where topOfPage = current;
   Rc gprc = OkRc;
   Rc rc;
 
@@ -667,7 +666,7 @@ int Gui::drawPage(
 
             steps->setBottomOfSteps(topOfStep);
             steps->placement = steps->meta.LPub.multiStep.placement;
-            showLine(topOfPage);
+            showLine(steps->topOfSteps());
             addGraphicsPageItems(steps, view, scene);
             return HitEndOfPage;
           }
@@ -764,14 +763,12 @@ int Gui::drawPage(
               }
               steps->setBottomOfSteps(current);
               steps->placement = steps->meta.LPub.assem.placement;
-              showLine(topOfPage);
+              showLine(topOfStep);
               addGraphicsPageItems(steps,view,scene);
               return HitEndOfPage;
             }
             steps->meta.pop();
-            if (partsAdded) {
-              stepNum++;
-            }
+            stepNum += partsAdded;
             topOfStep = current;
 
             partsAdded = false;
@@ -806,32 +803,6 @@ int Gui::drawPage(
       return InvalidLDrawLineRc;
     }
   }
-
-#if 0
-  if (multiStep) {
-    showLine(current);
-    QMessageBox::critical(NULL,
-                          QMessageBox::tr("LPub"),
-                          QMessageBox::tr("End of %1 while multiStep pending")
-                          .arg(current.modelName));
-    multiStep = false;
-  
-    if (pli.tsize() != 0) {
-      steps->pli = pli;
-      steps->pli.sizePli(&steps->meta, StepGroupType);
-    }
-    pli.clear();
-
-    /* this is a page we're supposed to process */
-
-    steps->setBottomOfSteps(current);
-    steps->placement = steps->meta.LPub.multiStep.placement;
-
-    showLine(topOfPage);
-    addGraphicsPageItems(steps, view, scene);
-    return HitEndOfPage;
-  }
-#endif
   return 0;
 }
 
@@ -1004,6 +975,7 @@ int Gui::findPage(
         }
       break;
       case '0':
+        
         rc = meta.parse(line,current);
 
         switch (rc) {
@@ -1038,7 +1010,6 @@ int Gui::findPage(
           case RotStepRc:
             if (partsAdded) {
               ++stepNumber;
-              meta.pop();
               if (pageNum < displayPageNum) {
                 if ( ! stepGroup) {
                   saveCsiParts   = csiParts;
@@ -1062,6 +1033,7 @@ int Gui::findPage(
               }
               topOfStep = current;
               partsAdded = 0;
+              meta.pop();
             } else if ( ! stepGroup) {
               saveCurrent = current;  // so that draw page doesn't have to
                                       // deal with steps that are not steps

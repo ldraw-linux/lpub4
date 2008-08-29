@@ -1006,7 +1006,7 @@ void Step::addGraphicsItems(
                     offsetY + csiPixmap.offset[YY]);
   }
   if (pli.tsize()) {
-    pli.addPli(meta, submodelLevel, parent);
+    pli.addPli(submodelLevel, parent);
     pli.setPos(offsetX + pli.offset[XX],
                offsetY + pli.offset[YY]);
   }

@@ -492,7 +492,7 @@ void Steps::addGraphicsItemsVert(
 {
 
   if (pli.tsize()) {
-    pli.addPli(&meta, meta.submodelStack.size(), parent);
+    pli.addPli(meta.submodelStack.size(), parent);
   }
 
   for (int i = 0; i < list.size(); i++) {
@@ -542,7 +542,7 @@ void Steps::addGraphicsItemsHoriz(
   QGraphicsItem *parent)
 {
   if (pli.tsize()) {
-    pli.addPli(&meta, meta.submodelStack.size(), parent);
+    pli.addPli(meta.submodelStack.size(), parent);
   }
 
   for (int i = 0; i < list.size(); i++) {
