@@ -166,7 +166,7 @@ int Gui::addGraphicsPageItems(
 
           step->stepNumber.sizeit();
 
-          step->pli.addPli(&page->meta, step->submodelLevel, pageBg);
+          step->pli.addPli(step->submodelLevel, pageBg);
 
           /* Size the callouts */
           for (int i = 0; i < step->list.size(); i++) {
