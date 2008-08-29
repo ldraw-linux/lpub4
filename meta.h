@@ -1514,6 +1514,8 @@ public:
   StringListMeta subModelFontColor;
   StringMeta     ldviewParms;
   StringMeta     ldgliteParms;
+  BoolMeta       pack;
+  BoolMeta       sort;
 
   PliMeta();
   virtual ~PliMeta() {}
@@ -1522,23 +1524,9 @@ public:
 
 /*------------------------*/
 
-class BomMeta  : public BranchMeta
+class BomMeta  : public PliMeta
 {
 public:
-  // top    == beginning of top level file
-  // bottom == last line of last file
-  BorderMeta     border;
-  BackgroundMeta background;
-  MarginsMeta    margin;
-  NumberMeta     instance;
-  NumberMeta     annotate;
-  ConstrainMeta  constrain;
-  PlacementMeta  placement;
-  PartMeta       part;
-  BoolMeta       pack;
-  BoolMeta       sort;
-  BomBeginMeta   begin;
-  RcMeta         end;
   BomMeta();
   virtual ~BomMeta() {}
   virtual void init(BranchMeta *parent, QString name);
@@ -1658,7 +1646,7 @@ public:
   CalloutMeta    callout;
   MultiStepMeta  multiStep;
   PliMeta        pli;
-  BomMeta        bom;
+  PliMeta        bom;
   RemoveMeta     remove;
   FloatMeta      reserve;
   PartIgnMeta    partSub;
