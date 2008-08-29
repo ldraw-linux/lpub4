@@ -429,10 +429,10 @@ void Gui::closeEvent(QCloseEvent *event)
 void Gui::about()
 {
    QMessageBox::about(this, tr("About LPub"),
-            tr("<b>LPub 4.0.0.0</b> is a WYSIWYG tool for creating\n"
+            tr("<b>LPub 4.0.0.1</b> is a WYSIWYG tool for creating\n"
                "LEGO(c) style building instructions\n"
                "Copyright 2000-2008 Kevin Clague\n"
-               "kevin_clague@yahoo.com"));
+               "kevin.clague@gmail.com"));
 }
 
 void Gui::createActions()

@@ -188,7 +188,7 @@ public:
     return preamble == match;
   }
   
-  virtual QString format(bool local, bool local) = 0;
+  virtual QString format(bool local, bool global) = 0;
   
   virtual QString format(bool local, bool global, QString);
 
