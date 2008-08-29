@@ -593,7 +593,8 @@ void MetaItem::convertToIgnore(Meta *meta)
 {
   gui->maxPages = -1;
 
-  Where calledOut = meta->submodelStack[meta->submodelStack.size() - 1];
+  SubmodelStack tos = meta->submodelStack[meta->submodelStack.size() - 1];
+  Where calledOut(tos.modelName,tos.lineNumber);
   Where here = calledOut+1;
   beginMacro("ignoreSubmodel");
   insertMeta(here,      "0 !LPUB PART END");
@@ -615,6 +616,8 @@ void MetaItem::setMetaTopOf(
 {
   volatile int  lineNumber = meta->here().lineNumber;
   volatile bool metaInRange;
+
+#if 0
   
   QByteArray Left  = meta->here().modelName.toAscii();
   QByteArray Right = topOf.modelName.toAscii();
@@ -632,6 +635,7 @@ void MetaItem::setMetaTopOf(
     right[i] = Right[i];
   }
   right[i] = '\0';
+#endif
 
   metaInRange = meta->here().modelName == topOf.modelName;
   
@@ -1285,6 +1289,108 @@ bool equivalentAdds(
   return firstMirror == secondMirror && firstTokens[14] == secondTokens[14];
 }
 
+int MetaItem::nestCallouts(
+  const QString &modelName)
+{
+  Where walk(modelName,1);
+
+  int numLines = gui->subFileSize(walk.modelName);
+
+  bool partIgnore = false;
+  bool callout = false;
+  
+  // modelName is called out, so any submodels in modelName need to be
+  // called out
+  
+  // for all the lines in the file
+
+  for ( ; walk.lineNumber < numLines; ++walk) {
+
+    QString line = gui->readLine(walk);
+
+    QStringList argv;
+
+    split(line,argv);
+    
+    // Process meta-commands so we don't turn ignored or substituted
+    // submodels get called out
+
+    if (argv.size() >= 2 && argv[0] == "0") {
+      if (argv[1] == "WRITE") {
+        argv.removeAt(1);
+      } else if (argv[1] == "GHOST") {
+        argv.removeAt(1);
+        argv.removeAt(0);
+      }
+
+      if (argv[1] == "LPUB" || argv[1] == "!LPUB") {
+        if (argv.size() == 5 && argv[2] == "PART" 
+                             && argv[3] == "BEGIN" 
+                             && argv[4] == "IGN") {
+          partIgnore = true;
+        } else if (argv.size() == 5 && argv[2] == "PART" 
+                                    && argv[3] == "END") {
+          partIgnore = false;
+        } else if (argv.size() == 4 && argv[2] == "CALLOUT"
+                                    && argv[3] == "BEGIN") {
+          callout = true;
+        } else if (argv.size() == 4 && argv[2] == "CALLOUT"
+                                    && argv[3] == "END") {
+          callout = false;
+        } else if (argv.size() >= 3 && argv[3] == "MULTI_STEP") {
+          deleteMeta(walk);
+          --numLines;
+          --walk;
+        }
+      }
+    } else if ( ! callout && ! partIgnore) {
+
+      // We've got a part added
+      
+      if (argv.size() == 15 && argv[0] == "1") {
+        if (gui->isSubmodel(argv[14])) {
+
+          // and it is a submodel
+
+          // We've got to call this submodel out
+          insertMeta(walk, "0 !LPUB CALLOUT BEGIN");
+          walk.lineNumber += 2;
+          ++numLines;
+          for ( ; walk < numLines; walk++) {
+            QString nextLine = gui->readLine(walk);
+
+            QStringList nextArgv;
+            split(nextLine,nextArgv);
+            if (nextArgv.size() >= 2 && nextArgv[0] == "0") {
+              if (nextArgv[1] == "STEP" || nextArgv[1] == "ROTSTEP") {
+                break;
+              } else if (nextArgv.size() >= 3
+                         && (nextArgv[1] == "LPUB" ||
+                             nextArgv[1] == "!LPUB")
+                         && nextArgv[2] == "MULTI_STEP") {
+                --walk;
+                --numLines;
+              }
+            } else if (nextArgv.size() == 15 && nextArgv[0] == "1") {
+              if (gui->isSubmodel(nextArgv[14])) {
+                if (argv[14] == nextArgv[14] && equivalentAdds(line,nextLine)) {
+                } else {
+                  break;
+                }
+              }
+            }
+          }
+          insertMeta(walk,     "0 !LPUB CALLOUT END");
+          nestCallouts(argv[14]);
+          ++walk;
+          ++numLines;
+        }
+      }
+    }
+  }
+  return 0;
+}
+
 void MetaItem::convertToCallout(
   Meta *meta,
   const QString &modelName)
@@ -1316,7 +1422,8 @@ void MetaItem::convertToCallout(
    * top stop on other sub-models, or mirror images of the same sub-model.
    */
 
-  Where calledOut = meta->submodelStack[meta->submodelStack.size() - 1];
+  SubmodelStack tos = meta->submodelStack[meta->submodelStack.size() - 1];
+  Where calledOut(tos.modelName,tos.lineNumber);
   QString firstLine = gui->readLine(calledOut);
   walk = calledOut+1;
   numLines = gui->subFileSize(walk.modelName);
@@ -1379,92 +1486,6 @@ void MetaItem::convertToCallout(
   appendMeta(walkBack,"0 !LPUB CALLOUT BEGIN");
   nestCallouts(modelName);
   endMacro();
-}
-
-void MetaItem::nestCallouts(
-  const QString &modelName)
-{
-  Where walk(modelName,1);
-
-  int numLines = gui->subFileSize(walk.modelName);
-
-  bool partIgnore = false;
-  bool callout = false;
-
-  for ( ; walk.lineNumber < numLines; ++walk) {
-
-    QString line = gui->readLine(walk);
-
-    QStringList argv;
-
-    split(line,argv);
-
-    if (argv.size() >= 2 && argv[0] == "0") {
-      if (argv[1] == "WRITE") {
-        argv.removeAt(1);
-      } else if (argv[1] == "GHOST") {
-        argv.removeAt(1);
-        argv.removeAt(0);
-      }
-
-      if (argv[1] == "LPUB" || argv[1] == "!LPUB") {
-        if (argv.size() == 5 && argv[2] == "PART" 
-                             && argv[3] == "BEGIN" 
-                             && argv[4] == "IGN") {
-          partIgnore = true;
-        } else if (argv.size() == 5 && argv[2] == "PART" 
-                                    && argv[3] == "END") {
-          partIgnore = false;
-        } else if (argv.size() == 4 && argv[2] == "CALLOUT"
-                                    && argv[3] == "BEGIN") {
-          callout = true;
-        } else if (argv.size() == 4 && argv[2] == "CALLOUT"
-                                    && argv[3] == "END") {
-          callout = false;
-        } else if (argv.size() >= 3 && argv[3] == "MULTI_STEP") {
-          deleteMeta(walk);
-          --numLines;
-          --walk;
-        }
-      }
-    } else if ( ! callout && ! partIgnore) {
-      if (argv.size() == 15 && argv[0] == "1") {
-        if (gui->isSubmodel(argv[14])) {
-          // We've got to call this submodel out
-          insertMeta(walk, "0 !LPUB CALLOUT BEGIN");
-          walk.lineNumber += 2;
-          ++numLines;
-          nestCallouts(argv[14]);
-          for ( ; walk.lineNumber < numLines; walk++) {
-            QString line = gui->readLine(walk);
-            QStringList argv;
-            split(line,argv);
-            if (argv.size() == 2 && argv[0] == "0") {
-              if (argv[1] == "STEP" || argv[1] == "ROTSTEP") {
-                break;
-              } else if (argv.size() >= 3
-                         && (argv[1] == "LPUB" ||
-                             argv[1] == "!LPUB")
-                         && argv[2] == "MULTI_STEP") {
-                --walk;
-                --numLines;
-              }
-            } else if (argv.size() == 15 && argv[0] == "1") {
-              if (gui->isSubmodel(argv[14])) {
-                if (argv[14] == modelName) {
-                } else {
-                  break;
-                }
-              }
-            }
-          }
-          insertMeta(walk,     "0 !LPUB CALLOUT END");
-          ++walk;
-          ++numLines;
-        }
-      }
-    }
-  }
 }
 
 void MetaItem::removeCallout(

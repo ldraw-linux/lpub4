@@ -68,11 +68,21 @@ const Where &Pli::bottomOfSteps()
 }
 const Where &Pli::topOfCallout()
 {
-  return callout->topOfCallout();
+  if (callout) {
+    return callout->topOfCallout();
+  } else {
+    static Where stupid;
+    return stupid;
+  }
 }
 const Where &Pli::bottomOfCallout()
 {
-   return callout->bottomOfCallout();
+  if (callout) {
+     return callout->bottomOfCallout();
+  } else {
+    static Where stupid;
+    return stupid;
+  }
 }
 
 /****************************************************************************
@@ -122,8 +132,6 @@ void Pli::append(
     part->csiMargin    = meta->LPub.pli.part.margin;
     parts.insert(key,part);
   }
-  
-  
 
   parts[key]->instances.append(here);
 }

@@ -319,7 +319,8 @@ int Gui::drawPage(
           Where current2(type,0);
           skipHeader(current2);          
           callout->meta.rotStep.clear();
-          callout->meta.submodelStack << current;
+          SubmodelStack tos(current.modelName,current.lineNumber,stepNum);
+          callout->meta.submodelStack << tos;
 
           Meta saveMeta = callout->meta;
 
@@ -942,7 +943,8 @@ int Gui::findPage(
           if (ldrawFile.contains(token[token.size()-1])) {
             // can't be a callout
             tmpMeta = meta;
-            tmpMeta.submodelStack << current;
+            SubmodelStack tos(current.modelName,current.lineNumber,stepNumber);
+            tmpMeta.submodelStack << tos;
             Where current2(token[token.size()-1],0);
             findPage(view,scene,pageNum,line,current2,tmpMeta);
           }

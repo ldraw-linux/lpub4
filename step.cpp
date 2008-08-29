@@ -45,6 +45,7 @@
 #include "resolution.h"
 #include "dependencies.h"
 #include "paths.h"
+#include "ldrawfiles.h"
 
 /*********************************************************************
  *
@@ -151,8 +152,19 @@ int Step::createCsi(
 {
   qreal       modelScale = meta.LPub.assem.modelScale.value();
   int         sn = stepNumber.number;
+  
+  // 1 color x y z a b c d e f g h i foo.dat
+  // 0 1     2 3 4 5 6 7 8 9 0 1 2 3 4
+  QStringList tokens;
+  split(addLine,tokens);
+  QString orient;
+  if (tokens.size() == 15) {
+    for (int i = 5; i < 14; i++) {
+      orient += "_" + tokens[i];
+    }
+  }
   QString key = QString("%1_%2_%3_%4_%5_%6")
-                        .arg(csiName())
+                        .arg(csiName()+orient)
                         .arg(sn)
                         .arg(meta.LPub.page.size.value(0))
                         .arg(resolution)

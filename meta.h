@@ -1684,6 +1684,26 @@ public:
 
 /*------------------------*/
 
+class SubmodelStack
+{
+public:
+  SubmodelStack(QString _modelName, int _lineNumber, int _stepNumber)
+  {
+    modelName = _modelName;
+    lineNumber = _lineNumber;
+    stepNumber = _stepNumber;
+  }
+  SubmodelStack()
+  {
+    modelName = "undefined";
+    lineNumber = 0;
+    stepNumber = 0;
+  }
+  QString modelName;
+  int     lineNumber;
+  int     stepNumber;
+};
+
 class Meta : public BranchMeta
 {
 public:
@@ -1695,7 +1715,7 @@ public:
   MLCadMeta     MLCad;
   LSynthMeta    LSynth;
 
-  QList<Where>  submodelStack;
+  QList<SubmodelStack>  submodelStack;
 
            Meta();
   virtual ~Meta();

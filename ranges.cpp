@@ -77,11 +77,11 @@ QString Steps::csiName()
   QString thePath;
 
   for (int i = 0; i < meta.submodelStack.size(); i++) {
-    QString lineNum = QString("%1") .arg(meta.submodelStack[i].lineNumber);
-    thePath += "_" + QFileInfo(meta.submodelStack[i].modelName).baseName() + "_" + lineNum;
+    QString lineNum = QString("%1") .arg(meta.submodelStack[i].stepNumber);
+    thePath += QFileInfo(meta.submodelStack[i].modelName).baseName() + "_" + lineNum + "_";
   }
   
-  thePath += "_" + QFileInfo(modelName()).baseName();
+  thePath += QFileInfo(modelName()).baseName();
   return thePath;
 }
 
@@ -132,7 +132,7 @@ void Steps::setBottomOfSteps(const Where &bos)
 QStringList Steps::submodelStack()
 {
   QStringList submodelStack;
-  Where filename;
+  SubmodelStack filename;
   foreach (filename,meta.submodelStack) {
     submodelStack << filename.modelName;
   }
