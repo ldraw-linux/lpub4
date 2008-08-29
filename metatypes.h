@@ -60,13 +60,13 @@ enum PlacementType {
   StepGroupType,
   StepNumberType,
   PartsListType,
-  BomType,
   CalloutType,
   PageNumberType,
   SingleStepType,
   StepType,
   RangeType,
   ReserveType,
+  BomType,
   NumRelatives
 };
 
