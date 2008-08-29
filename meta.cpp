@@ -1533,7 +1533,7 @@ Rc ArrowHeadMeta::parse(QStringList &argv, int index, Where &here)
     qreal head[4];
     bool  good, ok;
     
-    head[0] = argv[index].toFloat(&good);
+    head[0] = argv[index  ].toFloat(&good);
     head[1] = argv[index+1].toFloat(&ok);
     good &= ok;
     head[2] = argv[index+2].toFloat(&ok);
@@ -1944,6 +1944,8 @@ PliMeta::PliMeta()
   part.margin.setValueUnits(0.05,0.03);
   instance.margin.setValueUnits(0.0,0.0);
   annotate.margin.setValueUnits(0.0,0.0);
+  pack.setValue(false);
+  sort.setValue(true);
 }
 
 void PliMeta::init(BranchMeta *parent, QString name)
@@ -1980,19 +1982,40 @@ void BomBeginMeta::init(BranchMeta *parent, QString name)
 
 BomMeta::BomMeta()
 {
+  placement.setValue(Left,Top,PageType,Inside);
+  ConstrainData constraint;
+  constraint.type = PliConstrainArea;
+  constraint.constraint = 0;
+  constrain.setValueUnit(constraint);
   BorderData borderData;
-  borderData.type = BdrNone;
+  borderData.type = BdrRound;
   borderData.color = "Black";
   borderData.thickness = DEFAULT_THICKNESS;
   borderData.radius = 20;
   borderData.margin[0] = DEFAULT_MARGIN;
   borderData.margin[1] = DEFAULT_MARGIN;
   border.setValueUnit(borderData);
-  background.setValue(BgTransparent);
-  ConstrainData constraint;
-  constraint.type = PliConstrainColumns;
-  constraint.constraint = 5;
-  constrain.setValueUnit(constraint);
+  background.setValue(BgColor,"0xffffff");
+  margin.setValueUnits(0.0,0.0);
+  // instance - default
+  // annotate - default
+  modelScale.setRange(-10000.0,10000.0);
+  modelScale.setFormats(7,4,"99999.9");
+  modelScale.setValue(1.0);
+  angle.setValues(23,-45);
+  angle.setRange(-360.0,360.0);
+  angle.setFormats(6,4,"#999.9");
+  show.setValue(true);
+  ldgliteParms.setValue("-fh -w1");
+  ldviewParms.setValue("");
+  includeSubs.setValue(false);
+  subModelColor.setValue("0xffffff");
+  subModelColor.setValue("0xffffcc");
+  subModelColor.setValue("0xffcccc");
+  subModelColor.setValue("0xccccff");
+  part.margin.setValueUnits(0.05,0.03);
+  instance.margin.setValueUnits(0.0,0.0);
+  annotate.margin.setValueUnits(0.0,0.0);
   pack.setValue(false);
   sort.setValue(true);
 }
@@ -2000,18 +2023,23 @@ BomMeta::BomMeta()
 void BomMeta::init(BranchMeta *parent, QString name)
 {
   AbstractMeta::init(parent, name);
-  border.init(    this,"BORDER");
-  background.init(this,"BACKGROUND");
-  margin.init(    this,"MARGINS");
-  instance.init(  this,"INSTANCE_COUNT");
-  annotate.init(  this,"ANNOTATE");
-  constrain.init( this,"CONSTRAIN");
-  placement.init( this,"PLACEMENT");
-  part.init(      this,"PART_TEXT");
-  pack.init(      this,"PACK");
-  sort.init(      this,"SORT");
-  begin.init(     this,"BEGIN");
-  end.init(       this,"END",BomEndRc);
+  placement    .init(this,"PLACEMENT");
+  constrain    .init(this,"CONSTRAIN");
+  border       .init(this,"BORDER");
+  background   .init(this,"BACKGROUND");
+  margin       .init(this,"MARGINS");
+  instance     .init(this,"INSTANCE_COUNT");
+  annotate     .init(this,"ANNOTATE");
+  modelScale   .init(this,"MODEL_SCALE");
+  angle        .init(this,"VIEW_ANGLE");
+  show         .init(this,"SHOW");
+  ldviewParms  .init(this,"LDVIEW_PARMS");
+  ldgliteParms .init(this,"LDGLITE_PARMS");
+  includeSubs  .init(this,"INCLUDE_SUBMODELS");
+  subModelColor.init(this,"SUBMODEL_BACKGROUND_COLOR");
+  part         .init(this,"PART");
+  begin        .init(this,"BEGIN");
+  end          .init(this,"END",BomEndRc);
 }
 
 /* ------------------ */ 
