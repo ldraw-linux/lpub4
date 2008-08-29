@@ -981,7 +981,7 @@ int Gui::findPage(
         switch (rc) {
           case StepGroupBeginRc:
             stepGroup = true;
-            saveCurrent = topOfStep;
+            stepGroupCurrent = topOfStep;
             stepGroupMeta = meta;
           break;
           case StepGroupEndRc:
@@ -998,7 +998,7 @@ int Gui::findPage(
                 ldrawFile.setNumSteps(current.modelName,stepNumber);
                 page.meta      = saveMeta;
                 (void) drawPage(view,scene,&page,saveStepNumber,
-                                addLine,saveCurrent,saveCsiParts,pli,saveBfx);
+                                addLine,stepGroupCurrent,saveCsiParts,pli,saveBfx);
                 saveCurrent.modelName.clear();
                 saveCsiParts.clear();
               }
@@ -1013,11 +1013,11 @@ int Gui::findPage(
               if (pageNum < displayPageNum) {
                 if ( ! stepGroup) {
                   saveCsiParts   = csiParts;
-                  saveCurrent    = current;
                   saveStepNumber = stepNumber;
                   saveMeta       = meta;
                   saveBfx        = bfx;
                 }
+                saveCurrent    = current;
               }
               if ( ! stepGroup) {
                 if (pageNum == displayPageNum) {
