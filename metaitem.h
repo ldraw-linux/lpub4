@@ -56,7 +56,7 @@ public:
   void setGlobalMeta(QString &topLevelFile, LeafMeta *leaf);
 
   void convertToCallout(       Meta *, const QString &);
-  void nestCallouts(           const QString &);
+  int  nestCallouts(           const QString &);
   void removeCallout(          const QString &, const Where &, const Where &);
   void unnestCallouts(         const QString &);
   void updatePointer(          const Where &,   PointerMeta *pointer);
