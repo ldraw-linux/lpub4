@@ -391,6 +391,7 @@ public:
   ~Gui();
 
   int             displayPageNum;  // what page are we displaying
+  int             stepPageNum;     // the number displayed on the page
   
   FitMode fitMode;         // how to fit the scene into the view
   bool    ldrawFileContains(const QString &fileName) 
@@ -553,6 +554,7 @@ private:
 
   int addGraphicsPageItems(        // this converts the abstract page into
     Steps          *steps,         // a graphics view
+    bool            coverPage,
 	  LGraphicsView  *view, 
     QGraphicsScene *scene);
 

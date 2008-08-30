@@ -67,6 +67,7 @@ enum PlacementType {
   RangeType,
   ReserveType,
   BomType,
+  CoverPageType,
   NumRelatives
 };
 

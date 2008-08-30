@@ -238,6 +238,7 @@ int Gui::drawPage(
   bool        synthBegin  = false;
   bool        multiStep   = false;
   bool        partsAdded  = false;
+  bool        coverPage = false;
   int         numLines = ldrawFile.size(current.modelName);
   
   QList<InsertMeta> inserts;
@@ -593,6 +594,8 @@ int Gui::drawPage(
           }
         break;
         
+        case InsertCoverPageRc:
+          coverPage = true;
         case InsertPageRc:
           partsAdded = true;
         break;
@@ -668,7 +671,7 @@ int Gui::drawPage(
             steps->setBottomOfSteps(topOfStep);
             steps->placement = steps->meta.LPub.multiStep.placement;
             showLine(steps->topOfSteps());
-            addGraphicsPageItems(steps, view, scene);
+            addGraphicsPageItems(steps, coverPage, view, scene);
             return HitEndOfPage;
           }
         break;
@@ -765,7 +768,8 @@ int Gui::drawPage(
               steps->setBottomOfSteps(current);
               steps->placement = steps->meta.LPub.assem.placement;
               showLine(topOfStep);
-              addGraphicsPageItems(steps,view,scene);
+              addGraphicsPageItems(steps,coverPage,view,scene);
+              stepPageNum += ! coverPage;
               return HitEndOfPage;
             }
             steps->meta.pop();
@@ -773,6 +777,7 @@ int Gui::drawPage(
             topOfStep = current;
 
             partsAdded = false;
+            coverPage = false;
             step = NULL;
           }
           inserts.clear();
@@ -817,6 +822,7 @@ void Gui::countPages()
     maxPages       = 1;
     Meta meta;
     QString empty;
+    stepPageNum = 1;
     findPage(KpageView,KpageScene,maxPages,empty,current,meta);
     maxPages--;
     if (displayPageNum > maxPages) {
@@ -839,6 +845,7 @@ void Gui::drawPage(
 
   Where       current(ldrawFile.topLevelFile(),0);
   maxPages = 1;
+  stepPageNum = 1;
   Meta meta;
   QString empty;
   findPage(view,scene,maxPages,empty,current,meta);
@@ -889,6 +896,7 @@ int Gui::findPage(
 {
   bool stepGroup = false;
   bool partIgnore = false;
+  bool coverPage  = false;
   int  partsAdded = 0;
   int  stepNumber = 1;
   Rc   rc;
@@ -900,6 +908,7 @@ int Gui::findPage(
   Where       saveCurrent = current;
   Where       stepGroupCurrent;
   int         saveStepNumber = 1;
+  int         saveStepPageNum = stepPageNum;
 
   Meta        tmpMeta;
   Meta        saveMeta = meta;
@@ -995,8 +1004,10 @@ int Gui::findPage(
                 saveStepNumber = stepNumber;
                 saveMeta       = stepGroupMeta;
                 saveBfx        = bfx;
+                saveStepPageNum = stepPageNum;
               } else if (pageNum == displayPageNum) {
                 csiParts.clear();
+                stepPageNum = saveStepPageNum;
                 ldrawFile.setNumSteps(current.modelName,stepNumber);
                 page.meta      = saveMeta;
                 (void) drawPage(view,scene,&page,saveStepNumber,
@@ -1005,6 +1016,7 @@ int Gui::findPage(
                 saveCsiParts.clear();
               }
               ++pageNum;
+              ++stepPageNum;
             }
           break;
 
@@ -1012,18 +1024,21 @@ int Gui::findPage(
           case RotStepRc:
             if (partsAdded) {
               ++stepNumber;
+              stepPageNum += ! coverPage && ! stepGroup;
               if (pageNum < displayPageNum) {
                 if ( ! stepGroup) {
                   saveCsiParts   = csiParts;
                   saveStepNumber = stepNumber;
                   saveMeta       = meta;
                   saveBfx        = bfx;
+                  saveStepPageNum = stepPageNum;
                 }
                 saveCurrent    = current;
               }
               if ( ! stepGroup) {
                 if (pageNum == displayPageNum) {
                   csiParts.clear();
+                  stepPageNum = saveStepPageNum;
                   ldrawFile.setNumSteps(current.modelName,stepNumber);
                   page.meta      = saveMeta;
                   (void) drawPage(view,scene,&page,saveStepNumber,
@@ -1032,10 +1047,12 @@ int Gui::findPage(
                   saveCsiParts.clear();
                 } 
                 ++pageNum;
+//                stepPageNum += ! coverPage;
               }
               topOfStep = current;
               partsAdded = 0;
               meta.pop();
+              coverPage = false;
             } else if ( ! stepGroup) {
               saveCurrent = current;  // so that draw page doesn't have to
                                       // deal with steps that are not steps
@@ -1058,6 +1075,8 @@ int Gui::findPage(
             } while (rc != CalloutEndRc && current.lineNumber < numLines);
           break;
           
+          case InsertCoverPageRc:
+            coverPage = true;
           case InsertPageRc:
             partsAdded = true;
           break;
@@ -1128,7 +1147,8 @@ int Gui::findPage(
       page.meta = saveMeta;
       (void) drawPage(view, scene, &page,saveStepNumber,addLine,saveCurrent,saveCsiParts,pli,bfx);
     }
-    ++pageNum;  
+    ++pageNum;
+    ++stepPageNum;
   } else {
     ldrawFile.setNumSteps(current.modelName,stepNumber-1);
   }

@@ -1240,6 +1240,9 @@ Rc InsertMeta::parse(QStringList &argv, int index, Where &here)
   if (argv.size() - index == 1 && argv[index] == "PAGE") {
     return InsertPageRc;
   }
+  if (argv.size() - index == 1 && argv[index] == "COVER_PAGE") {
+    return InsertCoverPageRc;
+  }
 
   _placement     = _value[pushed].placement;
   _justification = _value[pushed].justification;

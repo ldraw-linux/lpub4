@@ -71,6 +71,7 @@ void Gui::clearPage(
 
 int Gui::addGraphicsPageItems(
   Steps          *steps,
+  bool            coverPage,
   LGraphicsView  *view,
   QGraphicsScene *scene)
 {
@@ -90,7 +91,7 @@ int Gui::addGraphicsPageItems(
   plPage.offset[XX] = 0;
   plPage.offset[YY] = 0;
 
-  if (page->meta.LPub.page.dpn.value()) {
+  if (page->meta.LPub.page.dpn.value() && ! coverPage) {
 
     // allocate QGraphicsTextItem for page number
 
@@ -100,7 +101,7 @@ int Gui::addGraphicsPageItems(
                      &page->meta, 
                       page->meta.LPub.page.number, 
                      "%d", 
-                     displayPageNum,
+                     stepPageNum,
                      pageBg);
 
     PlacementData placementData = page->meta.LPub.page.number.placement.value();
@@ -113,7 +114,7 @@ int Gui::addGraphicsPageItems(
     pn.size[YY]     = (int) pageNumber->document()->size().height();
     pn.margin       = page->meta.LPub.page.number.margin;
 
-    if (page->meta.LPub.page.togglePnPlacement.value() && ! (displayPageNum & 1)) {
+    if (page->meta.LPub.page.togglePnPlacement.value() && ! (stepPageNum & 1)) {
       switch (placementData.placement) {
         case TopLeft:
           placementData.placement = TopRight;

@@ -101,6 +101,7 @@ enum Rc {
          
          InsertRc,
          InsertPageRc,
+         InsertCoverPageRc,
 
          EndOfFileRc,
 };
