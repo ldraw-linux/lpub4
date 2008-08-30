@@ -83,6 +83,13 @@ void Gui::firstPage()
   displayPage();
 }
 
+void Gui::clearAndRedrawPage()
+{
+  clearCSICache();
+  clearPLICache();
+  redrawPage();
+}
+
 void Gui::redrawPage()
 {
   displayPage();
@@ -377,7 +384,7 @@ Gui::Gui()
             this,       SLOT(  contentsChange(const QString &,int,int,const QString &)));
 
     connect(editWindow, SIGNAL(redrawSig()),
-            this,       SLOT(  redrawPage()));
+            this,       SLOT(  clearAndRedrawPage()));
 
     connect(undoStack,  SIGNAL(canRedoChanged(bool)),
             this,       SLOT(  canRedoChanged(bool)));
