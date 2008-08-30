@@ -590,6 +590,7 @@ private slots:
 	    QGraphicsScene *scene);
 
     void redrawPage();
+    void clearAndRedrawPage();
     
     void enableActions();
 
