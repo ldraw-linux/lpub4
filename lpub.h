@@ -537,7 +537,8 @@ private:
 	  QGraphicsScene *scene,         // page, and then finish by counting the rest
     int           &pageNum,        // of the pages
 	  QString const &addLine,
-    Where          current,    
+    Where          current,
+    bool           mirrored,    
 	  Meta          &meta);
 
   int drawPage(                    // process the page of interest and any callouts
@@ -549,12 +550,15 @@ private:
     Where         &current,
     QStringList    csiParts,
     Pli           &pli,
+    bool           isMirrored,
     QHash<QString, QStringList> &bfx,
     bool           calledOut = false);
 
   int addGraphicsPageItems(        // this converts the abstract page into
     Steps          *steps,         // a graphics view
     bool            coverPage,
+    bool            endOfSubmodel,
+    int             instances,
 	  LGraphicsView  *view, 
     QGraphicsScene *scene);
 

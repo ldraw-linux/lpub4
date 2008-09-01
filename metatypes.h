@@ -68,6 +68,7 @@ enum PlacementType {
   ReserveType,
   BomType,
   CoverPageType,
+  SubmodelInstanceCountType,
   NumRelatives
 };
 
@@ -198,6 +199,7 @@ public:
   PlacementType  relativeTo;
   PrepositionEnc preposition;
   float          offsets[2];
+  float          margins[2];
   InsertType     type;
   QString        picName;
   qreal          picScale;

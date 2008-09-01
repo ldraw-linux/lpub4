@@ -1244,10 +1244,10 @@ Rc InsertMeta::parse(QStringList &argv, int index, Where &here)
     return InsertCoverPageRc;
   }
 
-  _placement     = _value[pushed].placement;
-  _justification = _value[pushed].justification;
-  _relativeTo    = _value[pushed].relativeTo;
-  _preposition   = _value[pushed].preposition;
+  _placement     = TopLeft;
+  _justification = Center;
+  _relativeTo    = PageType;
+  _preposition   = Inside;
   _offsets[0]    = 0;
   _offsets[1]    = 0;
 
@@ -1339,22 +1339,22 @@ Rc InsertMeta::parse(QStringList &argv, int index, Where &here)
     }
   }
   
-  InsertType  type =       _value[pushed].type;
-  QString     picName =    _value[pushed].picName;
-  qreal       picScale =   _value[pushed].picScale;
-  QStringList text =       _value[pushed].text;
+  InsertType  type =       InsertPicture;
+  QString     picName;
+  qreal       picScale =   1;
+  QStringList text;
   QPointF     arrow[2];
   
-  arrow[0] = _value[pushed].arrow[0];
-  arrow[1] = _value[pushed].arrow[1];
+  arrow[0] = QPointF(0,0);
+  arrow[1] = QPointF(0,0);
   
   bool good, ok;
     
   if (rc == OkRc) {
-    QString picName;
            if (argv.size() - index >= 2 && argv[index] == "PICTURE") {
       type = InsertPicture;
       picName = argv[++index];
+
       ++index;
       if (argv.size() - index >= 2 && argv[index] == "SCALE") {
         picScale = argv[++index].toFloat(&good);
@@ -1850,7 +1850,7 @@ void BuffExchgMeta::doc(QTextStream &out, QString preamble)
 
 PageMeta::PageMeta()
 {
-  size.setValueUnits(8.5,11.0);
+  size.setValuesInches(8.5,11.0);
   size.setRange(1,1000);
   size.setFormats(6,4,"9.9999");
 
@@ -1861,7 +1861,7 @@ PageMeta::PageMeta()
   borderData.radius = 0;
   borderData.margin[0] = DEFAULT_MARGIN;
   borderData.margin[1] = DEFAULT_MARGIN;
-  border.setValueUnit(borderData);
+  border.setValueInches(borderData);
 
   background.setValue(BgSubmodelColor);
   dpn.setValue(true);
@@ -1869,6 +1869,9 @@ PageMeta::PageMeta()
   number.placement.setValue(BottomRight,PageType,Inside);
   number.color.setValue("black");
   number.font.setValueUnit("Arial,20,-1,75,0,0,0,0,0");
+  instanceCount.placement.setValue(BottomRight,PageType,Inside);
+  instanceCount.color.setValue("black");
+  instanceCount.font.setValueUnit("Arial,48,-1,75,0,0,0,0,0");
 
   subModelColor.setValue("0xffffff");
   subModelColor.setValue("0xffffcc");
@@ -1886,6 +1889,7 @@ void PageMeta::init(BranchMeta *parent, QString name)
   dpn.init          (this, "DISPLAY_PAGE_NUMBER");
   togglePnPlacement.init(this,"TOGGLE_PAGE_NUMBER_PLACEMENT");
   number.init       (this, "NUMBER");
+  instanceCount.init(this, "SUBMODEL_INSTANCE_COUNT");
   subModelColor.init(this, "SUBMODEL_BACKGROUND_COLOR");
 }
 
@@ -1925,7 +1929,7 @@ PliMeta::PliMeta()
   borderData.radius = 20;
   borderData.margin[0] = DEFAULT_MARGIN;
   borderData.margin[1] = DEFAULT_MARGIN;
-  border.setValueUnit(borderData);
+  border.setValueInches(borderData);
   background.setValue(BgColor,"0xffffff");
   margin.setValueUnits(0.0,0.0);
   // instance - default
@@ -1944,7 +1948,7 @@ PliMeta::PliMeta()
   subModelColor.setValue("0xffffcc");
   subModelColor.setValue("0xffcccc");
   subModelColor.setValue("0xccccff");
-  part.margin.setValueUnits(0.05,0.03);
+  part.margin.setValuesInches(0.05,0.03);
   instance.margin.setValueUnits(0.0,0.0);
   annotate.margin.setValueUnits(0.0,0.0);
   pack.setValue(false);
@@ -1997,7 +2001,7 @@ BomMeta::BomMeta()
   borderData.radius = 20;
   borderData.margin[0] = DEFAULT_MARGIN;
   borderData.margin[1] = DEFAULT_MARGIN;
-  border.setValueUnit(borderData);
+  border.setValueInches(borderData);
   background.setValue(BgColor,"0xffffff");
   margin.setValueUnits(0.0,0.0);
   // instance - default
@@ -2016,9 +2020,9 @@ BomMeta::BomMeta()
   subModelColor.setValue("0xffffcc");
   subModelColor.setValue("0xffcccc");
   subModelColor.setValue("0xccccff");
-  part.margin.setValueUnits(0.05,0.03);
-  instance.margin.setValueUnits(0.0,0.0);
-  annotate.margin.setValueUnits(0.0,0.0);
+  part.margin.setValuesInches(0.05,0.03);
+  instance.margin.setValuesInches(0.0,0.0);
+  annotate.margin.setValuesInches(0.0,0.0);
   pack.setValue(false);
   sort.setValue(true);
 }
@@ -2051,7 +2055,7 @@ CalloutMeta::CalloutMeta()
   stepNum.color.setValue("black");
   // stepNum.font - default
   stepNum.placement.setValue(Left,Top,PartsListType,Outside);
-  sep.setValueUnit("Black",DEFAULT_THICKNESS,DEFAULT_MARGINS);
+  sep.setValueInches("Black",DEFAULT_THICKNESS,DEFAULT_MARGINS);
   BorderData borderData;
   borderData.type = BdrSquare;
   borderData.color = "Black";
@@ -2059,7 +2063,7 @@ CalloutMeta::CalloutMeta()
   borderData.radius = 20;
   borderData.margin[0] = DEFAULT_MARGIN;
   borderData.margin[1] = DEFAULT_MARGIN;
-  border.setValueUnit(borderData);
+  border.setValueInches(borderData);
   // subModelFont - default
   instance.color.setValue("black");
   // instance - default

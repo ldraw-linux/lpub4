@@ -45,6 +45,10 @@ class LDrawSubFile {
     bool        _modified;
     QDateTime   _datetime;
     int         _numSteps;
+    int         _instances;
+    int         _mirrorInstances;
+    bool        _rendered;
+    bool        _mirrorRendered;
 
     LDrawSubFile()
     {
@@ -58,6 +62,10 @@ class LDrawSubFile {
       _datetime = datetime;
       _modified = false;
       _numSteps = 0;
+      _instances = 0;
+      _mirrorInstances = 0;
+      _rendered = false;
+      _mirrorRendered = false;
     }
     ~LDrawSubFile()
     {
@@ -103,13 +111,6 @@ class LDrawFile {
       } else {
         return _emptyString;
       }
-    }
-    void setNumSteps(const QString &fileName, const int numSteps)
-    {
-      QMap<QString, LDrawSubFile>::iterator i = _subFiles.find(fileName);
-      if (i != _subFiles.end()) {
-        i.value()._numSteps = numSteps;
-      }      
     }
     int numSteps(const QString &fileName)
     {
@@ -261,6 +262,60 @@ class LDrawFile {
       }
       return 0;
     }
+    void unrendered()
+    {
+      QString key;
+      foreach(key,_subFiles.keys()) {
+        _subFiles[key]._rendered = false;
+        _subFiles[key]._mirrorRendered = false;
+      }
+    }
+
+    void setRendered(const QString &fileName, bool mirrored)
+    {
+      QMap<QString, LDrawSubFile>::iterator i = _subFiles.find(fileName);
+
+      if (i != _subFiles.end()) {
+        if (mirrored) {
+          i.value()._mirrorRendered = true;
+        } else {
+          i.value()._rendered = true;
+        }
+      }
+    }
+
+    bool rendered(const QString &fileName, bool mirrored)
+    {
+      QMap<QString, LDrawSubFile>::iterator i = _subFiles.find(fileName);
+
+      if (i != _subFiles.end()) {
+        if (mirrored) {
+          return i.value()._mirrorRendered;
+        } else {
+          return i.value()._rendered;
+        }
+      }
+      return false;
+    }      
+
+    int instances(const QString &fileName, bool mirrored)
+    {
+      QMap<QString, LDrawSubFile>::iterator i = _subFiles.find(fileName);
+      
+      int instances = 0;
+
+      if (i != _subFiles.end()) {
+        if (mirrored) {
+          instances = i.value()._mirrorInstances;
+        } else {
+          instances = i.value()._instances;
+        }
+      }
+      return instances;
+    }
+    
+    bool mirrored(const QStringList &tokens);
+    void countInstances(const QString &fileName, bool mirrored);
 
     bool saveFile(const QString &fileName);
     bool saveMPDFile(const QString &filename);

@@ -614,8 +614,8 @@ void MetaItem::setMetaTopOf(
   bool         local,
   bool         global)
 {
-  volatile int  lineNumber = meta->here().lineNumber;
-  volatile bool metaInRange;
+  int  lineNumber = meta->here().lineNumber;
+  bool metaInRange;
 
 #if 0
   
@@ -708,7 +708,7 @@ void MetaItem::setMetaBottomOf(
       QString line = gui->readLine(bottomOf);
       QStringList argv;
       split(line,argv);
-      if (argv.size() == 2 && argv[0] == "0" 
+      if (argv.size() >= 2 && argv[0] == "0" 
           && (argv[1] == "STEP" || argv[1] == "ROTSTEP")) {
         append = false;
       }
@@ -1353,6 +1353,7 @@ int MetaItem::nestCallouts(
           // and it is a submodel
 
           // We've got to call this submodel out
+          
           insertMeta(walk, "0 !LPUB CALLOUT BEGIN");
           walk.lineNumber += 2;
           ++numLines;
@@ -1361,13 +1362,12 @@ int MetaItem::nestCallouts(
 
             QStringList nextArgv;
             split(nextLine,nextArgv);
-            if (nextArgv.size() >= 2 && nextArgv[0] == "0") {
+            if (nextArgv.size() >= 3 && nextArgv[0] == "0") {
               if (nextArgv[1] == "STEP" || nextArgv[1] == "ROTSTEP") {
                 break;
-              } else if (nextArgv.size() >= 3
-                         && (nextArgv[1] == "LPUB" ||
-                             nextArgv[1] == "!LPUB")
-                         && nextArgv[2] == "MULTI_STEP") {
+              } else if ((nextArgv[1] == "LPUB" ||
+                          nextArgv[1] == "!LPUB")
+                       && nextArgv[2] == "MULTI_STEP") {
                 --walk;
                 --numLines;
               }
@@ -1431,14 +1431,11 @@ void MetaItem::convertToCallout(
     QString line = gui->readLine(walk);
     QStringList argv;
     split(line,argv);
-    if (argv.size() == 2 && argv[0] == "0") {
-      if (argv[1] == "STEP" || argv[1] == "ROTSTEP") {
+    if (argv.size() >= 2 && argv[0] == "0") {
+      if (argv[1] == "STEP" || argv[1] == "ROTSTEP" || 
+          argv[1] == "LPUB" || argv[1] == "!LPUB") {
         break;
       }
-    } else if (argv.size() >= 2 && argv[0] == "0"
-                                && (argv[1] == "LPUB" ||
-                                    argv[1] == "!LPUB")) {
-      break;
     } else if (argv.size() == 15 && argv[0] == "1") {
       if (gui->isSubmodel(argv[14])) {
         if (argv[14] == modelName) {
@@ -1454,19 +1451,17 @@ void MetaItem::convertToCallout(
     }
   }
   
-  Where walkBack = calledOut - 1;
-  for (walkBack = calledOut - 1; walkBack.lineNumber >= 0; walkBack--) {
+  Where walkBack = calledOut;
+  for (; walkBack.lineNumber >= 0; walkBack--) {
     QString line = gui->readLine(walkBack);
+
     QStringList argv;
     split(line,argv);
-    if (argv.size() == 2 && argv[0] == "0") {
-      if (argv[1] == "STEP" || argv[1] == "ROTSTEP") {
+    if (argv.size() >= 2 && argv[0] == "0") {
+      if (argv[1] == "STEP" || argv[1] == "ROTSTEP" || 
+          argv[1] == "LPUB" || argv[1] == "!LPUB") {
         break;
       }
-    } else if (argv.size() >= 3 && argv[0] == "0"
-                                && (argv[1] == "LPUB" ||
-                                    argv[1] == "!LPUB")) {
-      break;
     } else if (argv.size() == 15 && argv[0] == "1") {
       if (gui->isSubmodel(argv[14])) {
         if (argv[14] == modelName) {

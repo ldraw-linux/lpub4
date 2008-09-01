@@ -91,7 +91,8 @@ void LDrawFile::loadFile(const QString &fileName)
       QFileInfo fileInfo(fileName);
       loadLDRFile(fileInfo.absolutePath(),fileInfo.fileName());
     }
-
+    
+    countInstances(topLevelFile(),false);
     QApplication::restoreOverrideCursor();
 }
 
@@ -117,6 +118,16 @@ void LDrawFile::loadMPDFile(const QString &fileName, QDateTime &datetime)
     while ( ! in.atEnd()) {
 
       const QString line = in.readLine(0);
+  
+  QByteArray Line = line.toAscii();
+  
+  volatile char LIne[256];
+  
+  int i;
+  for (i = 0; i < Line.size(); i++) {
+    LIne[i] = Line[i];
+  }
+  LIne[i] = '\0';
 
       if (line.contains(sof)) {
         if ( ! mpdName.isEmpty()) {
@@ -208,6 +219,77 @@ bool LDrawFile::saveFile(const QString &fileName)
     }
     QApplication::restoreOverrideCursor();
     return rc;
+}
+ 
+bool LDrawFile::mirrored(
+  const QStringList &tokens)
+{  
+  /* 5  6  7
+     8  9 10
+    11 12 13 */
+    
+  float a = tokens[5].toFloat();
+  float b = tokens[6].toFloat();
+  float c = tokens[7].toFloat();
+  float d = tokens[8].toFloat();
+  float e = tokens[9].toFloat();
+  float f = tokens[10].toFloat();
+  float g = tokens[11].toFloat();
+  float h = tokens[12].toFloat();
+  float i = tokens[13].toFloat();
+  
+  return a*e*i - a*f*h - b*d*i + b*f*g + c*d*h - c*e*g < 0;
+}
+
+void LDrawFile::countInstances(const QString &fileName, bool isMirrored)
+{
+  bool partsAdded = false;
+  
+  QMap<QString, LDrawSubFile>::iterator f = _subFiles.find(fileName);
+  if (f != _subFiles.end()) {
+    int j = f->_contents.size();
+    for (int i = 0; i < j; i++) {
+      QStringList tokens;
+      split(f->_contents[i],tokens);
+      
+      /* Sorry, but models that are callouts are not counted as instances */
+      
+      if (tokens.size() == 4 && 
+          tokens[0] == "0" && 
+          (tokens[1] == "LPUB" || tokens[1] == "!LPUB") && 
+          tokens[2] == "CALLOUT" && 
+          tokens[3] == "BEGIN") {
+
+        for (++i; i < j; i++) {
+          split(f->_contents[i],tokens);
+          if (tokens.size() == 4 &&
+              tokens[0] == "0" && 
+              (tokens[1] == "LPUB" || tokens[1] == "!LPUB") && 
+              tokens[2] == "CALLOUT" && 
+              tokens[4] == "END") {
+            
+            break;
+          }
+        }
+      } else if (tokens.size() >= 2 && tokens[0] == "0" && 
+                (tokens[1] == "STEP" || tokens[1] == "ROTSTEP")) {
+        f->_numSteps += isMirrored && f->_mirrorInstances == 0 ||
+                      ! isMirrored && f->_instances == 0;
+        partsAdded = false;
+      } else if (tokens.size() == 15 && tokens[0] == "1") {
+        countInstances(tokens[14],mirrored(tokens));
+        partsAdded = true;
+      }
+    }
+    f->_numSteps += partsAdded &&
+                    (   isMirrored && f->_mirrorInstances == 0 ||
+                      ! isMirrored && f->_instances == 0);
+  }
+  if (isMirrored) {
+    ++f->_mirrorInstances;
+  } else {
+    ++f->_instances;
+  }
 }
 
 bool LDrawFile::saveMPDFile(const QString &fileName)

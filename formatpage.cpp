@@ -53,7 +53,7 @@ void Gui::clearPage(
   LGraphicsView  *view,
   QGraphicsScene * /* scene - unused */)
 {
-  page.freeSteps();
+  page.freePage();
   page.pli.clear();
 
   if (view->pageBackgroundItem) {
@@ -68,16 +68,77 @@ void Gui::clearPage(
  * entire page.
  *
  ********************************************/
+ 
+class SubmodelInstanceCount : public NumberPlacementItem
+{
+  Page *page;
+  
+  public:
+  
+    SubmodelInstanceCount(
+      Page                *pageIn,
+      Meta                *metaIn,
+      NumberPlacementMeta &numberMetaIn,
+      const char          *formatIn,
+      int                  valueIn,
+      QGraphicsItem       *parentIn)
+    {
+      page = pageIn;
+      QString toolTip("Number of times to build this submodel");
+      setAttributes(PageNumberType,
+                    SingleStepType,
+                    metaIn,
+                    numberMetaIn,
+                    formatIn,
+                    valueIn,
+                    toolTip,
+                    parentIn);
+    }
+  protected:
+    void contextMenuEvent(QGraphicsSceneContextMenuEvent *event);
+};
+
+void SubmodelInstanceCount::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
+{
+  QMenu menu;
+
+  PlacementData placementData = meta->LPub.page.instanceCount.placement.value();
+
+  QAction *fontAction       = menu.addAction("Change Submodel Count Font");
+  QAction *colorAction      = menu.addAction("Change Submodel Count Color");
+  QAction *marginAction     = menu.addAction("Change Submodel Count Margins");
+
+  fontAction->setWhatsThis("You can change the font or the size of the page number");
+  colorAction->setWhatsThis("You can change the color of the page number");
+  marginAction->setWhatsThis("You can change how much empty space their is around the page number");
+
+  QAction *selectedAction   = menu.exec(event->screenPos());
+
+  if (selectedAction == fontAction) {
+
+    changeFont(page->topOfSteps(),page->bottomOfSteps(),font);
+
+  } else if (selectedAction == colorAction) {
+
+    changeColor(page->topOfSteps(),page->bottomOfSteps(),color);
+
+  } else if (selectedAction == marginAction) {
+
+    changeMargins("Submodel Count Margins",
+                  page->topOfSteps(),page->bottomOfSteps(),
+                  margin);
+  }
+}
 
 int Gui::addGraphicsPageItems(
   Steps          *steps,
   bool            coverPage,
+  bool            endOfSubmodel,
+  int             instances,
   LGraphicsView  *view,
   QGraphicsScene *scene)
 {
   Page *page = dynamic_cast<Page *>(steps);
-  
-  statusBarMsg("Displaying Page");
 
   PageBackgroundItem *pageBg = new PageBackgroundItem(page);
 
@@ -112,8 +173,35 @@ int Gui::addGraphicsPageItems(
     pn.relativeType = PageNumberType;
     pn.size[XX]     = (int) pageNumber->document()->size().width();
     pn.size[YY]     = (int) pageNumber->document()->size().height();
-    pn.margin       = page->meta.LPub.page.number.margin;
+    pn.margin       = page->meta.LPub.page.number.margin;            
+    
+    // if this page contains the last step of the page, 
+    // and instance is > 1 then display instance
 
+    // allocate QGraphicsTextItem for instance number 
+    
+    SubmodelInstanceCount *instanceCount;
+    
+    if (endOfSubmodel && instances > 1) {
+      instanceCount = new SubmodelInstanceCount(
+         page,
+        &page->meta,
+        page->meta.LPub.page.instanceCount,
+        "x%d",
+        instances,
+        pageBg);
+    } else {
+      instanceCount = NULL;
+    }
+
+    Placement ic;
+        
+    PlacementData icPlacementData = page->meta.LPub.page.instanceCount.placement.value();
+
+    icPlacementData.placement = BottomRight;
+    icPlacementData.relativeTo = PageType;
+    icPlacementData.preposition = Inside;
+    
     if (page->meta.LPub.page.togglePnPlacement.value() && ! (stepPageNum & 1)) {
       switch (placementData.placement) {
         case TopLeft:
@@ -153,9 +241,65 @@ int Gui::addGraphicsPageItems(
 
       pn.placement.setValue(placementData);
     }
-
+          
+    if (placementData.placement == BottomRight) {
+      icPlacementData.placement = Top;
+      icPlacementData.justification = Right;
+      icPlacementData.relativeTo = PageNumberType;
+      icPlacementData.preposition = Outside;
+    }
+    
+    plPage.appendRelativeTo(&pn);
     plPage.placeRelative(&pn);
     pageNumber->setPos(pn.offset[XX],pn.offset[YY]);
+    
+    if (instanceCount) {
+      ic.placement.setValue(icPlacementData);
+      ic.relativeType = SubmodelInstanceCountType;
+      ic.size[XX] = (int) instanceCount->document()->size().width();
+      ic.size[YY] = (int) instanceCount->document()->size().height();
+      ic.margin = page->meta.LPub.page.instanceCount.margin;
+
+      if (icPlacementData.relativeTo == PageType) {
+        plPage.placeRelative(&ic);
+      } else {
+        pn.placeRelative(&ic);
+      }
+      instanceCount->setPos(ic.offset[XX],ic.offset[YY]);
+    }
+  }
+  
+  /* Create any graphics items in the insert list */
+  
+  int nInserts = page->inserts.size();
+  
+  if (nInserts) {
+    QFileInfo fileInfo;    
+    for (int i = 0; i < nInserts; i++) {
+      InsertData insert = page->inserts[i].value();  
+      switch (insert.type) {
+        case InsertPicture:
+          fileInfo.setFile(insert.picName);
+          if (fileInfo.exists()) {
+            PlacementPixmap *pixmap = new PlacementPixmap;
+            pixmap->pixmap = new QPixmap;
+            pixmap->pixmap->load(insert.picName);
+            pixmap->size[0] = pixmap->pixmap->width()*insert.picScale;
+            pixmap->size[1] = pixmap->pixmap->height()*insert.picScale;
+            page->addInsertPixmap(pixmap);
+            QGraphicsPixmapItem *gpi = new QGraphicsPixmapItem(*pixmap->pixmap,pageBg);
+            gpi->setTransformationMode(Qt::SmoothTransformation);
+            gpi->scale(insert.picScale,insert.picScale);
+          }
+        break;
+        case InsertText:
+        break;
+        case InsertArrow:
+        break;
+        case InsertBom:
+        break;
+      }
+    }
   }
 
   if (page->relativeType == SingleStepType) {
@@ -267,7 +411,8 @@ int Gui::addGraphicsPageItems(
     page->relativeToMs(page); // place callouts relative to MULTI_STEP
     plPage.relativeToMs(page);    // place callouts relative to PAGE
     page->addGraphicsItems(0,0,pageBg);
-  } 
+  } else {
+  }
   
   scene->addItem(pageBg);
   

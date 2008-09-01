@@ -203,11 +203,12 @@ void PageNumberItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
   QAction *fontAction       = menu.addAction("Change Page Number Font");
   QAction *colorAction      = menu.addAction("Change Page Number Color");
   QAction *marginAction     = menu.addAction("Change Page Number Margins");
-  QAction *selectedAction   = menu.exec(event->screenPos());
 
   fontAction->setWhatsThis("You can change the font or the size of the page number");
   colorAction->setWhatsThis("You can change the color of the page number");
   marginAction->setWhatsThis("You can change how much empty space their is around the page number");
+
+  QAction *selectedAction   = menu.exec(event->screenPos());
 
   if (selectedAction == placementAction) {
 
@@ -227,8 +228,6 @@ void PageNumberItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
     changeColor(page->topOfSteps(),page->bottomOfSteps(),color);
 
   } else if (selectedAction == marginAction) {
-
-    QString foo = PlacementDialog::relativeToName(relativeType);
 
     changeMargins("Page Number Margins",
                   page->topOfSteps(),page->bottomOfSteps(),

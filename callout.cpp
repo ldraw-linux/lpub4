@@ -287,7 +287,7 @@ void Callout::addGraphicsItemsVert(
     CalloutInstanceItem *item = new CalloutInstanceItem(
       this,
      &meta, 
-      "%dx",
+      "x%d",
       instanceCount.number,
       parent);
     item->setPos(offsetX + instanceCount.offset[0], offsetY + instanceCount.offset[1]);
@@ -325,7 +325,7 @@ void Callout::addGraphicsItemsHoriz(
       break;
     }
     CalloutInstanceItem *item = new CalloutInstanceItem(
-      this,&meta, "%dx",instanceCount.number,parent);
+      this,&meta, "x%d",instanceCount.number,parent);
     item->setPos(offsetX + instanceCount.offset[0], offsetY + instanceCount.offset[1]);
   }
 

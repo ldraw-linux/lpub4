@@ -1073,6 +1073,10 @@ public:
   InsertMeta() 
   {
   }
+  InsertData &value()
+  {
+    return _value[pushed];
+  }
   virtual ~InsertMeta() {}
   Rc parse(QStringList &argv, int index, Where &here);
   QString format(bool,bool);
@@ -1467,6 +1471,7 @@ public:
   BoolMeta       dpn;
   BoolMeta       togglePnPlacement;
   NumberPlacementMeta number;
+  NumberPlacementMeta instanceCount;
   StringListMeta subModelColor;
 
   PageMeta();

@@ -225,6 +225,7 @@ int Gui::drawPage(
   Where          &current,
   QStringList     csiParts,
   Pli            &pli,
+  bool            isMirrored,
   QHash<QString, QStringList> &bfx,
   bool            calledOut)
 {
@@ -238,7 +239,7 @@ int Gui::drawPage(
   bool        synthBegin  = false;
   bool        multiStep   = false;
   bool        partsAdded  = false;
-  bool        coverPage = false;
+  bool        coverPage   = false;
   int         numLines = ldrawFile.size(current.modelName);
   
   QList<InsertMeta> inserts;
@@ -342,6 +343,7 @@ int Gui::drawPage(
                  current2,
                  csiParts2,
                  callout->pli,
+                 ldrawFile.mirrored(tokens),
                  calloutBfx,
                  true);
 
@@ -576,10 +578,6 @@ int Gui::drawPage(
             }
           }
         break;
-        
-        case InsertRc:
-          inserts.append(curMeta.LPub.insert);  // these are always placed before any parts in step
-        break;
 
         case ReserveSpaceRc:
           /* since we have a part usage, we have a valid step */
@@ -598,6 +596,10 @@ int Gui::drawPage(
           coverPage = true;
         case InsertPageRc:
           partsAdded = true;
+        break;
+        
+        case InsertRc:
+          inserts.append(curMeta.LPub.insert);  // these are always placed before any parts in step
         break;
 
         case CalloutBeginRc:
@@ -671,7 +673,10 @@ int Gui::drawPage(
             steps->setBottomOfSteps(topOfStep);
             steps->placement = steps->meta.LPub.multiStep.placement;
             showLine(steps->topOfSteps());
-            addGraphicsPageItems(steps, coverPage, view, scene);
+            
+            bool endOfSubmodel = stepNum == ldrawFile.numSteps(current.modelName);
+            int  instances = ldrawFile.instances(current.modelName,isMirrored);
+            addGraphicsPageItems(steps, coverPage, endOfSubmodel,instances, view, scene);
             return HitEndOfPage;
           }
         break;
@@ -682,6 +687,7 @@ int Gui::drawPage(
         case RotStepRc:
         case StepRc:
           if (partsAdded) {
+
             if (pliIgnore) {
               parseError("PLI BEGIN then STEP. Expected PLI END",current);
               pliIgnore = false;
@@ -768,7 +774,12 @@ int Gui::drawPage(
               steps->setBottomOfSteps(current);
               steps->placement = steps->meta.LPub.assem.placement;
               showLine(topOfStep);
-              addGraphicsPageItems(steps,coverPage,view,scene);
+
+              volatile int  numSteps = ldrawFile.numSteps(current.modelName);
+              volatile bool endOfSubmodel = stepNum == numSteps;
+              volatile int  instances = ldrawFile.instances(current.modelName,isMirrored);
+
+              addGraphicsPageItems(steps,coverPage,endOfSubmodel,instances,view,scene);
               stepPageNum += ! coverPage;
               return HitEndOfPage;
             }
@@ -823,7 +834,7 @@ void Gui::countPages()
     Meta meta;
     QString empty;
     stepPageNum = 1;
-    findPage(KpageView,KpageScene,maxPages,empty,current,meta);
+    findPage(KpageView,KpageScene,maxPages,empty,current,false,meta);
     maxPages--;
     if (displayPageNum > maxPages) {
       displayPageNum = maxPages;
@@ -842,13 +853,16 @@ void Gui::drawPage(
 {
 
   QApplication::setOverrideCursor(Qt::WaitCursor);
+  
+  ldrawFile.unrendered();
 
   Where       current(ldrawFile.topLevelFile(),0);
   maxPages = 1;
   stepPageNum = 1;
   Meta meta;
+  page.meta = meta;
   QString empty;
-  findPage(view,scene,maxPages,empty,current,meta);
+  findPage(view,scene,maxPages,empty,current,false,meta);
   maxPages--;  
 
   QString string = QString("%1 of %2") .arg(displayPageNum) .arg(maxPages);
@@ -892,11 +906,13 @@ int Gui::findPage(
   int            &pageNum,
   QString const  &addLine,
   Where           current,
+  bool            isMirrored,
   Meta           &meta)
 {
-  bool stepGroup = false;
+  bool stepGroup  = false;
   bool partIgnore = false;
   bool coverPage  = false;
+  bool stepPage   = false;
   int  partsAdded = 0;
   int  stepNumber = 1;
   Rc   rc;
@@ -921,6 +937,8 @@ int Gui::findPage(
   int numLines = ldrawFile.size(current.modelName);
   
   Where topOfStep = current;
+  
+  ldrawFile.setRendered(current.modelName, isMirrored);
 
   for ( ;
        current.lineNumber < numLines;
@@ -949,13 +967,18 @@ int Gui::findPage(
         }
         if ( ! partIgnore) {
           QStringList token = line.split(" ");
-          if (ldrawFile.contains(token[token.size()-1])) {
+          
+          bool isMirrored = ldrawFile.mirrored(token);
+          
+          if (ldrawFile.contains(token[token.size()-1]) &&
+              ! ldrawFile.rendered(token[token.size()-1],isMirrored)) {
+              
             // can't be a callout
             tmpMeta = meta;
             SubmodelStack tos(current.modelName,current.lineNumber,stepNumber);
             tmpMeta.submodelStack << tos;
             Where current2(token[token.size()-1],0);
-            findPage(view,scene,pageNum,line,current2,tmpMeta);
+            findPage(view,scene,pageNum,line,current2,isMirrored,tmpMeta);
           }
         }
         if (partsAdded++ == 0) {
@@ -1008,10 +1031,9 @@ int Gui::findPage(
               } else if (pageNum == displayPageNum) {
                 csiParts.clear();
                 stepPageNum = saveStepPageNum;
-                ldrawFile.setNumSteps(current.modelName,stepNumber);
                 page.meta      = saveMeta;
                 (void) drawPage(view,scene,&page,saveStepNumber,
-                                addLine,stepGroupCurrent,saveCsiParts,pli,saveBfx);
+                                addLine,stepGroupCurrent,saveCsiParts,pli,isMirrored,saveBfx);
                 saveCurrent.modelName.clear();
                 saveCsiParts.clear();
               }
@@ -1023,7 +1045,7 @@ int Gui::findPage(
           case StepRc:
           case RotStepRc:
             if (partsAdded) {
-              ++stepNumber;
+              stepNumber += ! coverPage && ! stepPage;
               stepPageNum += ! coverPage && ! stepGroup;
               if (pageNum < displayPageNum) {
                 if ( ! stepGroup) {
@@ -1039,20 +1061,19 @@ int Gui::findPage(
                 if (pageNum == displayPageNum) {
                   csiParts.clear();
                   stepPageNum = saveStepPageNum;
-                  ldrawFile.setNumSteps(current.modelName,stepNumber);
                   page.meta      = saveMeta;
                   (void) drawPage(view,scene,&page,saveStepNumber,
-                                  addLine,saveCurrent,saveCsiParts,pli,saveBfx);
+                                  addLine,saveCurrent,saveCsiParts,pli,isMirrored,saveBfx);
                   saveCurrent.modelName.clear();
                   saveCsiParts.clear();
                 } 
                 ++pageNum;
-//                stepPageNum += ! coverPage;
               }
               topOfStep = current;
               partsAdded = 0;
               meta.pop();
               coverPage = false;
+              stepPage = false;
             } else if ( ! stepGroup) {
               saveCurrent = current;  // so that draw page doesn't have to
                                       // deal with steps that are not steps
@@ -1076,8 +1097,11 @@ int Gui::findPage(
           break;
           
           case InsertCoverPageRc:
-            coverPage = true;
+            coverPage  = true;
+            partsAdded = true;
+          break;
           case InsertPageRc:
+            stepPage   = true;
             partsAdded = true;
           break;
           
@@ -1142,15 +1166,12 @@ int Gui::findPage(
   } // for every line
   csiParts.clear();
   if (partsAdded) {
-    ldrawFile.setNumSteps(current.modelName,stepNumber);
     if (pageNum == displayPageNum) {
       page.meta = saveMeta;
-      (void) drawPage(view, scene, &page,saveStepNumber,addLine,saveCurrent,saveCsiParts,pli,bfx);
+      (void) drawPage(view, scene, &page,saveStepNumber,addLine,saveCurrent,saveCsiParts,pli,isMirrored,bfx);
     }
     ++pageNum;
     ++stepPageNum;
-  } else {
-    ldrawFile.setNumSteps(current.modelName,stepNumber-1);
   }
   saveCurrent.modelName.clear();
   saveCsiParts.clear();
