@@ -118,16 +118,6 @@ void LDrawFile::loadMPDFile(const QString &fileName, QDateTime &datetime)
     while ( ! in.atEnd()) {
 
       const QString line = in.readLine(0);
-  
-  QByteArray Line = line.toAscii();
-  
-  volatile char LIne[256];
-  
-  int i;
-  for (i = 0; i < Line.size(); i++) {
-    LIne[i] = Line[i];
-  }
-  LIne[i] = '\0';
 
       if (line.contains(sof)) {
         if ( ! mpdName.isEmpty()) {
