@@ -33,7 +33,6 @@
 #include <QFontDialog>
 #include <QColor>
 #include <QColorDialog>
-#include <QByteArray>
 #include "metaitem.h"
 #include "lpub.h"
 #include "color.h"
@@ -616,26 +615,6 @@ void MetaItem::setMetaTopOf(
 {
   int  lineNumber = meta->here().lineNumber;
   bool metaInRange;
-
-#if 0
-  
-  QByteArray Left  = meta->here().modelName.toAscii();
-  QByteArray Right = topOf.modelName.toAscii();
-  
-  volatile char left[256];
-  volatile char right[256];
-  
-  int i;
-  for (i = 0; i < Left.size(); i++) {
-    left[i] = Left[i];
-  }
-  left[i] = '\0';
-  
-  for (i = 0; i < Right.size(); i++) {
-    right[i] = Right[i];
-  }
-  right[i] = '\0';
-#endif
 
   metaInRange = meta->here().modelName == topOf.modelName;
   
