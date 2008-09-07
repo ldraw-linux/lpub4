@@ -18,6 +18,7 @@
 #include <QDir>
 #include <QTextEdit>
 #include <QUndoStack>
+#include <QSettings>
 
 #include "lpub.h"
 #include "lpub_preferences.h"
@@ -25,19 +26,28 @@
 #include "paths.h"
 
 void Gui::open()
-{
+{  
   if (maybeSave()) {
+    QSettings settings(LPUB,SETTINGS);
+    QString modelDir;
+    if (settings.contains("modelDir")) {
+      modelDir = settings.value("modelDir").toString();
+    } else {
+      modelDir = Preferences::ldrawPath + "/MODELS";
+    }
+
     QString fileName = QFileDialog::getOpenFileName(
       this,
       tr("Open LDraw File"),
-      Preferences::ldrawPath + "\\MODELS",
+      modelDir,
       tr("LDraw Files (*.DAT;*.LDR;*.MPD;*.dat;*.ldr;*.mpd)"));
 
     if (!fileName.isEmpty()) {
-        openFile(fileName);
-        displayPage();
-        enableActions();
-        return;
+      settings.setValue("modelDir",modelDir);
+      openFile(fileName);
+      displayPage();
+      enableActions();
+      return;
     }
   }
   return;
@@ -212,20 +222,22 @@ void Gui::openFile(QString &fileName)
 void Gui::updateRecentFileActions()
 {
   QSettings settings(LPUB,SETTINGS);
-  QStringList files = settings.value("recentFileList").toStringList();
+  if (settings.contains("recentFileList")) {
+    QStringList files = settings.value("recentFileList").toStringList();
 
-  int numRecentFiles = qMin(files.size(), (int)MaxRecentFiles);
+    int numRecentFiles = qMin(files.size(), (int)MaxRecentFiles);
 
-  for (int i = 0; i < numRecentFiles; i++) {
-    QString text = tr("&%1 %2").arg(i + 1).arg(strippedName(files[i]));
-    recentFilesActs[i]->setText(text);
-    recentFilesActs[i]->setData(files[i]);
-    recentFilesActs[i]->setVisible(true);
+    for (int i = 0; i < numRecentFiles; i++) {
+      QString text = tr("&%1 %2").arg(i + 1).arg(strippedName(files[i]));
+      recentFilesActs[i]->setText(text);
+      recentFilesActs[i]->setData(files[i]);
+      recentFilesActs[i]->setVisible(true);
+    }
+    for (int j = numRecentFiles; j < MaxRecentFiles; j++) {
+      recentFilesActs[j]->setVisible(false);
+    }
+    separatorAct->setVisible(numRecentFiles > 0);
   }
-  for (int j = numRecentFiles; j < MaxRecentFiles; j++) {
-    recentFilesActs[j]->setVisible(false);
-  }
-  separatorAct->setVisible(numRecentFiles > 0);
 }
 
 QString Gui::strippedName(const QString &fullFileName)
