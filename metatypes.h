@@ -122,6 +122,11 @@ public:
   PlacementType  relativeTo;
   PrepositionEnc preposition;
   float offsets[2];
+  PlacementData()
+  {
+    offsets[0] = 0;
+    offsets[1] = 0;
+  }
 };
 
 class BackgroundData
@@ -140,6 +145,11 @@ public:
   float   thickness;  // in units 
   float   radius;     // in units
   float   margin[2];  // in units
+  BorderData()
+  {
+    margin[0] = 0;
+    margin[1] = 0;
+  }
 };
 
 class SubData
@@ -181,6 +191,11 @@ public:
   float   thickness;  // in units
   QString color;
   float   margin[2];  // in units
+  SepData()
+  {
+    margin[0] = 0;
+    margin[1] = 0;
+  }
 };
 
 enum InsertType
@@ -205,6 +220,15 @@ public:
   qreal          picScale;
   QStringList    text;
   QPointF        arrow[2];
+  InsertData()
+  {
+    offsets[0] = 0;
+    offsets[1] = 0;
+    margins[0] = 0;
+    margins[1] = 0;
+    arrow[0] = QPointF(0,0);
+    arrow[1] = QPointF(0,0);
+  }
 };
 
   
