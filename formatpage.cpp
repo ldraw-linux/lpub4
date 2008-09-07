@@ -241,6 +241,10 @@ int Gui::addGraphicsPageItems(
 
       pn.placement.setValue(placementData);
     }
+    
+    plPage.appendRelativeTo(&pn);
+    plPage.placeRelative(&pn);
+    pageNumber->setPos(pn.offset[XX],pn.offset[YY]);
           
     if (placementData.placement == BottomRight) {
       icPlacementData.placement = Top;
@@ -248,10 +252,6 @@ int Gui::addGraphicsPageItems(
       icPlacementData.relativeTo = PageNumberType;
       icPlacementData.preposition = Outside;
     }
-    
-    plPage.appendRelativeTo(&pn);
-    plPage.placeRelative(&pn);
-    pageNumber->setPos(pn.offset[XX],pn.offset[YY]);
     
     if (instanceCount) {
       ic.placement.setValue(icPlacementData);
@@ -279,17 +279,32 @@ int Gui::addGraphicsPageItems(
       InsertData insert = page->inserts[i].value();  
       switch (insert.type) {
         case InsertPicture:
-          fileInfo.setFile(insert.picName);
-          if (fileInfo.exists()) {
-            PlacementPixmap *pixmap = new PlacementPixmap;
-            pixmap->pixmap = new QPixmap;
-            pixmap->pixmap->load(insert.picName);
-            pixmap->size[0] = pixmap->pixmap->width()*insert.picScale;
-            pixmap->size[1] = pixmap->pixmap->height()*insert.picScale;
-            page->addInsertPixmap(pixmap);
-            QGraphicsPixmapItem *gpi = new QGraphicsPixmapItem(*pixmap->pixmap,pageBg);
-            gpi->setTransformationMode(Qt::SmoothTransformation);
-            gpi->scale(insert.picScale,insert.picScale);
+          {
+            fileInfo.setFile(insert.picName);
+            if (fileInfo.exists()) {
+              PlacementPixmap *pixmap = new PlacementPixmap;
+              pixmap->pixmap = new QPixmap;
+              pixmap->pixmap->load(insert.picName);
+              pixmap->size[0] = pixmap->pixmap->width()*insert.picScale;
+              pixmap->size[1] = pixmap->pixmap->height()*insert.picScale;
+              page->addInsertPixmap(pixmap);
+              QGraphicsPixmapItem *gpi = new QGraphicsPixmapItem(*pixmap->pixmap,pageBg);
+              gpi->setTransformationMode(Qt::SmoothTransformation);
+              gpi->scale(insert.picScale,insert.picScale);
+              
+              PlacementData pld;
+              Placement     pl;
+              
+              pld.placement     = insert.placement;
+              pld.justification = insert.justification;
+              pld.relativeTo    = insert.relativeTo;
+              pld.preposition   = insert.preposition;
+              
+              pixmap->placement.setValue(pld);
+
+              plPage.placeRelative(pixmap);
+              gpi->setPos(pixmap->offset[XX],pixmap->offset[YY]);
+            }
           }
         break;
         case InsertText:
