@@ -80,7 +80,7 @@ public:
   }
 };
 
-class NumberPlacementItem : public QGraphicsTextItem, public MetaItem
+class NumberPlacementItem : public QGraphicsTextItem, public MetaItem, public Placement
 {
 public:
   PlacementType  relativeType;
@@ -126,6 +126,9 @@ public:
   }
 
 protected:
+  virtual void mousePressEvent(QGraphicsSceneMouseEvent *event);
+  virtual void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
+  virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
 };
 
 class PageNumberItem : public NumberPlacementItem
