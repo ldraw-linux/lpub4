@@ -392,6 +392,7 @@ public:
 
   int             displayPageNum;  // what page are we displaying
   int             stepPageNum;     // the number displayed on the page
+  int             saveStepPageNum;
   
   FitMode fitMode;         // how to fit the scene into the view
   bool    ldrawFileContains(const QString &fileName) 
@@ -518,9 +519,11 @@ private:
   QString         curFile;         // the file name for MPD, or top level file
   QString         curSubFile;      // whats being displayed in the edit window
   EditWindow     *editWindow;      // the sub file editable by the user
+#ifdef WATCHER
   QFileSystemWatcher watcher;      // watch the file system for external
                                    // changes to the ldraw files currently
                                    // being edited
+#endif
 
   LDrawColor      ldrawColors;     // provides maps from ldraw color to RGB
   PartsList       partsList;       // this is an internal version of PARTS.LST
@@ -553,6 +556,8 @@ private:
     bool           isMirrored,
     QHash<QString, QStringList> &bfx,
     bool           calledOut = false);
+    
+  void include(Meta &meta);
 
   int addGraphicsPageItems(        // this converts the abstract page into
     Steps          *steps,         // a graphics view
@@ -604,7 +609,6 @@ private slots:
      * File management functions
      *****************************************************************/
 
-    QString strippedName(const QString &fullFileName);
     void setCurrentFile(const QString &fileName);
     void openFile(QString &fileName);
     bool maybeSave();

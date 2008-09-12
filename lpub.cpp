@@ -393,10 +393,10 @@ Gui::Gui()
     connect(undoStack,  SIGNAL(cleanChanged(bool)),
             this,       SLOT(  cleanChanged(bool)));
 
-//    FIXME:::::
-//    connect(&watcher,   SIGNAL(fileChanged(const QString &)),
-//             this,      SLOT(  fileChanged(const QString &)));
-
+#ifdef WATCHER
+    connect(&watcher,   SIGNAL(fileChanged(const QString &)),
+             this,      SLOT(  fileChanged(const QString &)));
+#endif
     setCurrentFile("");
 
     resize(800,600);
