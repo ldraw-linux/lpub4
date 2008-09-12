@@ -55,6 +55,7 @@ void Gui::open()
 
 void Gui::save()
 {
+#ifdef WATCHER
   if (isMpd()) {
     watcher.removePath(curFile);
   } else {
@@ -65,12 +66,14 @@ void Gui::save()
       watcher.removePath(bar);
     }
   }
+#endif
   if (curFile.isEmpty()) {
     saveAs();
   } else {
     saveFile(curFile);
   }
 
+#ifdef WATCHER
   if (isMpd()) {
     watcher.addPath(curFile);
   } else {
@@ -81,10 +84,12 @@ void Gui::save()
       watcher.addPath(bar);
     }
   }
+#endif
 }
 
 void Gui::saveAs()
 {
+#ifdef WATCHER
   if (curFile != "") {
     if (isMpd()) {
       watcher.removePath(curFile);
@@ -97,11 +102,13 @@ void Gui::saveAs()
       }
     }
   }
+#endif
   QString fileName = QFileDialog::getSaveFileName(this);
   if (fileName.isEmpty()) {
     return;
   }
   saveFile(fileName); 
+#ifdef WATCHER
   if (curFile != "") {
     if (isMpd()) {
       watcher.addPath(curFile);
@@ -114,6 +121,7 @@ void Gui::saveAs()
       }
     }
   }
+#endif
 } 
 
 bool Gui::maybeSave()
@@ -176,6 +184,7 @@ void Gui::openRecentFile()
 
 void Gui::openFile(QString &fileName)
 {
+#ifdef WATCHER
   if (curFile != "") {
     if (isMpd()) {
       watcher.removePath(curFile);
@@ -188,6 +197,7 @@ void Gui::openFile(QString &fileName)
       }
     }
   }
+#endif
 
   clearPage(KpageView,KpageScene);
   closeFile();
@@ -206,6 +216,7 @@ void Gui::openFile(QString &fileName)
   QStringList list = ldrawFile.subFileOrder();
   QString foo;
 
+#ifdef WATCHER
   if (isMpd()) {
     watcher.addPath(curFile);
   } else {
@@ -216,6 +227,7 @@ void Gui::openFile(QString &fileName)
       watcher.addPath(bar);
     }
   }
+#endif
   defaultResolutionType(Preferences::preferCentimeters);
 }
 
@@ -228,7 +240,8 @@ void Gui::updateRecentFileActions()
     int numRecentFiles = qMin(files.size(), (int)MaxRecentFiles);
 
     for (int i = 0; i < numRecentFiles; i++) {
-      QString text = tr("&%1 %2").arg(i + 1).arg(strippedName(files[i]));
+      QFileInfo fileInfo(files[i]);
+      QString text = tr("&%1 %2").arg(i + 1).arg(fileInfo.fileName());
       recentFilesActs[i]->setText(text);
       recentFilesActs[i]->setData(files[i]);
       recentFilesActs[i]->setVisible(true);
@@ -240,19 +253,17 @@ void Gui::updateRecentFileActions()
   }
 }
 
-QString Gui::strippedName(const QString &fullFileName)
-{
-  return QFileInfo(fullFileName).fileName();
-}
-
 void Gui::setCurrentFile(const QString &fileName)
 {
   QString shownName;
-  if (fileName.size() == 0)
-      shownName = "An LDraw Building Instruction Editor";
-  else
-      shownName = strippedName(fileName);
-
+  if (fileName.size() == 0) {
+    shownName = "An LDraw Building Instruction Editor";
+  } else {
+    QFileInfo fileInfo(fileName);
+    
+    shownName = fileInfo.fileName();
+  }
+  
   setWindowTitle(tr("%1[*] - %2").arg(shownName).arg(tr(LPUB)));
 
   if (fileName.size() > 0) {
