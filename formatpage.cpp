@@ -81,8 +81,7 @@ class SubmodelInstanceCount : public NumberPlacementItem
       NumberPlacementMeta &numberMetaIn,
       const char          *formatIn,
       int                  valueIn,
-      QGraphicsItem       *parentIn)
-    {
+      QGraphicsItem       *parentIn)    {
       page = pageIn;
       QString toolTip("Number of times to build this submodel");
       setAttributes(PageNumberType,
@@ -93,9 +92,12 @@ class SubmodelInstanceCount : public NumberPlacementItem
                     valueIn,
                     toolTip,
                     parentIn);
+      setFlag(QGraphicsItem::ItemIsMovable,true);
+      setFlag(QGraphicsItem::ItemIsSelectable,true);
     }
   protected:
     void contextMenuEvent(QGraphicsSceneContextMenuEvent *event);
+    virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
 };
 
 void SubmodelInstanceCount::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
@@ -107,10 +109,12 @@ void SubmodelInstanceCount::contextMenuEvent(QGraphicsSceneContextMenuEvent *eve
   QAction *fontAction       = menu.addAction("Change Submodel Count Font");
   QAction *colorAction      = menu.addAction("Change Submodel Count Color");
   QAction *marginAction     = menu.addAction("Change Submodel Count Margins");
+  QAction *placementAction  = menu.addAction("Move this number");
 
   fontAction->setWhatsThis("You can change the font or the size of the page number");
   colorAction->setWhatsThis("You can change the color of the page number");
   marginAction->setWhatsThis("You can change how much empty space their is around the page number");
+  placementAction->setWhatsThis("You can move this submodel count around");
 
   QAction *selectedAction   = menu.exec(event->screenPos());
 
@@ -127,6 +131,40 @@ void SubmodelInstanceCount::contextMenuEvent(QGraphicsSceneContextMenuEvent *eve
     changeMargins("Submodel Count Margins",
                   page->topOfSteps(),page->bottomOfSteps(),
                   margin);
+  } else if (selectedAction == placementAction) {
+  
+    changePlacement(PageType,
+                    SubmodelInstanceCountType,
+                    "Submodel Count Placement",
+                    page->topOfSteps(),
+                    page->bottomOfSteps(),
+                    placement);
+  }
+}
+
+void SubmodelInstanceCount::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
+{
+  QGraphicsItem::mouseReleaseEvent(event);
+
+  if (isSelected() && (flags() & QGraphicsItem::ItemIsMovable)) {
+
+    QPointF newPosition;
+
+    // back annotate the movement of the PLI into the LDraw file.
+    newPosition = pos() - position;
+    
+    if (newPosition.x() || newPosition.y()) {
+      positionChanged = true;
+
+      PlacementData placementData = placement->value();
+
+      placementData.offsets[0] += newPosition.x()/relativeToWidth;
+      placementData.offsets[1] += newPosition.y()/relativeToHeight;
+
+      placement->setValue(placementData);
+
+      changePlacementOffset(page->topOfSteps(),placement);
+    }
   }
 }
 
@@ -175,33 +213,6 @@ int Gui::addGraphicsPageItems(
     pn.size[YY]     = (int) pageNumber->document()->size().height();
     pn.margin       = page->meta.LPub.page.number.margin;            
     
-    // if this page contains the last step of the page, 
-    // and instance is > 1 then display instance
-
-    // allocate QGraphicsTextItem for instance number 
-    
-    SubmodelInstanceCount *instanceCount;
-    
-    if (endOfSubmodel && instances > 1) {
-      instanceCount = new SubmodelInstanceCount(
-         page,
-        &page->meta,
-        page->meta.LPub.page.instanceCount,
-        "x%d",
-        instances,
-        pageBg);
-    } else {
-      instanceCount = NULL;
-    }
-
-    Placement ic;
-        
-    PlacementData icPlacementData = page->meta.LPub.page.instanceCount.placement.value();
-
-    icPlacementData.placement = BottomRight;
-    icPlacementData.relativeTo = PageType;
-    icPlacementData.preposition = Inside;
-    
     if (page->meta.LPub.page.togglePnPlacement.value() && ! (stepPageNum & 1)) {
       switch (placementData.placement) {
         case TopLeft:
@@ -245,27 +256,55 @@ int Gui::addGraphicsPageItems(
     plPage.appendRelativeTo(&pn);
     plPage.placeRelative(&pn);
     pageNumber->setPos(pn.offset[XX],pn.offset[YY]);
-          
-    if (placementData.placement == BottomRight) {
-      icPlacementData.placement = Top;
-      icPlacementData.justification = Right;
-      icPlacementData.relativeTo = PageNumberType;
-      icPlacementData.preposition = Outside;
-    }
     
-    if (instanceCount) {
-      ic.placement.setValue(icPlacementData);
-      ic.relativeType = SubmodelInstanceCountType;
-      ic.size[XX] = (int) instanceCount->document()->size().width();
-      ic.size[YY] = (int) instanceCount->document()->size().height();
-      ic.margin = page->meta.LPub.page.instanceCount.margin;
+    // if this page contains the last step of the page, 
+    // and instance is > 1 then display instance
 
-      if (icPlacementData.relativeTo == PageType) {
-        plPage.placeRelative(&ic);
-      } else {
-        pn.placeRelative(&ic);
+    // allocate QGraphicsTextItem for instance number 
+    
+    SubmodelInstanceCount *instanceCount;
+    
+    if (endOfSubmodel && instances > 1) {
+      instanceCount = new SubmodelInstanceCount(
+         page,
+        &page->meta,
+        page->meta.LPub.page.instanceCount,
+        "x%d",
+        instances,
+        pageBg);
+        
+      /*
+       * To make mousemove always know how to calculate offset, I modified
+       * SubmodelInstanceClass to be derived from Placement.  The relativeToWidth
+       * and relativeToHeight for offset calculation are in Placement.
+       *
+       * The offset calculation works great, but we end up with a problem
+       * SubmodelInstanceCount gets placement from NumberPlacementItem, and
+       * placement from Placement.  To work around this, I had to hack (and I mean
+       * ugly) SubmodelInstanceCount to Placement.
+       */
+        
+      if (instanceCount) {
+        instanceCount->size[XX] = (int) instanceCount->document()->size().width();
+        instanceCount->size[YY] = (int) instanceCount->document()->size().height();
+        instanceCount->offset[XX] = 0;
+        instanceCount->offset[YY] = 0;
+        instanceCount->tbl[0] = 0;
+        instanceCount->tbl[1] = 0;
+        
+        Placement *ic = dynamic_cast<Placement *>(instanceCount);
+        
+        ic->placement = page->meta.LPub.page.instanceCount.placement;
+                        
+        PlacementData placementData = ic->placement.value();
+        
+        if (placementData.relativeTo == PageType) {
+          plPage.placeRelative(instanceCount);
+        } else {
+          pn.placeRelative(instanceCount);
+        }
+        instanceCount->setPos(instanceCount->offset[XX],instanceCount->offset[YY]);
       }
-      instanceCount->setPos(ic.offset[XX],ic.offset[YY]);
     }
   }
   
