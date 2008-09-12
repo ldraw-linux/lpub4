@@ -218,6 +218,9 @@ void Placement::placeRelative(
 
   PlacementData placementData = them->placement.value();
 
+  them->relativeToWidth = size[XX];
+  them->relativeToHeight = size[YY];
+
   if (placementData.preposition == Outside) {
     switch (placementData.placement) {
       case TopLeft:
@@ -338,6 +341,9 @@ void Placement::placeRelative(
   lmargin[YY] = qMax(margin[YY],lmargin[YY]);
 
   PlacementData placementData = them->placement.value();
+
+  them->relativeToWidth = size[XX];
+  them->relativeToHeight = size[YY];
 
   if (placementData.preposition == Outside) {
     switch (placementData.placement) {

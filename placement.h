@@ -83,8 +83,12 @@ enum dim {
   YY = 1
 };
 
-class Placement : QObject {
+class Foo : QObject
+{
   Q_OBJECT
+};
+
+class Placement {
   public:
     int           size[2];       // How big am I?
     int           offset[2];     // Where do I live within my group
@@ -92,6 +96,8 @@ class Placement : QObject {
     PlacementType relativeType;  // What am I?
     PlacementMeta placement;     // Where am I placed?
     MarginsMeta   margin;        // How much room do I need?
+    int           relativeToWidth;
+    int           relativeToHeight;
 
     QList<Placement *> relativeToList; // things placed relative to me
 
@@ -103,6 +109,8 @@ class Placement : QObject {
       offset[1] = 0;
       tbl[0]    = 0;
       tbl[1]    = 0;
+      relativeToWidth = 1;
+      relativeToHeight = 1;
     }
 
     virtual ~Placement()
@@ -132,15 +140,6 @@ class Placement : QObject {
     void justifyY(
       int origin,
       int height);
-};
-
-class PlacementImage : public Placement {
-  public:
-    QImage    *image;
-    qreal      scale;
-    PlacementImage()
-    {
-    }
 };
 
 class PlacementPixmap : public Placement {
