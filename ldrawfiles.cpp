@@ -274,11 +274,11 @@ void LDrawFile::countInstances(const QString &fileName, bool isMirrored)
     f->_numSteps += partsAdded &&
                     (   isMirrored && f->_mirrorInstances == 0 ||
                       ! isMirrored && f->_instances == 0);
-  }
-  if (isMirrored) {
-    ++f->_mirrorInstances;
-  } else {
-    ++f->_instances;
+    if (isMirrored) {
+      ++f->_mirrorInstances;
+    } else {
+      ++f->_instances;
+    }
   }
 }
 
