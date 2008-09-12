@@ -169,6 +169,25 @@ void NumberPlacementItem::setAttributes(
   setToolTip(toolTip);
   setParentItem(_parent);
 }
+void NumberPlacementItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
+{     
+  QGraphicsItem::mousePressEvent(event);
+  positionChanged = false;
+  position = pos();
+} 
+  
+void NumberPlacementItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
+{ 
+  QGraphicsItem::mouseMoveEvent(event);
+  if (isSelected() && (flags() & QGraphicsItem::ItemIsMovable)) {
+    positionChanged = true;
+  }   
+}     
+      
+void NumberPlacementItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
+{     
+  QGraphicsItem::mouseReleaseEvent(event);
+} 
 
 PageNumberItem::PageNumberItem(
   Page          *_page,
