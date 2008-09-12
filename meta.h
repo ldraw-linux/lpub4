@@ -102,6 +102,8 @@ enum Rc {
          InsertRc,
          InsertPageRc,
          InsertCoverPageRc,
+         
+         IncludeRc,
 
          EndOfFileRc,
 };
@@ -1657,6 +1659,7 @@ public:
   FloatMeta      reserve;
   PartIgnMeta    partSub;
   InsertMeta     insert;
+  StringMeta     include;
   LPubMeta();
   virtual ~LPubMeta() {};
   virtual void init(BranchMeta *parent, QString name);

@@ -388,7 +388,7 @@ Rc StringMeta::parse(QStringList &argv, int index,Where &here)
   if (argv.size() - index == 1) {
     _value[pushed] = argv[index];
     _here[pushed] = here;
-    return OkRc;
+    return rc;
   }
   
   QMessageBox::warning(NULL,
@@ -427,7 +427,7 @@ Rc StringListMeta::parse(QStringList &argv, int index,Where &here)
     _value[pushed] << argv[i];
   }
   _here[pushed] = here;
-  return OkRc;
+  return rc;
 }
 QString StringListMeta::format(bool local, bool global)
 {
@@ -462,7 +462,7 @@ Rc FontListMeta::parse(QStringList &argv, int index,Where &here)
     _value[pushed] << argv[i];
   }
   _here[pushed] = here;
-  return OkRc;
+  return rc;
 }
 QString FontListMeta::format(bool local, bool global)
 {
@@ -516,7 +516,7 @@ QString placementNames[] =
 
 QString relativeNames[] = 
 {
-  "PAGE","ASSEM","MULTI_STEP","STEP_NUMBER","PLI","CALLOUT"
+  "PAGE","ASSEM","MULTI_STEP","STEP_NUMBER","PLI","CALLOUT","PAGE_NUMBER"
 };
 
 QString prepositionNames[] = 
@@ -601,7 +601,7 @@ Rc PlacementMeta::parse(QStringList &argv, int index,Where &here)
   }
 
   if (rc == OkRc && index < argv.size()) {
-    rx.setPattern("^(PAGE|ASSEM|MULTI_STEP|STEP_NUMBER|PLI|CALLOUT)$");
+    rx.setPattern("^(PAGE|ASSEM|MULTI_STEP|STEP_NUMBER|PLI|CALLOUT|PAGE_NUMBER)$");
     if (argv[index].contains(rx)) {
       _relativeTo = PlacementType(tokenMap[argv[index++]]);
       if (_relativeTo == PageType) {
@@ -641,7 +641,7 @@ Rc PlacementMeta::parse(QStringList &argv, int index,Where &here)
     _value[pushed].offsets[1] = _offsets[1];
     _here[pushed] = here;
 
-    return OkRc;
+    return rc;
   }
   return rc;
 }
@@ -2212,6 +2212,7 @@ void LPubMeta::init(BranchMeta *parent, QString name)
   partSub                .init(this,"PART");
   resolution             .init(this,"RESOLUTION");
   insert                 .init(this,"INSERT");
+  include                .init(this,"INCLUDE", IncludeRc);
 }
 
 /* ------------------ */ 
@@ -2275,6 +2276,7 @@ Meta::Meta()
     tokenMap["STEP_GROUP"]   = StepGroupType;
     tokenMap["STEP_NUMBER"]  = StepNumberType;
     tokenMap["PLI"]          = PartsListType;
+    tokenMap["PAGE_NUMBER"]  = PageNumberType;
 
     tokenMap["AREA"]         = PliConstrainArea;
     tokenMap["SQUARE"]       = PliConstrainSquare;

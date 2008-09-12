@@ -63,12 +63,12 @@ enum PlacementType {
   CalloutType,
   PageNumberType,
   SingleStepType,
+  SubmodelInstanceCountType,
   StepType,
   RangeType,
   ReserveType,
   BomType,
   CoverPageType,
-  SubmodelInstanceCountType,
   NumRelatives
 };
 
