@@ -78,6 +78,7 @@ const int PlacementDialog::relativeToOks[NumRelatives] =
   /* Callout */   Page | Csi | Ms | Sn | Pli,
   /* PageNum */   Page,
   /* SingleStep */Page | Csi,
+  /* SubmodelIns*/Page |                 Pn
 };
 
 const int PlacementDialog::prepositionOks[NumRelatives] = // indexed by them
@@ -88,14 +89,14 @@ const int PlacementDialog::prepositionOks[NumRelatives] = // indexed by them
   /* StepNum */   OutsideOk,
   /* Pli */       OutsideOk,
   /* Callout */   OutsideOk,
-  /* PageNum */   InsideOk,
+  /* PageNum */   OutsideOk,
 };
 
 const QString relativeNames[NumRelatives] =
 {
   "Page",        "Assem",   "Step Group",  "Step Number",
   "Parts List",  "Callout", "Page Number",
-  "Single Step", "Range",   "Step",        "Reserve"
+  "Single Step", "Submodel Instance Count", "Range",   "Step",        "Reserve"
 };
 
 QString PlacementDialog::relativeToName(
