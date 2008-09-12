@@ -46,6 +46,8 @@ class AbstractRangeElement;
 
 class AbstractStepsElement : public Placement {
 public:
+  AbstractStepsElement() {}
+  
   Steps *parent;
 
   QList<AbstractRangeElement *> list;
