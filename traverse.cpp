@@ -34,6 +34,7 @@
 #include <QGraphicsItem>
 #include <QGraphicsScene>
 #include <QString>
+#include <QFileInfo>
 #include "lpub.h"
 #include "ranges.h"
 #include "callout.h"
@@ -415,6 +416,10 @@ int Gui::drawPage(
       /* handle specific meta-commands */
 
       switch (rc) {
+      
+        case IncludeRc:
+          include(steps->meta);
+        break;
 
         /* substitute part/parts with this */
 
@@ -823,83 +828,6 @@ int Gui::drawPage(
   return 0;
 }
 
-void Gui::countPages()
-{
-  if (maxPages < 1) {
-    statusBarMsg("Counting");
-    Where       current(ldrawFile.topLevelFile(),0);
-    int savedDpn   = displayPageNum;
-    displayPageNum = 1 << 31;
-    maxPages       = 1;
-    Meta meta;
-    QString empty;
-    stepPageNum = 1;
-    findPage(KpageView,KpageScene,maxPages,empty,current,false,meta);
-    maxPages--;
-    if (displayPageNum > maxPages) {
-      displayPageNum = maxPages;
-    } else {
-      displayPageNum = savedDpn;
-    }
-    QString string = QString("%1 of %2") .arg(displayPageNum) .arg(maxPages);
-    setPageLineEdit->setText(string);
-    statusBarMsg("");
-  }
-}         
-
-void Gui::drawPage(
-  LGraphicsView  *view,
-  QGraphicsScene *scene)
-{
-
-  QApplication::setOverrideCursor(Qt::WaitCursor);
-  
-  ldrawFile.unrendered();
-
-  Where       current(ldrawFile.topLevelFile(),0);
-  maxPages = 1;
-  stepPageNum = 1;
-  Meta meta;
-  page.meta = meta;
-  QString empty;
-  findPage(view,scene,maxPages,empty,current,false,meta);
-  maxPages--;  
-
-  QString string = QString("%1 of %2") .arg(displayPageNum) .arg(maxPages);
-  setPageLineEdit->setText(string);
-
-  QApplication::restoreOverrideCursor();
-
-}
-
-void Gui::skipHeader(Where &current)
-{
-  int numLines = ldrawFile.size(current.modelName);
-  for ( ; current.lineNumber < numLines; current.lineNumber++) {
-    QString line = gui->readLine(current);
-    int p;
-    for (p = 0; p < line.size(); ++p) {
-      if (line[p] != ' ') {
-        break;
-      }
-    }
-    if (line[p] >= '1' && line[p] <= '5') {
-      if (current.lineNumber == 0) {
-        QString empty = "0 ";
-        gui->insertLine(current,empty,NULL);
-      } else if (current > 0) {
-        --current;
-      }        
-      break;
-    } else if ( ! isHeader(line)) {
-      if (current.lineNumber != 0) {
-        --current;
-        break;
-      }
-    }
-  }
-}
-
 int Gui::findPage(
   LGraphicsView  *view,
   QGraphicsScene *scene,
@@ -924,7 +852,7 @@ int Gui::findPage(
   Where       saveCurrent = current;
   Where       stepGroupCurrent;
   int         saveStepNumber = 1;
-  int         saveStepPageNum = stepPageNum;
+              saveStepPageNum = stepPageNum;
 
   Meta        tmpMeta;
   Meta        saveMeta = meta;
@@ -959,6 +887,8 @@ int Gui::findPage(
         line = line.mid(1);
       }
     }
+    
+    QByteArray Line = line.toAscii();
 
     switch (line.toAscii()[0]) {
       case '1':
@@ -979,6 +909,7 @@ int Gui::findPage(
             tmpMeta.submodelStack << tos;
             Where current2(token[token.size()-1],0);
             findPage(view,scene,pageNum,line,current2,isMirrored,tmpMeta);
+            saveStepPageNum = stepPageNum;
           }
         }
         if (partsAdded++ == 0) {
@@ -1158,6 +1089,10 @@ int Gui::findPage(
             }
           break;
           
+          case IncludeRc:
+            include(meta);
+          break;
+          
           default:
           break;
         } // switch
@@ -1176,4 +1111,122 @@ int Gui::findPage(
   saveCurrent.modelName.clear();
   saveCsiParts.clear();
   return 0;
+}
+
+void Gui::countPages()
+{
+  if (maxPages < 1) {
+    statusBarMsg("Counting");
+    Where       current(ldrawFile.topLevelFile(),0);
+    int savedDpn   = displayPageNum;
+    displayPageNum = 1 << 31;
+    maxPages       = 1;
+    Meta meta;
+    QString empty;
+    stepPageNum = 1;
+    findPage(KpageView,KpageScene,maxPages,empty,current,false,meta);
+    maxPages--;
+    if (displayPageNum > maxPages) {
+      displayPageNum = maxPages;
+    } else {
+      displayPageNum = savedDpn;
+    }
+    QString string = QString("%1 of %2") .arg(displayPageNum) .arg(maxPages);
+    setPageLineEdit->setText(string);
+    statusBarMsg("");
+  }
+}         
+
+void Gui::drawPage(
+  LGraphicsView  *view,
+  QGraphicsScene *scene)
+{
+
+  QApplication::setOverrideCursor(Qt::WaitCursor);
+  
+  ldrawFile.unrendered();
+
+  Where       current(ldrawFile.topLevelFile(),0);
+  maxPages = 1;
+  stepPageNum = 1;
+  Meta meta;
+  page.meta = meta;
+  QString empty;
+  findPage(view,scene,maxPages,empty,current,false,meta);
+  maxPages--;  
+
+  QString string = QString("%1 of %2") .arg(displayPageNum) .arg(maxPages);
+  setPageLineEdit->setText(string);
+
+  QApplication::restoreOverrideCursor();
+
+}
+
+void Gui::skipHeader(Where &current)
+{
+  int numLines = ldrawFile.size(current.modelName);
+  for ( ; current.lineNumber < numLines; current.lineNumber++) {
+    QString line = gui->readLine(current);
+    int p;
+    for (p = 0; p < line.size(); ++p) {
+      if (line[p] != ' ') {
+        break;
+      }
+    }
+    if (line[p] >= '1' && line[p] <= '5') {
+      if (current.lineNumber == 0) {
+        QString empty = "0 ";
+        gui->insertLine(current,empty,NULL);
+      } else if (current > 0) {
+        --current;
+      }        
+      break;
+    } else if ( ! isHeader(line)) {
+      if (current.lineNumber != 0) {
+        --current;
+        break;
+      }
+    }
+  }
+}
+
+void Gui::include(Meta &meta)
+{
+  QString fileName = meta.LPub.include.value();
+  if (ldrawFile.contains(fileName)) {
+    int numLines = ldrawFile.size(fileName);
+
+    Where current(fileName,0);
+    for (; current < numLines; current++) {
+      QString line = ldrawFile.readLine(fileName,current.lineNumber);
+      meta.parse(line,current);
+    }
+  } else {
+    QFileInfo fileInfo(fileName);
+    if (fileInfo.exists()) {
+      QFile file(fileName);
+      if ( ! file.open(QFile::ReadOnly | QFile::Text)) {
+        QMessageBox::warning(NULL, 
+                             QMessageBox::tr(LPUB),
+                             QMessageBox::tr("Cannot read file %1:\n%2.")
+                             .arg(fileName)
+                             .arg(file.errorString()));
+        return;
+      }
+
+      /* Read it in the first time to put into fileList in order of 
+         appearance */
+
+      QTextStream in(&file);
+      QStringList contents;
+      Where       current(fileName,0);
+
+      while ( ! in.atEnd()) {
+        QString line = in.readLine(0);
+        meta.parse(line,current);
+        ++current;
+      }
+      file.close();
+    }
+  }
 }
