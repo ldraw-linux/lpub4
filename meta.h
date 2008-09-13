@@ -67,6 +67,10 @@ enum Rc {
          CalloutPointerRc,
          CalloutDividerRc,
          CalloutEndRc,             
+         
+         InsertRc,
+         InsertPageRc,
+         InsertCoverPageRc,
 
          ClearRc,
          BufferStoreRc,
@@ -98,10 +102,6 @@ enum Rc {
          SynthEndRc,
 
          ResolutionRc,
-         
-         InsertRc,
-         InsertPageRc,
-         InsertCoverPageRc,
          
          IncludeRc,
 

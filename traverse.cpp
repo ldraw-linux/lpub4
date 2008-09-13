@@ -959,7 +959,6 @@ int Gui::findPage(
                 saveStepNumber = stepNumber;
                 saveMeta       = stepGroupMeta;
                 saveBfx        = bfx;
-                saveStepPageNum = stepPageNum;
               } else if (pageNum == displayPageNum) {
                 csiParts.clear();
                 stepPageNum = saveStepPageNum;
@@ -970,7 +969,7 @@ int Gui::findPage(
                 saveCsiParts.clear();
               }
               ++pageNum;
-              ++stepPageNum;
+              saveStepPageNum = ++stepPageNum;
             }
           break;
 

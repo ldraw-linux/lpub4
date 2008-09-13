@@ -47,6 +47,8 @@ enum ScanMask {
   StepGroupEndMask = (1 << StepGroupEndRc),
 
   StepGroupMask = StepGroupBeginMask|StepGroupDividerMask|StepGroupEndMask,
+
+  PageMask = (1 << InsertPageRc) | (1 << InsertCoverPageRc)
 };
 
 class StepGroup;
@@ -64,6 +66,9 @@ public:
 
   void addNextMultiStep(       const Where &topOfSteps, const Where &bottomOfSteps);
   void addPrevMultiStep(       const Where &topOfSteps, const Where &bottomOfSteps); 
+  
+  void movePageToEndOfStepGroup(const Where &topOfSteps);
+  void movePageToBeginOfStepGroup(const Where &topOfSteps);
 
   int  removeFirstStep(        const Where &topOfSteps);
   int  removeLastStep(         const Where &topOfSteps, const Where &lastStep);
@@ -74,8 +79,8 @@ public:
   void addDivider(             PlacementType, const Where &, RcMeta *divider);
   void deleteDivider(          PlacementType parentRelativeType, const Where &divider);
 
-  void MetaItem::addToNext(    PlacementType parentRelativeType, const Where &topOfStep);
-  void MetaItem::addToPrev(    PlacementType parentRelativeType, const Where &topOfStep);
+  void addToNext(    PlacementType parentRelativeType, const Where &topOfStep);
+  void addToPrev(    PlacementType parentRelativeType, const Where &topOfStep);
 
   void calloutAddToPrev(       const Where &);
   void calloutAddToNext(       const Where &);
@@ -95,7 +100,7 @@ public:
 
   void changeAlloc(     const Where &, 
                         const Where &, 
-				                AllocMeta   &,
+			AllocMeta   &,
                         int   append = 1);
                         
   void changeBool(      const Where &, 

@@ -162,6 +162,7 @@ void MetaItem::addNextMultiStep(
   // STEP     PART STEP END
 
   Where walk = bottomOfSteps + 1;
+  Where finalTopOfSteps = topOfSteps;
   rc1 = scanForward(walk,StepMask|StepGroupMask);
   Where end;
   if (rc1 == StepGroupEndRc) {                            // END
@@ -194,14 +195,69 @@ void MetaItem::addNextMultiStep(
     walk = topOfSteps + 1;
     rc1 = scanForward(walk,StepMask|StepGroupMask);
     if (rc1 == StepGroupEndRc) {
+      finalTopOfSteps = walk+1;
       appendMeta(walk,stepGroupBegin);
     } else {
       walk = topOfSteps;
       scanPastGlobal(walk);
+      finalTopOfSteps = walk+1;
       appendMeta(walk,stepGroupBegin);
     }
   }
+  movePageToEndOfStepGroup(finalTopOfSteps);
   endMacro();
+}
+
+void MetaItem::movePageToEndOfStepGroup(
+  const Where &topOfSteps)
+{
+  Where bottomOfSteps, topOfPage, bottomOfPage;
+  while (1) {
+    bottomOfSteps = topOfSteps;
+  
+    // Find bottom of step group
+  
+    scanForward(bottomOfSteps,StepGroupEndMask);
+  
+    Meta meta;
+  
+    // find top of page
+  
+    topOfPage = bottomOfSteps;
+    for (topOfPage = bottomOfSteps - 1; topOfPage >= topOfSteps.lineNumber; topOfPage--) {
+      QString line = gui->readLine(topOfPage);
+      Rc rc = meta.parse(line,topOfPage);
+      if (rc == StepGroupBeginRc) {
+        return;
+      }
+      if (rc == InsertPageRc || rc == InsertCoverPageRc) {
+        break;
+      }
+    }
+  
+    // find bottom of page
+
+    for (bottomOfPage = topOfPage + 1; bottomOfPage < bottomOfSteps.lineNumber; bottomOfPage++) {
+      QString line = gui->readLine(bottomOfPage);
+      Rc rc = meta.parse(line,bottomOfPage);
+      if (rc == StepRc || rc == RotStepRc) {
+        break;
+      }
+    }
+  
+    Where walk = bottomOfSteps;
+  
+    // copy page to after step group
+      
+    for (Where walk2 = topOfPage; walk2 <= bottomOfPage.lineNumber; walk2++) {
+      QString line = gui->readLine(walk2);
+      appendMeta(walk++,line);
+    }
+      
+    for (Where walk2 = topOfPage; walk2 <= bottomOfPage.lineNumber; walk2++) {
+      deleteMeta(topOfPage);
+    }
+  }
 }
 
 //                      TOS
@@ -377,7 +433,7 @@ void MetaItem::addPrevMultiStep(
   
   Where prevStep = topOfSteps - 1;
   scanBackward(prevStep,StepMask);
-
+  
   if (begin.lineNumber) {
     deleteMeta(begin);
     
@@ -387,10 +443,67 @@ void MetaItem::addPrevMultiStep(
   }
   
   appendMeta(prevStep,stepGroupBegin);
+  ++prevStep;
+  movePageToBeginOfStepGroup(prevStep);
 
 //  gui->displayPageNum--;
-  if ( ! firstChange) {
-    endMacro();
+  endMacro();
+}
+
+void MetaItem::movePageToBeginOfStepGroup(
+  const Where &topOfStepsIn)
+{
+  Where topOfSteps, bottomOfSteps, topOfPage, bottomOfPage;
+  topOfSteps = topOfStepsIn;
+  while (1) {
+    bottomOfSteps = topOfSteps;
+  
+    // Find bottom of step group
+  
+    scanForward(bottomOfSteps,StepGroupEndMask);
+  
+    Meta meta;
+  
+    // find top of page
+  
+    for (topOfPage = topOfSteps + 1; topOfPage <= bottomOfSteps.lineNumber; topOfPage++) {
+      QString line = gui->readLine(topOfPage);
+      QByteArray Line = line.toAscii();
+      Rc rc = meta.parse(line,topOfPage);
+      if (rc == StepGroupEndRc) {
+        return;
+      }
+      if (rc == InsertPageRc || rc == InsertCoverPageRc) {
+        break;
+      }
+    }
+  
+    // find bottom of page
+
+    for (bottomOfPage = topOfPage + 1; bottomOfPage < bottomOfSteps.lineNumber; bottomOfPage++) {
+      QString line = gui->readLine(bottomOfPage);
+      Rc rc = meta.parse(line,bottomOfPage);
+      if (rc == StepRc || rc == RotStepRc) {
+        break;
+      }
+    }
+  
+    Where walk = bottomOfSteps;
+  
+    // copy page to before step group
+    
+    for (Where walk2 = topOfPage; walk2 <= bottomOfPage.lineNumber; walk2.lineNumber += 2) {
+      QString line = gui->readLine(walk2);
+      insertMeta(topOfSteps,line);
+      ++topOfSteps;
+      ++bottomOfSteps;
+      ++topOfPage;
+      ++bottomOfPage;
+    }
+      
+    for (Where walk2 = topOfPage; walk2 <= bottomOfPage.lineNumber; walk2++) {
+      deleteMeta(topOfPage);
+    }
   }
 }
 
@@ -1032,7 +1145,7 @@ Rc  MetaItem::scanForward(
   Where &here,
   int    mask,
   bool  &partsAdded)
-{
+{  
   Meta tmpMeta;
   int  numLines  = gui->subFileSize(here.modelName);
   partsAdded = false;
@@ -1041,6 +1154,7 @@ Rc  MetaItem::scanForward(
       
   for ( ; here < numLines; here++) {
     QString line = gui->readLine(here);
+    QByteArray Line = line.toAscii();
     QStringList tokens;
 
     split(line,tokens);
@@ -1079,6 +1193,8 @@ Rc MetaItem::scanBackward(
   bool  &partsAdded)
 {
   Meta tmpMeta;
+  
+  partsAdded = false;
 
   for ( ; here >= 0; here--) {
 
@@ -1097,7 +1213,6 @@ Rc MetaItem::scanBackward(
       partsAdded = true;
     } else {
       Rc rc = tmpMeta.parse(line,here);
-      
       if (rc == StepRc || rc == RotStepRc) {
         if (((mask >> rc) & 1) && partsAdded) {
           return rc;
