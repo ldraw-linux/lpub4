@@ -85,11 +85,8 @@ class NumberPlacementItem : public QGraphicsTextItem, public MetaItem, public Pl
 public:
   PlacementType  relativeType;
   PlacementType  parentRelativeType;
-  Meta          *meta;
-  FontMeta      *font;
-  StringMeta    *color;
-  MarginsMeta   *margin;
-  PlacementMeta *placement;
+  FontMeta       font;
+  StringMeta     color;
   int            value;
   QString        name;
 
@@ -101,7 +98,6 @@ public:
   NumberPlacementItem(
     PlacementType  relativeType,
     PlacementType  parentRelativeType,
-    Meta          *meta,
     NumberPlacementMeta    &number,
     const char    *format,
     int            _value,
@@ -112,7 +108,6 @@ public:
   void setAttributes(
     PlacementType  relativeType,
     PlacementType  parentRelativeType,
-    Meta          *meta,
     NumberPlacementMeta &number,
     const char    *format,
     int            _value,
@@ -137,13 +132,13 @@ class PageNumberItem : public NumberPlacementItem
 public:
   PageNumberItem(
     Page          *page,
-    Meta          *meta,
     NumberPlacementMeta &number,
     const char    *format,
     int            _value,
     QGraphicsItem *parent);
 protected:
   void contextMenuEvent(QGraphicsSceneContextMenuEvent *event);
+  virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
 };
 
 class StepNumberItem : public NumberPlacementItem
@@ -153,12 +148,13 @@ public:
   StepNumberItem(
     Step          *step,
     PlacementType  parentRelativeType,
-    Meta          *meta,
     NumberPlacementMeta &number,
     const char    *format,
     int            _value,
     QGraphicsItem *parent,
     QString        name = "Step Number ");
+protected:
   void contextMenuEvent(QGraphicsSceneContextMenuEvent *event);
+  virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
 };
 #endif

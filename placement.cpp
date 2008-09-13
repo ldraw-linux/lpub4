@@ -208,6 +208,8 @@ void Placement::placeRelative(
   Placement *them)
 {
   int disp[2];
+  
+  volatile PlacementData pld = them->placement.value();
 
   disp[XX] = (int) (size[XX] * them->placement.value().offsets[XX]);
   disp[YY] = (int) (size[YY] * them->placement.value().offsets[YY]);
@@ -226,29 +228,29 @@ void Placement::placeRelative(
       case TopLeft:
       case Left:
       case BottomLeft:
-        them->offset[XX] = offset[XX] - them->size[XX] - lmargin[XX];
+        them->loc[XX] = loc[XX] - them->size[XX] - lmargin[XX];
       break;
       case TopRight:
       case Right:
       case BottomRight:
-        them->offset[XX] = offset[XX] + size[XX] + lmargin[XX];
+        them->loc[XX] = loc[XX] + size[XX] + lmargin[XX];
       break;
       case Top:
       case Bottom:
-        them->offset[XX] = offset[XX];
+        them->loc[XX] = loc[XX];
         switch (placementData.justification) {
           case Center:
-            them->offset[XX] += (size[XX]-them->size[XX])/2;
+            them->loc[XX] += (size[XX]-them->size[XX])/2;
           break;
           case Right:
-            them->offset[XX] += size[XX]-them->size[XX];
+            them->loc[XX] += size[XX]-them->size[XX];
           break;
           default:
           break;
         }
       break;
       case Center:
-        them->offset[XX] = offset[XX];
+        them->loc[XX] = loc[XX];
       break;
       default:
       break;
@@ -257,22 +259,22 @@ void Placement::placeRelative(
       case TopLeft:
       case Top:
       case TopRight:
-        them->offset[YY] = offset[YY] - them->size[YY] - lmargin[YY];
+        them->loc[YY] = loc[YY] - them->size[YY] - lmargin[YY];
       break;
       case BottomLeft:
       case Bottom:
       case BottomRight:
-        them->offset[YY] = offset[YY] + size[YY] + lmargin[YY];
+        them->loc[YY] = loc[YY] + size[YY] + lmargin[YY];
       break;
       case Left:
       case Right:
-        them->offset[YY] = offset[YY];
+        them->loc[YY] = loc[YY];
         switch(placementData.justification) {
           case Center:
-            them->offset[YY] += (size[YY]-them->size[YY])/2;
+            them->loc[YY] += (size[YY]-them->size[YY])/2;
           break;
           case Bottom:
-            them->offset[YY] += size[YY]-them->size[YY];
+            them->loc[YY] += size[YY]-them->size[YY];
           break;
           default:
           break;
@@ -286,19 +288,19 @@ void Placement::placeRelative(
       case TopLeft:
       case Left:
       case BottomLeft:
-        them->offset[XX] = offset[XX] + lmargin[XX];
+        them->loc[XX] = loc[XX] + lmargin[XX];
       break;
       case Top:
       case Bottom:
-        them->offset[XX] = offset[XX] + (size[XX]-them->size[XX])/2;
+        them->loc[XX] = loc[XX] + (size[XX]-them->size[XX])/2;
       break;
       case TopRight:
       case Right:
       case BottomRight:
-        them->offset[XX] = offset[XX] + size[XX] - them->size[XX] - lmargin[XX];
+        them->loc[XX] = loc[XX] + size[XX] - them->size[XX] - lmargin[XX];
       break;
       case Center:
-        them->offset[XX] = offset[XX] + (size[XX]-them->size[XX])/2;
+        them->loc[XX] = loc[XX] + (size[XX]-them->size[XX])/2;
       break;
       default:
       break;
@@ -308,26 +310,26 @@ void Placement::placeRelative(
       case TopLeft:
       case Top:
       case TopRight:
-        them->offset[YY] = offset[YY] + lmargin[YY];
+        them->loc[YY] = loc[YY] + lmargin[YY];
       break;
       case Left:
       case Right:
-        them->offset[YY] = offset[YY] + (size[YY] - them->size[YY])/2;
+        them->loc[YY] = loc[YY] + (size[YY] - them->size[YY])/2;
       break;
       case BottomLeft:
       case Bottom:
       case BottomRight:
-        them->offset[YY] = offset[YY] + size[YY] - them->size[YY] - lmargin[YY];
+        them->loc[YY] = loc[YY] + size[YY] - them->size[YY] - lmargin[YY];
       break;
       case Center:
-        them->offset[YY] = offset[YY] + (size[YY] - them->size[YY])/2;
+        them->loc[YY] = loc[YY] + (size[YY] - them->size[YY])/2;
       break;
       default:
       break;
     }
   }
-  them->offset[XX] += disp[XX];
-  them->offset[YY] += disp[YY];
+  them->loc[XX] += disp[XX];
+  them->loc[YY] += disp[YY];
 }
 
 void Placement::placeRelative(
@@ -350,29 +352,29 @@ void Placement::placeRelative(
       case TopLeft:
       case Left:
       case BottomLeft:
-        them->offset[XX] = offset[XX] - them->size[XX] - lmargin[XX];
+        them->loc[XX] = loc[XX] - them->size[XX] - lmargin[XX];
       break;
       case TopRight:
       case Right:
       case BottomRight:
-        them->offset[XX] = offset[XX] + size[XX] + lmargin[XX];
+        them->loc[XX] = loc[XX] + size[XX] + lmargin[XX];
       break;
       case Top:
       case Bottom:
-        them->offset[XX] = offset[XX];
+        them->loc[XX] = loc[XX];
         switch (placementData.justification) {
           case Center:
-            them->offset[XX] += (size[XX]-them->size[XX])/2;
+            them->loc[XX] += (size[XX]-them->size[XX])/2;
           break;
           case Right:
-            them->offset[XX] += size[XX]-them->size[XX];
+            them->loc[XX] += size[XX]-them->size[XX];
           break;
           default:
           break;
         }
       break;
       case Center:
-        them->offset[XX] = offset[XX];
+        them->loc[XX] = loc[XX];
       break;
       default:
       break;
@@ -381,22 +383,22 @@ void Placement::placeRelative(
       case TopLeft:
       case Top:
       case TopRight:
-        them->offset[YY] = offset[YY] - them->size[YY] - lmargin[YY];
+        them->loc[YY] = loc[YY] - them->size[YY] - lmargin[YY];
       break;
       case BottomLeft:
       case Bottom:
       case BottomRight:
-        them->offset[YY] = offset[YY] + size[YY] + lmargin[YY];
+        them->loc[YY] = loc[YY] + size[YY] + lmargin[YY];
       break;
       case Left:
       case Right:
-        them->offset[YY] = offset[YY];
+        them->loc[YY] = loc[YY];
         switch(placementData.justification) {
           case Center:
-            them->offset[YY] += (size[YY]-them->size[YY])/2;
+            them->loc[YY] += (size[YY]-them->size[YY])/2;
           break;
           case Bottom:
-            them->offset[YY] += size[YY]-them->size[YY];
+            them->loc[YY] += size[YY]-them->size[YY];
           break;
           default:
           break;
@@ -410,19 +412,19 @@ void Placement::placeRelative(
       case TopLeft:
       case Left:
       case BottomLeft:
-        them->offset[XX] = offset[XX] + lmargin[XX];
+        them->loc[XX] = loc[XX] + lmargin[XX];
       break;
       case Top:
       case Bottom:
-        them->offset[XX] = offset[XX] + (size[XX]-them->size[XX])/2;
+        them->loc[XX] = loc[XX] + (size[XX]-them->size[XX])/2;
       break;
       case TopRight:
       case Right:
       case BottomRight:
-        them->offset[XX] = offset[XX] + size[XX] - them->size[XX] - lmargin[XX];
+        them->loc[XX] = loc[XX] + size[XX] - them->size[XX] - lmargin[XX];
       break;
       case Center:
-        them->offset[XX] = offset[XX] + (size[XX]-them->size[XX])/2;
+        them->loc[XX] = loc[XX] + (size[XX]-them->size[XX])/2;
       break;
       default:
       break;
@@ -432,19 +434,19 @@ void Placement::placeRelative(
       case TopLeft:
       case Top:
       case TopRight:
-        them->offset[YY] = offset[YY] + lmargin[YY];
+        them->loc[YY] = loc[YY] + lmargin[YY];
       break;
       case Left:
       case Right:
-        them->offset[YY] = offset[YY] + (size[YY] - them->size[YY])/2;
+        them->loc[YY] = loc[YY] + (size[YY] - them->size[YY])/2;
       break;
       case BottomLeft:
       case Bottom:
       case BottomRight:
-        them->offset[YY] = offset[YY] + size[YY] - them->size[YY] - lmargin[YY];
+        them->loc[YY] = loc[YY] + size[YY] - them->size[YY] - lmargin[YY];
       break;
       case Center:
-        them->offset[YY] = offset[YY] + (size[YY]-them->size[YY])/2;
+        them->loc[YY] = loc[YY] + (size[YY]-them->size[YY])/2;
       break;
       default:
       break;
@@ -454,8 +456,8 @@ void Placement::placeRelative(
 
   disp[XX] = (int) (size[XX] * them->placement.value().offsets[XX]);
   disp[YY] = (int) (size[YY] * them->placement.value().offsets[YY]);
-  them->offset[XX] += disp[XX];
-  them->offset[YY] += disp[YY];
+  them->loc[XX] += disp[XX];
+  them->loc[YY] += disp[YY];
 }
 
 void Placement::justifyX(
@@ -467,13 +469,13 @@ void Placement::justifyX(
     case Bottom:
       switch (placement.value().justification) {
         case Left:
-          offset[XX] = origin;
+          loc[XX] = origin;
         break;
         case Center:
-          offset[XX] = origin + (height - size[XX])/2;
+          loc[XX] = origin + (height - size[XX])/2;
         break;
         case Right:
-          offset[XX] = origin + height - size[XX];
+          loc[XX] = origin + height - size[XX];
         break;
         default:
         break;
@@ -493,13 +495,13 @@ void Placement::justifyY(
     case Right:
       switch (placement.value().justification) {
         case Top:
-          offset[YY] = origin;
+          loc[YY] = origin;
         break;
         case Center:
-          offset[YY] = origin + (height - size[YY])/2;
+          loc[YY] = origin + (height - size[YY])/2;
         break;
         case Bottom:
-          offset[YY] = origin + height - size[YY];
+          loc[YY] = origin + height - size[YY];
         break;
         default:
         break;
@@ -509,4 +511,97 @@ void Placement::justifyY(
     break;
   }
 }
+
+#if 0
+
+void PlacementPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
+{     
+  QGraphicsItem::mousePressEvent(event);
+  positionChanged = false;
+  position = pos();
+} 
+  
+void PlacementPixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
+{ 
+  QGraphicsItem::mouseMoveEvent(event);
+  if (isSelected() && (flags() & QGraphicsItem::ItemIsMovable)) {
+    positionChanged = true;
+  }   
+}
+
+void PlacementPixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
+{
+  QGraphicsItem::mouseReleaseEvent(event);
+
+  if (isSelected() && (flags() & QGraphicsItem::ItemIsMovable)) {
+
+    QPointF newPosition;
+
+    // back annotate the movement of the PLI into the LDraw file.
+    newPosition = pos() - position;
+    
+    if (newPosition.x() || newPosition.y()) {
+      positionChanged = true;
+
+      PlacementData placementData = placement.value();
+      
+      float offset[2] = { newPosition.x()/relativeToWidth, newPosition.y()/relativeToHeight };
+      
+      placementData.offsets[0] += offset[0];
+      placementData.offsets[1] += offset[1];
+
+      placement.setValue(placementData);
+
+      changePlacementOffset(&placement,true,false);
+    }
+  }
+}
+
+#endif
+
+void InsertPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
+{     
+  QGraphicsItem::mousePressEvent(event);
+  positionChanged = false;
+  position = pos();
+} 
+  
+void InsertPixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
+{ 
+  QGraphicsItem::mouseMoveEvent(event);
+  if (isSelected() && (flags() & QGraphicsItem::ItemIsMovable)) {
+    positionChanged = true;
+  }   
+}
+
+void InsertPixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
+{
+  QGraphicsItem::mouseReleaseEvent(event);
+
+  if (isSelected() && (flags() & QGraphicsItem::ItemIsMovable)) {
+
+    QPointF newPosition;
+
+    // back annotate the movement of the PLI into the LDraw file.
+    newPosition = pos() - position;
+    
+    if (newPosition.x() || newPosition.y()) {
+      positionChanged = true;
+
+      InsertData insertData = insertMeta.value();
+      
+      volatile float offset[2] = { newPosition.x()/relativeToWidth, newPosition.y()/relativeToHeight };
+      
+      insertData.offsets[0] += offset[0];
+      insertData.offsets[1] += offset[1];
+
+      insertMeta.setValue(insertData);
+
+      changeInsertOffset(&insertMeta);
+    }
+  }
+}
+
+
+
 

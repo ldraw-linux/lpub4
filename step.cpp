@@ -74,7 +74,6 @@ Step::Step(
 
   relativeType            = StepType;
   csiPixmap.relativeType  = CsiType;
-  csiPixmap.pixmap        = NULL;
   stepNumber.relativeType = StepNumberType;
 
   if (calledOut) {
@@ -122,9 +121,6 @@ Step::~Step() {
     delete callout;
   }
   list.clear();
-  if (csiPixmap.pixmap) {
-    delete csiPixmap.pixmap;
-  }
   pli.clear();
 }
 
@@ -692,10 +688,10 @@ void Step::placeitVert(
   /* Now place the components in pixel units */
   /*******************************************/
 
-  csiPixmap.offset[y] = origins[TblCsi] + (rows[TblCsi] - csiPixmap.size[y])/2;
+  csiPixmap.loc[y] = origins[TblCsi] + (rows[TblCsi] - csiPixmap.size[y])/2;
 
-  pli.offset[y] = origins[pli.tbl[y]];
-  stepNumber.offset[y]  = origins[stepNumber.tbl[y]];
+  pli.loc[y] = origins[pli.tbl[y]];
+  stepNumber.loc[y]  = origins[stepNumber.tbl[y]];
 
   switch (y) {
     case XX:
@@ -719,7 +715,7 @@ void Step::placeitVert(
       case CsiType:
       case PartsListType:
       case StepNumberType:
-        callout->offset[y] = origins[callout->tbl[y]];
+        callout->loc[y] = origins[callout->tbl[y]];
         if (y == XX) {
           callout->justifyX(origins[callout->tbl[y]],
                                rows[callout->tbl[y]]);
@@ -951,9 +947,9 @@ void Step::placeitHoriz(
   /* Now place the components in pixel units */
   /*******************************************/
 
-  csiPixmap.offset[x] = origins[TblCsi] + (rows[TblCsi] - csiPixmap.size[x])/2;
-  pli.offset[x] = origins[pli.tbl[x]];
-  stepNumber.offset[x]  = origins[stepNumber.tbl[x]];
+  csiPixmap.loc[x] = origins[TblCsi] + (rows[TblCsi] - csiPixmap.size[x])/2;
+  pli.loc[x] = origins[pli.tbl[x]];
+  stepNumber.loc[x]  = origins[stepNumber.tbl[x]];
 
   switch (x) {
     case XX:
@@ -977,7 +973,7 @@ void Step::placeitHoriz(
       case CsiType:
       case PartsListType:
       case StepNumberType:
-        callout->offset[x] = origins[callout->tbl[x]];
+        callout->loc[x] = origins[callout->tbl[x]];
         if (x == XX) {
           callout->justifyX(origins[callout->tbl[x]],
                              rows[callout->tbl[x]]);
@@ -1004,8 +1000,8 @@ void Step::addGraphicsItems(
   PlacementType   parentRelativeType,
   QGraphicsItem  *parent)
 {
-  offsetX += offset[XX];
-  offsetY += offset[YY];
+  offsetX += loc[XX];
+  offsetY += loc[YY];
 
   if (csiPixmap.pixmap) {
     CsiItem *csiItem = new CsiItem(this,
@@ -1014,13 +1010,14 @@ void Step::addGraphicsItems(
                                    submodelLevel,
                                    parent,
                                    parentRelativeType);
-    csiItem->setPos(offsetX + csiPixmap.offset[XX],
-                    offsetY + csiPixmap.offset[YY]);
+    csiItem->setPos(offsetX + csiPixmap.loc[XX],
+                    offsetY + csiPixmap.loc[YY]);
   }
+  
   if (pli.tsize()) {
     pli.addPli(submodelLevel, parent);
-    pli.setPos(offsetX + pli.offset[XX],
-               offsetY + pli.offset[YY]);
+    pli.setPos(offsetX + pli.loc[XX],
+               offsetY + pli.loc[YY]);
   }
 
   if (stepNumber.number > 0) {
@@ -1028,28 +1025,27 @@ void Step::addGraphicsItems(
     if (calledOut) {
       sn = new StepNumberItem(this,
                               parentRelativeType,
-                              meta,meta->LPub.callout.stepNum,
+                              meta->LPub.callout.stepNum,
                               "%d", 
                               stepNumber.number,
                               parent);
     } else {
       sn = new StepNumberItem(this,
                               parentRelativeType,
-                              meta,
                               meta->LPub.multiStep.stepNum,
                               "%d", 
                               stepNumber.number,
                               parent);
     }
-    sn->setPos(offsetX + stepNumber.offset[XX],
-               offsetY + stepNumber.offset[YY]);
+    sn->setPos(offsetX + stepNumber.loc[XX],
+               offsetY + stepNumber.loc[YY]);
   }
 
   for (int i = 0; i < list.size(); i++) {
     Callout *callout = list[i];
     PlacementData placementData = callout->placement.value();
-    QRect rect(csiPixmap.offset[XX],
-               csiPixmap.offset[YY],
+    QRect rect(csiPixmap.loc[XX],
+               csiPixmap.loc[YY],
                csiPixmap.size[XX],
                csiPixmap.size[YY]);
 
@@ -1060,11 +1056,11 @@ void Step::addGraphicsItems(
         callout->addGraphicsItems(offsetX,offsetY,rect,parent);
         for (int i = 0; i < callout->pointerList.size(); i++) {
           Pointer *pointer = callout->pointerList[i];
-          callout->addGraphicsPointerItem(offsetX+callout->offset[XX],
-                                          offsetY+callout->offset[YY],
+          callout->addGraphicsPointerItem(offsetX+callout->loc[XX],
+                                          offsetY+callout->loc[YY],
                                           offsetX,
                                           offsetY,
-                                          csiPixmap.offset,
+                                          csiPixmap.loc,
                                           csiPixmap.size,
                                           pointer,
                                           callout->background);
@@ -1079,7 +1075,7 @@ void Step::addGraphicsItems(
                                           0,
                                           0,
                                           0,
-                                          csiPixmap.offset,
+                                          csiPixmap.loc,
                                           csiPixmap.size,
                                           pointer,
                                           callout->background);
@@ -1145,8 +1141,8 @@ void Step::placeInside()
       default:
       break;
     }
-    callout->offset[XX] += relativeToSize[XX]*placementData.offsets[XX];
-    callout->offset[YY] += relativeToSize[YY]*placementData.offsets[YY];
+    callout->loc[XX] += relativeToSize[XX]*placementData.offsets[XX];
+    callout->loc[YY] += relativeToSize[YY]*placementData.offsets[YY];
   }
 }
 
@@ -1199,7 +1195,7 @@ void Step::sizeitFreeform(
     if (callout->meta.LPub.callout.freeform.value().mode) {
       if (callout->meta.LPub.callout.freeform.value().justification == Left ||
           callout->meta.LPub.callout.freeform.value().justification == Top) {
-        callout->offset[xx] = callout->size[xx];
+        callout->loc[xx] = callout->size[xx];
       }
     } else {
       callout->sizeIt();
@@ -1222,7 +1218,7 @@ void Step::sizeitFreeform(
 	    placementData.relativeTo = PageType;
 	    csiPixmap.placement.setValue(placementData);
       csiPixmap.relativeTo(this);
-      offsetX = csiPixmap.offset[xx];
+      offsetX = csiPixmap.loc[xx];
       sizeX   = csiPixmap.size[yy];
     break;
     case PartsListType:
@@ -1230,7 +1226,7 @@ void Step::sizeitFreeform(
 	    placementData.relativeTo = PageType;
 	    pli.placement.setValue(placementData);
       pli.relativeTo(this);
-      offsetX = pli.offset[xx];
+      offsetX = pli.loc[xx];
       sizeX   = pli.size[yy];
     break;
     case StepNumberType:
@@ -1238,7 +1234,7 @@ void Step::sizeitFreeform(
 	    placementData.relativeTo = PageType;
 	    stepNumber.placement.setValue(placementData);
       stepNumber.relativeTo(this);
-      offsetX = stepNumber.offset[xx];
+      offsetX = stepNumber.loc[xx];
       sizeX   = stepNumber.size[xx];
     break;
   }
@@ -1259,43 +1255,43 @@ void Step::sizeitFreeform(
     int min = 500000;
     int max = 0;
 
-    if (csiPixmap.offset[dim] < min) {
-      min = csiPixmap.offset[dim];
+    if (csiPixmap.loc[dim] < min) {
+      min = csiPixmap.loc[dim];
     }
-    if (csiPixmap.offset[dim] + csiPixmap.size[dim] > max) {
-      max = csiPixmap.offset[dim] + csiPixmap.size[dim];
+    if (csiPixmap.loc[dim] + csiPixmap.size[dim] > max) {
+      max = csiPixmap.loc[dim] + csiPixmap.size[dim];
     }
-    if (pli.offset[dim] < min) {
-      min = pli.offset[dim];
+    if (pli.loc[dim] < min) {
+      min = pli.loc[dim];
     }
-    if (pli.offset[dim] + pli.size[dim] > max) {
-      max = pli.offset[dim] + pli.size[dim];
+    if (pli.loc[dim] + pli.size[dim] > max) {
+      max = pli.loc[dim] + pli.size[dim];
     }
-    if (stepNumber.offset[dim] < min) {
-      min = stepNumber.offset[dim];
+    if (stepNumber.loc[dim] < min) {
+      min = stepNumber.loc[dim];
     }
-    if (stepNumber.offset[dim] + stepNumber.size[dim] > max) {
-      max = stepNumber.offset[dim] + stepNumber.size[dim];
+    if (stepNumber.loc[dim] + stepNumber.size[dim] > max) {
+      max = stepNumber.loc[dim] + stepNumber.size[dim];
     }
 
     for (int i = 0; i < list.size(); i++) {
       Callout *callout = list[i];
-      if (callout->offset[dim] < min) {
-        min = callout->offset[dim];
+      if (callout->loc[dim] < min) {
+        min = callout->loc[dim];
       }
-      if (callout->offset[dim] + callout->size[dim] > max) {
-        max = callout->offset[dim] + callout->size[dim];
+      if (callout->loc[dim] + callout->size[dim] > max) {
+        max = callout->loc[dim] + callout->size[dim];
       }
     }
 
     if (calledOut) {
-      csiPixmap.offset[dim] -= min;
-      pli.offset[dim]        -= min;
-      stepNumber.offset[dim] -= min;
+      csiPixmap.loc[dim] -= min;
+      pli.loc[dim]        -= min;
+      stepNumber.loc[dim] -= min;
 
       for (int i = 0; i < list.size(); i++) {
         Callout *callout = list[i];
-        callout->offset[dim] -= min;
+        callout->loc[dim] -= min;
       }
     }
 
@@ -1309,11 +1305,11 @@ void Step::sizeitFreeform(
 
   /* Now make all things relative to the base */
 
-  csiPixmap.offset[xx]  -= offsetX + sizeX;
-  pli.offset[xx]        -= offsetX + sizeX;
-  stepNumber.offset[xx] -= offsetX + sizeX;
+  csiPixmap.loc[xx]  -= offsetX + sizeX;
+  pli.loc[xx]        -= offsetX + sizeX;
+  stepNumber.loc[xx] -= offsetX + sizeX;
 
   for (int i = 0; i < list.size(); i++) {
-    list[i]->offset[xx] -= offsetX + sizeX;
+    list[i]->loc[xx] -= offsetX + sizeX;
   }
 }

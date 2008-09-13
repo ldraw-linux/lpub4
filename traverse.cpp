@@ -742,10 +742,10 @@ int Gui::drawPage(
               }
 
               int rc = step->createCsi(
-                addLine,
-                csiParts,
-                step->csiPixmap.pixmap,
-                steps->meta);
+                 addLine,
+                 csiParts,
+                 step->csiPixmap.pixmap,
+                 steps->meta);
 
               statusBar()->showMessage("Processing " + current.modelName);
 
@@ -852,6 +852,7 @@ int Gui::findPage(
   Where       saveCurrent = current;
   Where       stepGroupCurrent;
   int         saveStepNumber = 1;
+              
               saveStepPageNum = stepPageNum;
 
   Meta        tmpMeta;

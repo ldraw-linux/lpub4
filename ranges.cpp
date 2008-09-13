@@ -258,8 +258,8 @@ void Steps::sizeitVert(void)
 
         /* place each range Horizontally */
 
-        range->offset[YY] = 0;
-        range->offset[XX] = size[XX];
+        range->loc[YY] = 0;
+        range->loc[XX] = size[XX];
 
         size[XX] += range->size[XX];
 
@@ -342,8 +342,8 @@ void Steps::sizeitHoriz(void)
 
         /* place each range Horizontally */
 
-        range->offset[XX] = 0;
-        range->offset[YY] = size[YY];
+        range->loc[XX] = 0;
+        range->loc[YY] = size[YY];
 
         size[YY] += range->size[YY];
 
@@ -418,12 +418,12 @@ void Steps::sizeitFreeform(
 
         /* place each range Horizontally */
 
-        range->offset[yy] = 0;
-        range->offset[xx] = size[xx];
+        range->loc[yy] = 0;
+        range->loc[xx] = size[xx];
 
         if (relativeType == StepGroupType) {
           Range *realRange = dynamic_cast<Range *>(range);
-          realRange->offset[xx] += realRange->leftAdjust;
+          realRange->loc[xx] += realRange->leftAdjust;
         }
 
         /* accumulate total width of ranges */
@@ -458,7 +458,7 @@ void Steps::addGraphicsItems(
   QGraphicsItem *parent)
 {
   QGraphicsItem *backDrop;
-  QRectF rect = QRectF(ox + offset[XX], oy + offset[YY],size[XX],size[YY]);
+  QRectF rect = QRectF(ox + loc[XX], oy + loc[YY],size[XX],size[YY]);
   backDrop = new MultiStepRangesBackgroundItem(this,rect,parent,&meta);
 
   AllocEnc allocEnc;
@@ -504,12 +504,12 @@ void Steps::addGraphicsItemsVert(
           rb = parent;
         } else {       
           rb = new MultiStepRangeBackgroundItem(this,range,&meta,
-                    offset_x + offset[XX],
-                    offset_y + offset[YY],
+                    offset_x + loc[XX],
+                    offset_y + loc[YY],
                     parent);
         }
         range->addGraphicsItemsVert(
-          offset_x + offset[XX], offset_y + offset[YY], &meta, relativeType, rb);
+          offset_x + loc[XX], offset_y + loc[YY], &meta, relativeType, rb);
 
         if (list.size() > 1 && i < list.size() - 1) {
           // add divider here
@@ -520,8 +520,8 @@ void Steps::addGraphicsItemsVert(
               DividerItem *divider = new DividerItem(
                               step,
                              &meta,
-                              offset_x + offset[XX] + range->offset[XX] + range->size[XX],
-                              offset_y + offset[YY] + range->offset[YY]);
+                              offset_x + loc[XX] + range->loc[XX] + range->size[XX],
+                              offset_y + loc[YY] + range->loc[YY]);
               divider->setParentItem(parent);
             }
           }
@@ -554,13 +554,13 @@ void Steps::addGraphicsItemsHoriz(
           rb = parent;
         } else {       
           rb = new MultiStepRangeBackgroundItem(this,range,&meta,
-                    offset_x + offset[XX],
-                    offset_y + offset[YY],
+                    offset_x + loc[XX],
+                    offset_y + loc[YY],
                     parent);
         }
 
         range->addGraphicsItemsHoriz(
-          offset_x + offset[XX], offset_y + offset[YY], &meta, relativeType, rb);
+          offset_x + loc[XX], offset_y + loc[YY], &meta, relativeType, rb);
 
         if (list.size() > 1 && i < list.size() - 1) {
           int size = range->list.size();
@@ -571,8 +571,8 @@ void Steps::addGraphicsItemsHoriz(
               DividerItem *divider = new DividerItem(
                          step,
                         &meta,
-                          offset_x + offset[XX] + range->offset[XX],
-                          offset_y + offset[YY] + range->offset[YY] + range->size[YY]);
+                          offset_x + loc[XX] + range->loc[XX],
+                          offset_y + loc[YY] + range->loc[YY] + range->size[YY]);
               divider->setParentItem(parent);
             }
           }

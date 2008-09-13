@@ -199,8 +199,8 @@ void Range::placeitVert(int max)
     if (list[i]->relativeType == StepType) {
       Step *step = dynamic_cast<Step *>(list[i]);
 
-      step->offset[YY] = y;
-      step->offset[XX] = 0;
+      step->loc[YY] = y;
+      step->loc[XX] = 0;
 
       y += step->size[YY] + spacing;
 
@@ -335,8 +335,8 @@ void Range::placeitHoriz(int max)
     if (list[i]->relativeType == StepType) {
       Step *step = dynamic_cast<Step *>(list[i]);
 
-      step->offset[XX] = x;
-      step->offset[YY] = 0;
+      step->loc[XX] = x;
+      step->loc[YY] = 0;
 
       x += step->size[XX] + spacing;
 
@@ -423,21 +423,21 @@ void Range::placeitFreeform(
     if (list[i]->relativeType == StepType) {
       Step *step = dynamic_cast<Step *>(list[i]);
 
-      step->offset[yy] = y;
+      step->loc[yy] = y;
 
       /* Horizontal placement */
 
       switch (justification) {
         case Left:
         case Top:
-          step->offset[xx] = margin.value(xx);
+          step->loc[xx] = margin.value(xx);
         break;
         case Center:
-          step->offset[xx] = size[xx]/2 + margin.value(xx);
+          step->loc[xx] = size[xx]/2 + margin.value(xx);
         break;
         case Right:
         case Bottom:
-          step->offset[xx] = size[xx] + margin.value(xx);
+          step->loc[xx] = size[xx] + margin.value(xx);
         break;
       }
 
@@ -465,7 +465,7 @@ void Range::addGraphicsItemsVert(
   for (int i = 0; i < list.size(); i++) {
     if (list[i]->relativeType == StepType) {
       Step *step = dynamic_cast<Step *>(list[i]);
-      step->addGraphicsItems(xx+offset[XX],yy+offset[YY],meta,parentRelativeType,parent);
+      step->addGraphicsItems(xx+loc[XX],yy+loc[YY],meta,parentRelativeType,parent);
     }
   }
 }
@@ -480,7 +480,7 @@ void Range::addGraphicsItemsHoriz(
   for (int i = 0; i < list.size(); i++) {
     if (list[i]->relativeType == StepType) {
       Step *step = dynamic_cast<Step *>(list[i]);
-      step->addGraphicsItems(xx+offset[XX],yy+offset[YY],meta,parentRelativeType,parent);
+      step->addGraphicsItems(xx+loc[XX],yy+loc[YY],meta,parentRelativeType,parent);
     }
   }
 }

@@ -827,10 +827,10 @@ public:
     _value[pushed].relativeTo = relativeTo;
     _value[pushed].preposition = preposition;
   }
-  void setValue(int offset[2])
+  void setValue(int loc[2])
   {
-    _value[pushed].offsets[0] = offset[0];
-    _value[pushed].offsets[1] = offset[1];
+    _value[pushed].offsets[0] = loc[0];
+    _value[pushed].offsets[1] = loc[1];
   }
   PlacementMeta();
   virtual ~PlacementMeta() {}
@@ -1078,6 +1078,10 @@ public:
   InsertData &value()
   {
     return _value[pushed];
+  }
+  void setValue(InsertData &value)
+  {
+    _value[pushed] = value;
   }
   virtual ~InsertMeta() {}
   Rc parse(QStringList &argv, int index, Where &here);

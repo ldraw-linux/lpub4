@@ -218,7 +218,7 @@ void Callout::addGraphicsItems(
   QRect         &csiRect,
   QGraphicsItem *parent)
 {
-  QRect calloutRect(offsetX + offset[XX],offsetY + offset[YY],size[XX],size[YY]);
+  QRect calloutRect(offsetX + loc[XX],offsetY + loc[YY],size[XX],size[YY]);
 
   background = new CalloutBackgroundItem(
                      this,
@@ -231,15 +231,15 @@ void Callout::addGraphicsItems(
                      parent,
                      view);
 
-  background->setPos(offsetX + offset[XX],offsetY + offset[YY]);
+  background->setPos(offsetX + loc[XX],offsetY + loc[YY]);
 
-  int saveX = offset[XX];
-  int saveY = offset[YY];
+  int saveX = loc[XX];
+  int saveY = loc[YY];
 
   BorderData borderData = meta.LPub.callout.border.value();
 
-  offset[XX] = borderData.margin[0];
-  offset[YY] = borderData.margin[1];
+  loc[XX] = borderData.margin[0];
+  loc[YY] = borderData.margin[1];
  
   if (meta.LPub.callout.alloc.value() == Vertical) {
     addGraphicsItemsVert(0,
@@ -250,8 +250,8 @@ void Callout::addGraphicsItems(
                           0,
                           background);
   }
-  offset[XX] = saveX;
-  offset[YY] = saveY;
+  loc[XX] = saveX;
+  loc[YY] = saveY;
 }
 
 void Callout::addGraphicsItemsVert(
@@ -290,12 +290,12 @@ void Callout::addGraphicsItemsVert(
       "x%d",
       instanceCount.number,
       parent);
-    item->setPos(offsetX + instanceCount.offset[0], offsetY + instanceCount.offset[1]);
+    item->setPos(offsetX + instanceCount.loc[0], offsetY + instanceCount.loc[1]);
   }
 
   Steps::addGraphicsItemsVert(offsetX,
-                               offsetY,
-                               parent);
+                              offsetY,
+                              parent);
 }
 
 void Callout::addGraphicsItemsHoriz(
@@ -326,7 +326,7 @@ void Callout::addGraphicsItemsHoriz(
     }
     CalloutInstanceItem *item = new CalloutInstanceItem(
       this,&meta, "x%d",instanceCount.number,parent);
-    item->setPos(offsetX + instanceCount.offset[0], offsetY + instanceCount.offset[1]);
+    item->setPos(offsetX + instanceCount.loc[0], offsetY + instanceCount.loc[1]);
   }
 
   Steps::addGraphicsItemsHoriz(offsetX,
@@ -398,7 +398,6 @@ CalloutInstanceItem::CalloutInstanceItem(
   QString toolTip("Number of times model in callout is used on this page");
   setAttributes(PageNumberType,
                 CalloutType,
-                _meta,
                 _meta->LPub.callout.instance,
                 _format,
                 _value,
@@ -465,17 +464,17 @@ void CalloutInstanceItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event
 
   if (selectedAction == fontAction) {
 
-    changeFont(callout->topOfCallout(), callout->bottomOfCallout(),font);
+    changeFont(callout->topOfCallout(), callout->bottomOfCallout(),&font);
 
   } else if (selectedAction == colorAction) {
 
-    changeColor(callout->topOfCallout(), callout->bottomOfCallout(),color);
+    changeColor(callout->topOfCallout(), callout->bottomOfCallout(),&color);
 
   } else if (selectedAction == marginAction) {
 
     changeMargins("Times Used Margin",
                   callout->topOfCallout(), callout->bottomOfCallout(),
-                  margin);
+                  &margin);
   }
 }
 
@@ -486,10 +485,10 @@ void CalloutInstanceItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
   if (isSelected() && (flags() & QGraphicsItem::ItemIsMovable) && positionChanged) {
     // back annotate the movement of the PLI into the LDraw file.
     newPosition = pos() - position;
-    PlacementData placementData = placement->value();
-    placementData.offsets[0] += newPosition.x()/meta->LPub.page.size.value(0);
-    placementData.offsets[1] += newPosition.y()/meta->LPub.page.size.value(1);
-    placement->setValue(placementData);
-    changePlacementOffset(callout->topOfCallout(),placement);
+    PlacementData placementData = placement.value();
+    placementData.offsets[0] += newPosition.x()/relativeToWidth;
+    placementData.offsets[1] += newPosition.y()/relativeToHeight;
+    placement.setValue(placementData);
+    changePlacementOffset(callout->topOfCallout(),&placement);
   }
 }

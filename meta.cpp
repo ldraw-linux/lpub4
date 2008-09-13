@@ -1235,6 +1235,7 @@ Rc InsertMeta::parse(QStringList &argv, int index, Where &here)
   PlacementType  _relativeTo;
   PrepositionEnc _preposition;
   float _offsets[2];
+  float _margins[2];
   Rc rc = FailureRc;
   
   if (argv.size() - index == 1 && argv[index] == "PAGE") {
@@ -1250,6 +1251,8 @@ Rc InsertMeta::parse(QStringList &argv, int index, Where &here)
   _preposition   = Inside;
   _offsets[0]    = 0;
   _offsets[1]    = 0;
+  _margins[0]    = 0;
+  _margins[1]    = 0;
 
   QRegExp rx("^(TOP|BOTTOM)$");
   if (argv[index].contains(rx)) {
@@ -1311,9 +1314,8 @@ Rc InsertMeta::parse(QStringList &argv, int index, Where &here)
         argv[index  ].toFloat(&ok[0]);
         argv[index+1].toFloat(&ok[1]);
         if (ok[0] && ok[1]) {
-          _value[pushed].offsets[0] = argv[index++].toFloat(&ok[0]);
-          _value[pushed].offsets[1] = argv[index++].toFloat(&ok[1]);
-          _here[pushed] = here;
+          _offsets[0] = argv[index++].toFloat(&ok[0]);
+          _offsets[1] = argv[index++].toFloat(&ok[1]);
         }
       } else {
         rc = FailureRc;
@@ -1329,9 +1331,8 @@ Rc InsertMeta::parse(QStringList &argv, int index, Where &here)
         argv[index  ].toFloat(&ok[0]);
         argv[index+1].toFloat(&ok[1]);
         if (ok[0] && ok[1]) {
-          _value[pushed].offsets[0] = argv[index++].toFloat(&ok[0]);
-          _value[pushed].offsets[1] = argv[index++].toFloat(&ok[1]);
-          _here[pushed] = here;
+          _margins[0] = argv[index++].toFloat(&ok[0]);
+          _margins[1] = argv[index++].toFloat(&ok[1]);
         }
       } else {
         rc = FailureRc;
@@ -1395,6 +1396,8 @@ Rc InsertMeta::parse(QStringList &argv, int index, Where &here)
     _value[pushed].preposition   = _preposition;
     _value[pushed].offsets[0]    = _offsets[0];
     _value[pushed].offsets[1]    = _offsets[1];
+    _value[pushed].margins[0]    = _margins[0];
+    _value[pushed].margins[1]    = _margins[1];
     _value[pushed].type          = type;
     _value[pushed].picName       = picName;
     _value[pushed].picScale      = picScale;
@@ -1439,9 +1442,9 @@ QString InsertMeta::format(bool local, bool global)
     foo += QString(" OFFSET %1 %2") .arg(_value[pushed].offsets[0]) 
                                    .arg(_value[pushed].offsets[1]);
   }
-  if (_value[pushed].offsets[0] || _value[pushed].offsets[1]) {
-    foo += QString(" MARGIN %1 %2") .arg(_value[pushed].offsets[0]) 
-                                    .arg(_value[pushed].offsets[1]);
+  if (_value[pushed].margins[0] || _value[pushed].margins[1]) {
+    foo += QString(" MARGIN %1 %2") .arg(_value[pushed].margins[0]) 
+                                    .arg(_value[pushed].margins[1]);
   }
   switch (_value[pushed].type) {
     case InsertPicture:

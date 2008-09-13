@@ -195,6 +195,7 @@ public:
                         bool global = true);
 
   void changePlacementOffset(Where defaultconst, PlacementMeta *placement, bool local = true, bool global = false);  
+  void MetaItem::changeInsertOffset(InsertMeta *placement);
 
   void replaceMeta(const Where &here, const QString &line);
   void insertMeta( const Where &here, const QString &line);

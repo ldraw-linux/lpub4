@@ -88,17 +88,16 @@ class Steps : public Placement {
 class Page : public Steps {
   public:
     QList<InsertMeta> inserts;
-    QList<PlacementPixmap *> insertPixmaps;
+    QList<InsertPixmapItem *> insertPixmaps;
     
-    void addInsertPixmap(PlacementPixmap *pixMap)
+    void addInsertPixmap(InsertPixmapItem *pixMap)
     {
       insertPixmaps.append(pixMap);
     }
     void freePage()
     {
       for (int i = 0; i < insertPixmaps.size(); i++) {
-        PlacementPixmap *pixmap = insertPixmaps[i];
-        delete pixmap->pixmap;
+        InsertPixmapItem *pixmap = insertPixmaps[i];
         delete pixmap;
       }
       insertPixmaps.clear();

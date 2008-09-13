@@ -73,8 +73,8 @@ void MultiStepRangesBackgroundItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *
     // back annotate the movement of the PLI into the LDraw file.
     newPosition = pos() - position;
     PlacementData placementData = meta->LPub.multiStep.placement.value();
-    placementData.offsets[0] += newPosition.x()/meta->LPub.page.size.value(0);
-    placementData.offsets[1] += newPosition.y()/meta->LPub.page.size.value(1);
+    placementData.offsets[0] += newPosition.x()/page->relativeToWidth;
+    placementData.offsets[1] += newPosition.y()/page->relativeToHeight;
     meta->LPub.multiStep.placement.setValue(placementData);
 
     changePlacementOffset(page->topOfSteps(),&meta->LPub.multiStep.placement,false);
@@ -104,8 +104,8 @@ MultiStepRangeBackgroundItem::MultiStepRangeBackgroundItem(
   perStep           = &multiStep->pli.perStep;
   relativeType      = page->relativeType;
 
-  int tx = _offset_x+_range->offset[XX];
-  int ty = _offset_y+_range->offset[YY];
+  int tx = _offset_x+_range->loc[XX];
+  int ty = _offset_y+_range->loc[YY];
   setRect(tx,ty, _range->size[XX], _range->size[YY]);
 
   setPen(QPen(Qt::NoPen));

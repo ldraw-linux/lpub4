@@ -745,6 +745,13 @@ void MetaItem::changePlacementOffset(
   }
 }
 
+void MetaItem::changeInsertOffset(
+  InsertMeta *placement)
+{
+  QString newMetaString = placement->format(false,false);
+  replaceMeta(placement->here(),newMetaString);
+}
+
 void MetaItem::changeBackground(
   QString         title,
   const Where    &topOfStep,

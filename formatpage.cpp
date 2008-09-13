@@ -77,7 +77,6 @@ class SubmodelInstanceCount : public NumberPlacementItem
   
     SubmodelInstanceCount(
       Page                *pageIn,
-      Meta                *metaIn,
       NumberPlacementMeta &numberMetaIn,
       const char          *formatIn,
       int                  valueIn,
@@ -86,14 +85,11 @@ class SubmodelInstanceCount : public NumberPlacementItem
       QString toolTip("Number of times to build this submodel");
       setAttributes(PageNumberType,
                     SingleStepType,
-                    metaIn,
                     numberMetaIn,
                     formatIn,
                     valueIn,
                     toolTip,
                     parentIn);
-      setFlag(QGraphicsItem::ItemIsMovable,true);
-      setFlag(QGraphicsItem::ItemIsSelectable,true);
     }
   protected:
     void contextMenuEvent(QGraphicsSceneContextMenuEvent *event);
@@ -104,7 +100,7 @@ void SubmodelInstanceCount::contextMenuEvent(QGraphicsSceneContextMenuEvent *eve
 {
   QMenu menu;
 
-  PlacementData placementData = meta->LPub.page.instanceCount.placement.value();
+  PlacementData placementData = placement.value();
 
   QAction *fontAction       = menu.addAction("Change Submodel Count Font");
   QAction *colorAction      = menu.addAction("Change Submodel Count Color");
@@ -120,17 +116,17 @@ void SubmodelInstanceCount::contextMenuEvent(QGraphicsSceneContextMenuEvent *eve
 
   if (selectedAction == fontAction) {
 
-    changeFont(page->topOfSteps(),page->bottomOfSteps(),font);
+    changeFont(page->topOfSteps(),page->bottomOfSteps(),&font);
 
   } else if (selectedAction == colorAction) {
 
-    changeColor(page->topOfSteps(),page->bottomOfSteps(),color);
+    changeColor(page->topOfSteps(),page->bottomOfSteps(),&color);
 
   } else if (selectedAction == marginAction) {
 
     changeMargins("Submodel Count Margins",
                   page->topOfSteps(),page->bottomOfSteps(),
-                  margin);
+                  &margin);
   } else if (selectedAction == placementAction) {
   
     changePlacement(PageType,
@@ -138,7 +134,7 @@ void SubmodelInstanceCount::contextMenuEvent(QGraphicsSceneContextMenuEvent *eve
                     "Submodel Count Placement",
                     page->topOfSteps(),
                     page->bottomOfSteps(),
-                    placement);
+                  &placement);
   }
 }
 
@@ -156,14 +152,14 @@ void SubmodelInstanceCount::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     if (newPosition.x() || newPosition.y()) {
       positionChanged = true;
 
-      PlacementData placementData = placement->value();
+      PlacementData placementData = placement.value();
 
       placementData.offsets[0] += newPosition.x()/relativeToWidth;
       placementData.offsets[1] += newPosition.y()/relativeToHeight;
 
-      placement->setValue(placementData);
+      placement.setValue(placementData);
 
-      changePlacementOffset(page->topOfSteps(),placement);
+      changePlacementOffset(page->topOfSteps(),&placement);
     }
   }
 }
@@ -187,8 +183,8 @@ int Gui::addGraphicsPageItems(
   plPage.size[XX] = page->meta.LPub.page.size.value(0);
   plPage.size[YY] = page->meta.LPub.page.size.value(1);
   plPage.margin   = page->meta.LPub.page.margin;
-  plPage.offset[XX] = 0;
-  plPage.offset[YY] = 0;
+  plPage.loc[XX] = 0;
+  plPage.loc[YY] = 0;
 
   if (page->meta.LPub.page.dpn.value() && ! coverPage) {
 
@@ -197,21 +193,16 @@ int Gui::addGraphicsPageItems(
     PageNumberItem  *pageNumber = 
       new PageNumberItem(
                       page,
-                     &page->meta, 
                       page->meta.LPub.page.number, 
                      "%d", 
                      stepPageNum,
                      pageBg);
-
-    PlacementData placementData = page->meta.LPub.page.number.placement.value();
-
-    Placement pn;
-
-    pn.placement.setValue(placementData);
-    pn.relativeType = PageNumberType;
-    pn.size[XX]     = (int) pageNumber->document()->size().width();
-    pn.size[YY]     = (int) pageNumber->document()->size().height();
-    pn.margin       = page->meta.LPub.page.number.margin;            
+    
+    pageNumber->relativeType = PageNumberType;
+    pageNumber->size[XX]     = (int) pageNumber->document()->size().width();
+    pageNumber->size[YY]     = (int) pageNumber->document()->size().height();
+    
+    PlacementData placementData = pageNumber->placement.value();
     
     if (page->meta.LPub.page.togglePnPlacement.value() && ! (stepPageNum & 1)) {
       switch (placementData.placement) {
@@ -250,12 +241,12 @@ int Gui::addGraphicsPageItems(
         break;
       }
 
-      pn.placement.setValue(placementData);
+      pageNumber->placement.setValue(placementData);
     }
     
-    plPage.appendRelativeTo(&pn);
-    plPage.placeRelative(&pn);
-    pageNumber->setPos(pn.offset[XX],pn.offset[YY]);
+    plPage.appendRelativeTo(pageNumber);
+    plPage.placeRelative(pageNumber);
+    pageNumber->setPos(pageNumber->loc[XX],pageNumber->loc[YY]);
     
     // if this page contains the last step of the page, 
     // and instance is > 1 then display instance
@@ -266,8 +257,7 @@ int Gui::addGraphicsPageItems(
     
     if (endOfSubmodel && instances > 1) {
       instanceCount = new SubmodelInstanceCount(
-         page,
-        &page->meta,
+        page,
         page->meta.LPub.page.instanceCount,
         "x%d",
         instances,
@@ -287,23 +277,21 @@ int Gui::addGraphicsPageItems(
       if (instanceCount) {
         instanceCount->size[XX] = (int) instanceCount->document()->size().width();
         instanceCount->size[YY] = (int) instanceCount->document()->size().height();
-        instanceCount->offset[XX] = 0;
-        instanceCount->offset[YY] = 0;
+        instanceCount->loc[XX] = 0;
+        instanceCount->loc[YY] = 0;
         instanceCount->tbl[0] = 0;
         instanceCount->tbl[1] = 0;
         
-        Placement *ic = dynamic_cast<Placement *>(instanceCount);
-        
-        ic->placement = page->meta.LPub.page.instanceCount.placement;
+        instanceCount->placement = page->meta.LPub.page.instanceCount.placement;
                         
-        PlacementData placementData = ic->placement.value();
+        PlacementData placementData = instanceCount->placement.value();
         
         if (placementData.relativeTo == PageType) {
           plPage.placeRelative(instanceCount);
         } else {
-          pn.placeRelative(instanceCount);
+          pageNumber->placeRelative(instanceCount);
         }
-        instanceCount->setPos(instanceCount->offset[XX],instanceCount->offset[YY]);
+        instanceCount->setPos(instanceCount->loc[XX],instanceCount->loc[YY]);
       }
     }
   }
@@ -321,28 +309,30 @@ int Gui::addGraphicsPageItems(
           {
             fileInfo.setFile(insert.picName);
             if (fileInfo.exists()) {
-              PlacementPixmap *pixmap = new PlacementPixmap;
-              pixmap->pixmap = new QPixmap;
-              pixmap->pixmap->load(insert.picName);
-              pixmap->size[0] = pixmap->pixmap->width()*insert.picScale;
-              pixmap->size[1] = pixmap->pixmap->height()*insert.picScale;
+
+              QPixmap qpixmap;
+              qpixmap.load(insert.picName);
+              InsertPixmapItem *pixmap = new InsertPixmapItem(qpixmap,page->inserts[i],pageBg);
+              
               page->addInsertPixmap(pixmap);
-              QGraphicsPixmapItem *gpi = new QGraphicsPixmapItem(*pixmap->pixmap,pageBg);
-              gpi->setTransformationMode(Qt::SmoothTransformation);
-              gpi->scale(insert.picScale,insert.picScale);
+              pixmap->setTransformationMode(Qt::SmoothTransformation);
+              pixmap->scale(insert.picScale,insert.picScale);
               
               PlacementData pld;
-              Placement     pl;
               
               pld.placement     = insert.placement;
               pld.justification = insert.justification;
               pld.relativeTo    = insert.relativeTo;
               pld.preposition   = insert.preposition;
+              pld.offsets[0]    = insert.offsets[0];
+              pld.offsets[1]    = insert.offsets[1];
               
               pixmap->placement.setValue(pld);
 
               plPage.placeRelative(pixmap);
-              gpi->setPos(pixmap->offset[XX],pixmap->offset[YY]);
+              pixmap->setPos(pixmap->loc[XX],pixmap->loc[YY]);
+              pixmap->relativeToWidth  = plPage.size[XX];
+              pixmap->relativeToHeight = plPage.size[YY];
             }
           }
         break;
@@ -368,6 +358,7 @@ int Gui::addGraphicsPageItems(
           step->pli.addPli(step->submodelLevel, pageBg);
 
           /* Size the callouts */
+          
           for (int i = 0; i < step->list.size(); i++) {
             step->list[i]->sizeIt();
           }
@@ -376,8 +367,8 @@ int Gui::addGraphicsPageItems(
 
           plPage.relativeTo(step);      // place everything
 
-          step->pli.setPos(step->pli.offset[XX],
-                           step->pli.offset[YY]);
+          step->pli.setPos(step->pli.loc[XX],
+                           step->pli.loc[YY]);
 
           CsiItem *csiItem = NULL;
           if (step->csiPixmap.pixmap) {
@@ -387,11 +378,13 @@ int Gui::addGraphicsPageItems(
                                   step->submodelLevel,
                                   pageBg, 
                                   page->relativeType);
-            csiItem->setPos(step->csiPixmap.offset[XX],
-                            step->csiPixmap.offset[YY]);
+            csiItem->setPos(step->csiPixmap.loc[XX],
+                            step->csiPixmap.loc[YY]);
           } else {
             exit(-1);
           }
+          
+          /* Size the inserts : FIXME */
 
           // allocate QGraphicsTextItem for step number
 
@@ -399,22 +392,23 @@ int Gui::addGraphicsPageItems(
             StepNumberItem *stepNumber = 
               new StepNumberItem(step,
                                  page->relativeType,
-                                &page->meta, 
                                  page->meta.LPub.stepNumber, 
                                  "%d", 
                                  step->stepNumber.number,
                                  pageBg);
 
-            stepNumber->setPos(step->stepNumber.offset[XX],
-                               step->stepNumber.offset[YY]);
+            stepNumber->setPos(step->stepNumber.loc[XX],
+                               step->stepNumber.loc[YY]);
+            stepNumber->relativeToWidth  = step->stepNumber.relativeToWidth;
+            stepNumber->relativeToHeight = step->stepNumber.relativeToHeight;
           }
           
           // foreach callout
 
           for (int i = 0; i < step->list.size(); i++) {
             Callout *callout = step->list[i];
-            QRect    csiRect(step->csiPixmap.offset[XX]-callout->offset[XX],
-                             step->csiPixmap.offset[YY]-callout->offset[YY],
+            QRect    csiRect(step->csiPixmap.loc[XX]-callout->loc[XX],
+                             step->csiPixmap.loc[YY]-callout->loc[YY],
                              step->csiPixmap.size[XX], 
                              step->csiPixmap.size[YY]);
                              
@@ -423,11 +417,11 @@ int Gui::addGraphicsPageItems(
             callout->addGraphicsItems(0,0,csiRect,pageBg);
             for (int i = 0; i < callout->pointerList.size(); i++) {
               Pointer *pointer = callout->pointerList[i];
-              callout->addGraphicsPointerItem(callout->offset[XX],
-                                              callout->offset[YY],
+              callout->addGraphicsPointerItem(callout->loc[XX],
+                                              callout->loc[YY],
                                               0,
                                               0,
-                                              step->csiPixmap.offset,
+                                              step->csiPixmap.loc,
                                               step->csiPixmap.size,
                                               pointer,
                                               callout->background);

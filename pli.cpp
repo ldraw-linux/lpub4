@@ -1268,8 +1268,8 @@ void PliBackgroundItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     if (newPosition.x() || newPosition.y()) {
       positionChanged = true;
       PlacementData placementData = placement.value();
-      placementData.offsets[0] += newPosition.x()/pli->meta->LPub.page.size.value(0);
-      placementData.offsets[1] += newPosition.y()/pli->meta->LPub.page.size.value(1);
+      placementData.offsets[0] += newPosition.x()/pli->relativeToWidth;
+      placementData.offsets[1] += newPosition.y()/pli->relativeToHeight;
       placement.setValue(placementData);
 
       changePlacementOffset(pli->topOfStep(),&placement);

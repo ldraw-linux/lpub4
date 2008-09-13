@@ -31,9 +31,10 @@
 #define placementH
 
 
-#include <QGraphicsItem>
+#include <QGraphicsPixmapItem>
 #include <QPixmap>
 #include "meta.h"
+#include "metaitem.h"
 
 class QGraphicsScene;
 
@@ -83,15 +84,10 @@ enum dim {
   YY = 1
 };
 
-class Foo : QObject
-{
-  Q_OBJECT
-};
-
 class Placement {
   public:
     int           size[2];       // How big am I?
-    int           offset[2];     // Where do I live within my group
+    int           loc[2];        // Where do I live within my group
     int           tbl[2];        // Where am I in my grid?
     PlacementType relativeType;  // What am I?
     PlacementMeta placement;     // Where am I placed?
@@ -103,12 +99,12 @@ class Placement {
 
     Placement()
     {
-      size[0]   = 0;
-      size[1]   = 0;
-      offset[0] = 0;
-      offset[1] = 0;
-      tbl[0]    = 0;
-      tbl[1]    = 0;
+      size[0] = 0;
+      size[1] = 0;
+      loc[0]  = 0;
+      loc[1]  = 0;
+      tbl[0]  = 0;
+      tbl[1]  = 0;
       relativeToWidth = 1;
       relativeToHeight = 1;
     }
@@ -145,9 +141,70 @@ class Placement {
 class PlacementPixmap : public Placement {
   public:
     QPixmap   *pixmap;
+
     PlacementPixmap()
     {
     }
+};
+
+class PlacementPixmapItem : public QGraphicsPixmapItem, public Placement, public MetaItem
+{
+  public:
+    QPointF       position;
+    bool          positionChanged;
+
+    PlacementPixmapItem();
+    
+    PlacementPixmapItem(
+      QPixmap       &pixmap,
+      PlacementMeta &_placement,
+      QGraphicsItem *parent = 0)
+      
+      : QGraphicsPixmapItem(pixmap,parent)
+    {
+      placement = _placement;
+      
+      PlacementData placementData = placement.value();
+
+      size[0] = pixmap.width();
+      size[1] = pixmap.height();
+      setFlag(QGraphicsItem::ItemIsSelectable,true);
+      setFlag(QGraphicsItem::ItemIsMovable,true);
+    }
+  protected:
+    virtual void mousePressEvent(QGraphicsSceneMouseEvent *event);
+    virtual void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
+    virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
+};
+
+class InsertPixmapItem : public QGraphicsPixmapItem, public Placement, public MetaItem
+{
+  public:
+    QPointF    position;
+    bool       positionChanged;
+    InsertMeta insertMeta;
+
+    InsertPixmapItem();
+    
+    InsertPixmapItem(
+      QPixmap    &pixmap,
+      InsertMeta &insertMeta,
+      QGraphicsItem *parent = 0)
+      
+      : QGraphicsPixmapItem(pixmap,parent),
+        insertMeta(insertMeta)
+    {
+      InsertData insertData = insertMeta.value();
+
+      size[0] = pixmap.width() *insertData.picScale;
+      size[1] = pixmap.height()*insertData.picScale;
+      setFlag(QGraphicsItem::ItemIsSelectable,true);
+      setFlag(QGraphicsItem::ItemIsMovable,true);
+    }
+  protected:
+    virtual void mousePressEvent(QGraphicsSceneMouseEvent *event);
+    virtual void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
+    virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
 };
 
 class PlacementNum : public Placement {

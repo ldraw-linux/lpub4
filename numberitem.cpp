@@ -107,17 +107,13 @@ NumberItem::NumberItem(
 NumberPlacementItem::NumberPlacementItem()
 {
   relativeType = PageNumberType;
-  meta = NULL;
-  font = NULL;
-  color = NULL;
-  margin = NULL;
-  placement = NULL;
+  setFlag(QGraphicsItem::ItemIsMovable,true);
+  setFlag(QGraphicsItem::ItemIsSelectable,true);
 }
 
 NumberPlacementItem::NumberPlacementItem(
   PlacementType  _relativeType,
   PlacementType  _parentRelativeType,
-  Meta          *_meta,
   NumberPlacementMeta &_number,
   const char    *_format,
   int            _value,
@@ -127,7 +123,6 @@ NumberPlacementItem::NumberPlacementItem(
 {
   setAttributes(_relativeType,
                 _parentRelativeType,
-                _meta,
                 _number,
                 _format,
                 _value,
@@ -139,7 +134,6 @@ NumberPlacementItem::NumberPlacementItem(
 void NumberPlacementItem::setAttributes(
   PlacementType  _relativeType,
   PlacementType  _parentRelativeType,
-  Meta          *_meta,
   NumberPlacementMeta &_number,
   const char    *_format,
   int            _value,
@@ -149,13 +143,12 @@ void NumberPlacementItem::setAttributes(
 {
   relativeType = _relativeType;
   parentRelativeType = _parentRelativeType;
-  meta         =  _meta;
-  font         = &_number.font;
-  color        = &_number.color;
-  margin       = &_number.margin;
-  placement    = &_number.placement;
-  value        = _value;
-  name         = _name;
+  font         =  _number.font;
+  color        =  _number.color;
+  margin       =  _number.margin;
+  placement    =  _number.placement;
+  value        =  _value;
+  name         =  _name;
 
   QFont qfont;
   qfont.fromString(_number.font.value());
@@ -164,7 +157,7 @@ void NumberPlacementItem::setAttributes(
   QString foo;
   foo.sprintf(_format,_value);
   setPlainText(foo);
-  setDefaultTextColor(LDrawColor::color(color->value()));
+  setDefaultTextColor(LDrawColor::color(color.value()));
 
   setToolTip(toolTip);
   setParentItem(_parent);
@@ -191,7 +184,6 @@ void NumberPlacementItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 
 PageNumberItem::PageNumberItem(
   Page          *_page,
-  Meta          *_meta,
   NumberPlacementMeta &_number,
   const char    *_format,
   int            _value,
@@ -201,7 +193,6 @@ PageNumberItem::PageNumberItem(
   QString toolTip("Page Number");
   setAttributes(PageNumberType,
                 SingleStepType,
-                _meta,
                 _number,
                 _format,
                 _value,
@@ -213,7 +204,7 @@ void PageNumberItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 {
   QMenu menu;
 
-  PlacementData placementData = meta->LPub.page.number.placement.value();
+  PlacementData placementData = placement.value();
   QString name = "Move Page Number";
   QAction *placementAction  = menu.addAction(name);
   placementAction->setWhatsThis(
@@ -236,28 +227,53 @@ void PageNumberItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
                     "Page Number Placement",
                     page->topOfSteps(),
                     page->bottomOfSteps(),
-                    placement);
+                  &placement);
 
   } else if (selectedAction == fontAction) {
 
-    changeFont(page->topOfSteps(),page->bottomOfSteps(),font);
+    changeFont(page->topOfSteps(),page->bottomOfSteps(),&font);
 
   } else if (selectedAction == colorAction) {
 
-    changeColor(page->topOfSteps(),page->bottomOfSteps(),color);
+    changeColor(page->topOfSteps(),page->bottomOfSteps(),&color);
 
   } else if (selectedAction == marginAction) {
 
     changeMargins("Page Number Margins",
                   page->topOfSteps(),page->bottomOfSteps(),
-                  margin);
+                &margin);
+  }
+}
+
+void PageNumberItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
+{
+  QGraphicsItem::mouseReleaseEvent(event);
+
+  if (isSelected() && (flags() & QGraphicsItem::ItemIsMovable)) {
+
+    QPointF newPosition;
+
+    // back annotate the movement of the PLI into the LDraw file.
+    newPosition = pos() - position;
+    
+    if (newPosition.x() || newPosition.y()) {
+      positionChanged = true;
+
+      PlacementData placementData = placement.value();
+
+      placementData.offsets[0] += newPosition.x()/relativeToWidth;
+      placementData.offsets[1] += newPosition.y()/relativeToHeight;
+
+      placement.setValue(placementData);
+
+      changePlacementOffset(page->topOfSteps(),&placement);
+    }
   }
 }
 
 StepNumberItem::StepNumberItem(
   Step          *_step,
   PlacementType  parentRelativeType,
-  Meta          *_meta,
   NumberPlacementMeta    &_number,
   const char    *_format,
   int            _value,
@@ -268,7 +284,6 @@ StepNumberItem::StepNumberItem(
   QString toolTip("Step Number");
   setAttributes(StepNumberType,
                 parentRelativeType,
-                _meta,
                 _number,
                 _format,
                 _value,
@@ -322,19 +337,46 @@ void StepNumberItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
                     "Move Step Number", 
                     top,
                     bottom,
-                    placement,
+                   &placement,
                     1,local);
 
   } else if (selectedAction == fontAction) {
 
-    changeFont(top, bottom, font, 1, local);
+    changeFont(top, bottom, &font, 1, local);
 
   } else if (selectedAction == colorAction) {
 
-    changeColor(top,bottom,color, 1, local);
+    changeColor(top,bottom, &color, 1, local);
 
   } else if (selectedAction == marginAction) {
 
-    changeMargins("Change Step Number Margins",top,bottom,margin,1,local);
+    changeMargins("Change Step Number Margins",top,bottom,&margin,1,local);
   } 
 }
+
+void StepNumberItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
+{
+  QGraphicsItem::mouseReleaseEvent(event);
+
+  if (isSelected() && (flags() & QGraphicsItem::ItemIsMovable)) {
+
+    QPointF newPosition;
+
+    // back annotate the movement of the PLI into the LDraw file.
+    newPosition = pos() - position;
+    
+    if (newPosition.x() || newPosition.y()) {
+      positionChanged = true;
+
+      PlacementData placementData = placement.value();
+
+      placementData.offsets[0] += newPosition.x()/relativeToWidth;
+      placementData.offsets[1] += newPosition.y()/relativeToHeight;
+
+      placement.setValue(placementData);
+
+      changePlacementOffset(step->topOfStep(),&placement);
+    }
+  }
+}
+
