@@ -100,7 +100,7 @@ public:
 
   void changeAlloc(     const Where &, 
                         const Where &, 
-			AllocMeta   &,
+			                  AllocMeta   &,
                         int   append = 1);
                         
   void changeBool(      const Where &, 
@@ -166,6 +166,12 @@ public:
   void changeFloat(     QString, 
                         QString, 
                         const Where &, 
+                        const Where &, 
+                        FloatMeta *,
+                        int   append = 1, 
+                        bool checkLocal = true);
+
+  void changeFloat(     const Where &, 
                         const Where &, 
                         FloatMeta *,
                         int   append = 1, 

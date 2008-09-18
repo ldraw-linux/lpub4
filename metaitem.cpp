@@ -1031,6 +1031,16 @@ void MetaItem::changeFloat(
   }
 }
 
+void MetaItem::changeFloat(
+  const Where &topOfStep,
+  const Where &bottomOfStep,
+  FloatMeta   *floatMeta,
+  int          append,
+  bool         local)
+{
+  setMetaTopOf(topOfStep,bottomOfStep,floatMeta,append,local);
+}
+
 void MetaItem::changeFloatSpin(
   QString      title,
   QString      label,

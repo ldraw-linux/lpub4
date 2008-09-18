@@ -35,6 +35,8 @@
 #include <QGraphicsItemGroup>
 #include "metaitem.h"
 
+class QGraphicsView;
+
 class CalloutPointerItem : public QGraphicsItemGroup, public MetaItem
 {
 public:

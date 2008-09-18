@@ -54,6 +54,7 @@ enum PrepositionEnc {
   Inside = 0,
   Outside
 };
+
 enum PlacementType {
   PageType,
   CsiType,

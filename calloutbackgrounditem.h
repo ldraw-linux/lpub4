@@ -30,8 +30,7 @@
 
 #include "backgrounditem.h"
 
-class QGraphicsView;
-class CalloutPointerItem;
+//class CalloutPointerItem;
 class Callout;
 
 class CalloutBackgroundItem : public PlacementBackgroundItem

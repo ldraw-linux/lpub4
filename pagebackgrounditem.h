@@ -64,6 +64,9 @@ class PageBackgroundItem : public BackgroundItem
                     page->meta.submodelStack.size(),
                     toolTip);
       setPixmap(*pixmap);
+      setFlag(QGraphicsItem::ItemIsSelectable,false);
+      setFlag(QGraphicsItem::ItemIsMovable,false);
+
       delete pixmap;
     }
     ~PageBackgroundItem()

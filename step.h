@@ -36,6 +36,7 @@
 #include "pli.h"
 #include "meta.h"
 
+class QGraphicsView;
 class Meta;
 class Callout;
 class Range;

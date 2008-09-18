@@ -27,9 +27,6 @@
  *
  ***************************************************************************/
 
-#include <QGraphicsItem>
-#include <QGraphicsTextItem>
-#include <QGraphicsScene>
 #include "placement.h"
 #include "ranges.h"
 #include "callout.h"
@@ -512,6 +509,293 @@ void Placement::justifyY(
   }
 }
 
+InsertPixmapItem::InsertPixmapItem(
+  QPixmap    &pixmap,
+  InsertMeta &insertMeta,
+  QGraphicsItem *parent)
+      
+  : QGraphicsPixmapItem(pixmap,parent),
+    insertMeta(insertMeta)
+{
+  InsertData insertData = insertMeta.value();
+
+  size[0] = pixmap.width() *insertData.picScale;
+  size[1] = pixmap.height()*insertData.picScale;
+  setFlag(QGraphicsItem::ItemIsSelectable,true);
+  setFlag(QGraphicsItem::ItemIsMovable,true);
+      
+  origWidth  = size[0]; // pixmap.width();
+  origHeight = size[1]; // pixmap.height();
+  
+  setTransformationMode(Qt::SmoothTransformation);
+  
+  grabSize = toPixels(0.03,DPI);
+  for (int i = 0; i < 8; i++) {
+    grab[i] = NULL;
+  }
+  oldScale = insertData.picScale;
+  oldScale = 1.0;
+}
+
+void InsertPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
+{     
+  QGraphicsItem::mousePressEvent(event);
+  positionChanged = false;
+  position = pos();
+  placeGrabs();
+} 
+  
+void InsertPixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
+{ 
+  QGraphicsItem::mouseMoveEvent(event);
+  if (isSelected() && (flags() & QGraphicsItem::ItemIsMovable)) {
+    positionChanged = true;
+    placeGrabs();
+  }   
+}
+
+void InsertPixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
+{
+  QGraphicsItem::mouseReleaseEvent(event);
+
+  if (isSelected() && (flags() & QGraphicsItem::ItemIsMovable)) {
+
+    QPointF newPosition;
+
+    // back annotate the movement of the PLI into the LDraw file.
+    newPosition = pos() - position;
+    
+    if (newPosition.x() || newPosition.y()) {
+      positionChanged = true;
+
+      InsertData insertData = insertMeta.value();
+      
+      volatile float offset[2] = { newPosition.x()/relativeToWidth, newPosition.y()/relativeToHeight };
+      
+      insertData.offsets[0] += offset[0];
+      insertData.offsets[1] += offset[1];
+
+      insertMeta.setValue(insertData);
+
+      changeInsertOffset(&insertMeta);
+    }
+  }
+}
+
+QVariant InsertPixmapItem::itemChange(GraphicsItemChange change, const QVariant &value)
+{
+  if (grab[0] && change == ItemSelectedChange) {
+    for (int i = 0; i < 4; i++) {
+      grab[i]->setVisible(value.toBool());
+    }
+  }
+  return QGraphicsItem::itemChange(change,value);
+}
+
+void InsertPixmapItem::placeGrabs()
+{
+  QRectF rect = sceneBoundingRect();
+  int left = rect.left();
+  int top  = rect.top();
+  int width = rect.width();
+  int height = rect.height();
+
+  points[TopLeft]     = QPointF(left,top);
+  points[TopRight]    = QPointF(left + width,top);
+  points[BottomRight] = QPointF(left + width, top + height);
+  points[BottomLeft]  = QPointF(left, top + height);
+
+  if (grab[0] == NULL) {
+    for (int i = 0; i < 4; i++) {
+      grab[i] = new IpiGrab(this);
+      grab[i]->setParentItem(parentItem());
+      grab[i]->setFlag(QGraphicsItem::ItemIsSelectable,true);
+      grab[i]->setFlag(QGraphicsItem::ItemIsMovable,true);
+      grab[i]->setZValue(100);
+      QPen pen(Qt::black);
+      grab[i]->setPen(pen);
+      grab[i]->setBrush(Qt::black);
+      grab[i]->setRect(0,0,grabSize,grabSize);
+    }
+  }
+
+  for (int i = 0; i < 4; i++) {
+    grab[i]->setPos(points[i].x()-grabSize/2,points[i].y()-grabSize/2);
+  }
+}
+
+void InsertPixmapItem::whatPoint(IpiGrab *grabbed)
+{
+  for (int i = 0; i < 4; i++) {
+    if (grabbed == grab[i]) {
+      selectedPoint = SelectedPoint(i);
+      break;
+    }
+  }
+  positionChanged = true;
+  position = pos();
+}
+
+void InsertPixmapItem::resize(QPointF grabbed)
+{
+  // recalculate corners Y
+  switch (selectedPoint) {
+    case TopLeft:
+    case TopRight:
+      points[TopLeft].setY(grabbed.y());
+      points[TopRight].setY(grabbed.y());
+    break;
+    case BottomLeft:
+    case BottomRight:
+      points[BottomLeft].setY(grabbed.y());
+      points[BottomRight].setY(grabbed.y());
+    break;
+    default:
+    break;
+  }
+  // relaculate corners X
+  switch (selectedPoint) {
+    case TopLeft:
+    case BottomLeft:
+      points[TopLeft].setX(grabbed.x());
+      points[BottomLeft].setX(grabbed.x());
+    break;
+    case TopRight:
+    case BottomRight:
+      points[TopRight].setX(grabbed.x());
+      points[BottomRight].setX(grabbed.x());
+    break;
+    default:
+    break;
+  }
+  qreal  rawWidth, rawHeight;
+
+  // calculate box raw size
+  switch (selectedPoint) {
+    case TopLeft:
+      rawWidth = points[BottomRight].x() - grabbed.x();
+      rawHeight = points[BottomRight].y() - grabbed.y();
+    break;
+    case TopRight:
+      rawWidth = grabbed.x()-points[BottomLeft].x();
+      rawHeight = points[BottomLeft].y() - grabbed.y();
+    break;
+    case BottomRight:
+      rawWidth = grabbed.x() - points[TopLeft].x();
+      rawHeight = grabbed.y() - points[TopLeft].y();
+    break;
+    default:
+      rawWidth = points[TopRight].x() - grabbed.x();
+      rawHeight = grabbed.y() - points[TopRight].y();
+    break;
+  }
+  
+  if (rawWidth > 0 && rawHeight > 0) {
+
+    // Force aspect ratio to match original aspect ratio of picture
+    // ratio = width/height
+    // width = height * ratio
+    qreal  pixmapSizeX = pixmap().size().width();
+    qreal  pixmapSizeY = pixmap().size().height();
+    
+    qreal width = rawHeight * pixmapSizeX / pixmapSizeY;
+    qreal height = rawWidth * pixmapSizeY / pixmapSizeX;
+    
+    if (width * rawHeight < rawWidth * height) {
+      height = rawHeight;
+    } else {
+      width = rawWidth;
+    }
+    
+    // Place the scaled box
+
+    switch (selectedPoint) {
+      case TopLeft:
+        setPos(points[BottomRight].x()-width,points[BottomRight].y()-height);
+      break;
+      case TopRight:
+        setPos(points[BottomLeft].x(),points[BottomLeft].y()-height);
+      break;
+      case BottomRight:
+        setPos(points[TopLeft]);
+      break;
+      default:
+        setPos(points[TopRight].x()-width,points[TopRight].y());
+      break;
+    }
+    
+    // Calculate corners
+    
+    points[TopLeft] = pos();
+    points[TopRight] = QPointF(pos().x() + width,pos().y());
+    points[BottomRight] = pos() + QPointF(width,height);
+    points[BottomLeft] = QPointF(pos().x(),pos().y()+height);
+  
+    for (int i = 0; i < 4; i++) {
+      grab[i]->setPos(points[i].x()-grabSize/2,points[i].y()-grabSize/2);
+    }
+    
+    // Unscale from last time
+    
+    volatile qreal newScale = width/origWidth;
+    scale(1.0/oldScale,1.0/oldScale);
+    
+    // Scale it to the new scale
+    
+    scale(newScale,newScale);
+    oldScale = newScale;
+  }
+}
+
+void InsertPixmapItem::changePicScale()
+{
+  if (isSelected() && (flags() & QGraphicsItem::ItemIsMovable)) {
+    if (positionChanged) {
+
+      beginMacro(QString("DragIpi"));
+      
+      InsertData insertData = insertMeta.value();
+      if (insertData.placement == Center) {
+
+        QPointF delta(pos() - position);
+        volatile qreal deltax = delta.x();
+        volatile qreal deltay = delta.y();
+        volatile qreal deltaX = (sceneBoundingRect().width() - origWidth)/2;
+        volatile qreal deltaY = (sceneBoundingRect().height() - origHeight)/2;
+      
+        delta.setX(deltax + deltaX);
+        delta.setY(deltay + deltaY);
+      
+        // Back annotate to LDraw file
+        insertData.offsets[0] += delta.x()/relativeToWidth;
+        insertData.offsets[1] += delta.y()/relativeToHeight;
+      }
+      insertData.picScale *= oldScale;
+      insertMeta.setValue(insertData);
+      
+      changeInsertOffset(&insertMeta);
+      
+      endMacro();
+    }
+  }
+}
+
+void IpiGrab::mousePressEvent(QGraphicsSceneMouseEvent * /* event */)
+{
+  ipiItem->whatPoint(this);
+}
+
+void IpiGrab::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
+{
+  ipiItem->resize(event->scenePos());
+}
+
+void IpiGrab::mouseReleaseEvent(QGraphicsSceneMouseEvent * /* event */)
+{
+  ipiItem->changePicScale();
+}
+
+
 #if 0
 
 void PlacementPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
@@ -559,48 +843,7 @@ void PlacementPixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 
 #endif
 
-void InsertPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
-{     
-  QGraphicsItem::mousePressEvent(event);
-  positionChanged = false;
-  position = pos();
-} 
-  
-void InsertPixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
-{ 
-  QGraphicsItem::mouseMoveEvent(event);
-  if (isSelected() && (flags() & QGraphicsItem::ItemIsMovable)) {
-    positionChanged = true;
-  }   
-}
 
-void InsertPixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
-{
-  QGraphicsItem::mouseReleaseEvent(event);
-
-  if (isSelected() && (flags() & QGraphicsItem::ItemIsMovable)) {
-
-    QPointF newPosition;
-
-    // back annotate the movement of the PLI into the LDraw file.
-    newPosition = pos() - position;
-    
-    if (newPosition.x() || newPosition.y()) {
-      positionChanged = true;
-
-      InsertData insertData = insertMeta.value();
-      
-      volatile float offset[2] = { newPosition.x()/relativeToWidth, newPosition.y()/relativeToHeight };
-      
-      insertData.offsets[0] += offset[0];
-      insertData.offsets[1] += offset[1];
-
-      insertMeta.setValue(insertData);
-
-      changeInsertOffset(&insertMeta);
-    }
-  }
-}
 
 
 

@@ -40,6 +40,7 @@
 class Step;
 class AbstractStepsElement;
 class Where;
+class QGraphicsView;
 
 class Steps : public Placement {
   public:

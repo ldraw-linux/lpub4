@@ -59,16 +59,17 @@ Step::Step(
   AbstractStepsElement *_parent,
   int      num,            // step number as seen by the user
   Meta    &meta,           // the current state of the meta-commands
-  bool     calledOut_,     // if we're a callout
+  bool     calledOut,      // if we're a callout
   bool     multiStep,      // we can't be a multi-step
   Pli     &_pli)
+  : 
+  calledOut(calledOut), 
+  pli(_pli)
 {
-  top    = topOfStep;
+  top = topOfStep;
   parent = _parent;
-
+  
   submodelLevel = meta.submodelStack.size();
-
-  calledOut = calledOut_;
 
   stepNumber.number = num;                                  // record step number
 
@@ -108,7 +109,6 @@ Step::Step(
     stepNumber.margin    = meta.LPub.stepNumber.margin;
     pliPerStep           = false;
   }
-  pli = _pli;
   pli.steps = grandparent();
   pli.step  = this;
 }

@@ -376,7 +376,7 @@ int Gui::addGraphicsPageItems(
                                  &page->meta, 
                                  *step->csiPixmap.pixmap,
                                   step->submodelLevel,
-                                  pageBg, 
+                                  pageBg,
                                   page->relativeType);
             csiItem->setPos(step->csiPixmap.loc[XX],
                             step->csiPixmap.loc[YY]);

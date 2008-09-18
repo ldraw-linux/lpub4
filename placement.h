@@ -32,11 +32,15 @@
 
 
 #include <QGraphicsPixmapItem>
-#include <QPixmap>
+#include <QGraphicsRectItem>
+#include <QSize>
+#include <QRect>
+
 #include "meta.h"
 #include "metaitem.h"
 
-class QGraphicsScene;
+class QPixmap;
+//class QGraphicsScene;
 
 //---------------------------------------------------------------------------
 //
@@ -138,6 +142,59 @@ class Placement {
       int height);
 };
 
+class IpiGrab;
+
+class InsertPixmapItem : public QGraphicsPixmapItem, public MetaItem, public Placement
+{
+  public:
+    QPointF    position;
+    bool       positionChanged;
+    int        grabSize;
+    qreal      origWidth;
+    qreal      origHeight;
+    qreal      oldScale;
+    IpiGrab   *grab[4];
+    QPointF    points[4];
+
+    enum SelectedPoint { TopLeft, TopRight, BottomRight, BottomLeft} selectedPoint;
+
+    InsertMeta insertMeta;
+
+    InsertPixmapItem();
+    
+    InsertPixmapItem(
+      QPixmap    &pixmap,
+      InsertMeta &insertMeta,
+      QGraphicsItem *parent = 0);
+    void placeGrabs();
+    void whatPoint(IpiGrab *);
+    void resize(QPointF);
+    void changePicScale();
+    
+  protected:
+    virtual void mousePressEvent(QGraphicsSceneMouseEvent *event);
+    virtual void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
+    virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
+    QVariant itemChange(GraphicsItemChange change, const QVariant &value);
+};
+
+class IpiGrab : public QGraphicsRectItem
+{
+public:
+  InsertPixmapItem *ipiItem;
+  IpiGrab(
+    InsertPixmapItem *ipiItem)
+    :
+    ipiItem(ipiItem)
+  {
+    setFlag(QGraphicsItem::ItemIsMovable,true);
+  }
+private:
+  void mousePressEvent(QGraphicsSceneMouseEvent *event);
+  void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
+  void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
+};
+
 class PlacementPixmap : public Placement {
   public:
     QPixmap   *pixmap;
@@ -146,6 +203,8 @@ class PlacementPixmap : public Placement {
     {
     }
 };
+
+#if 0
 
 class PlacementPixmapItem : public QGraphicsPixmapItem, public Placement, public MetaItem
 {
@@ -177,35 +236,7 @@ class PlacementPixmapItem : public QGraphicsPixmapItem, public Placement, public
     virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
 };
 
-class InsertPixmapItem : public QGraphicsPixmapItem, public Placement, public MetaItem
-{
-  public:
-    QPointF    position;
-    bool       positionChanged;
-    InsertMeta insertMeta;
-
-    InsertPixmapItem();
-    
-    InsertPixmapItem(
-      QPixmap    &pixmap,
-      InsertMeta &insertMeta,
-      QGraphicsItem *parent = 0)
-      
-      : QGraphicsPixmapItem(pixmap,parent),
-        insertMeta(insertMeta)
-    {
-      InsertData insertData = insertMeta.value();
-
-      size[0] = pixmap.width() *insertData.picScale;
-      size[1] = pixmap.height()*insertData.picScale;
-      setFlag(QGraphicsItem::ItemIsSelectable,true);
-      setFlag(QGraphicsItem::ItemIsMovable,true);
-    }
-  protected:
-    virtual void mousePressEvent(QGraphicsSceneMouseEvent *event);
-    virtual void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
-    virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
-};
+#endif
 
 class PlacementNum : public Placement {
   public:

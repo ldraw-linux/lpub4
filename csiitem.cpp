@@ -24,17 +24,19 @@
  * make up the LPub program.
  *
  ***************************************************************************/
+#include <QMenu>
+#include <QAction>
+#include <QGraphicsRectItem>
+#include <QGraphicsSceneContextMenuEvent>
 
 #include "lpub.h"
 #include "step.h"
 #include "ranges.h"
 #include "ranges_element.h"
 #include "callout.h"
+#include "calloutbackgrounditem.h"
 #include "csiitem.h"
 #include "metaitem.h"
-#include <QMenu>
-#include <QAction>
-#include <QGraphicsSceneContextMenuEvent>
 #include "commonmenus.h"
 
 CsiItem::CsiItem(
@@ -44,35 +46,47 @@ CsiItem::CsiItem(
   int            _submodelLevel,
   QGraphicsItem *parent,
   PlacementType  _parentRelativeType)
+  :
+  QGraphicsPixmapItem(pixmap,parent)
 {
-  step    = _step;
+  step = _step;
+  meta = _meta;
+  submodelLevel = _submodelLevel;
+  parentRelativeType = _parentRelativeType;
   
-  assem = &_meta->LPub.assem;
-  if (_parentRelativeType == StepGroupType) {
-    divider = &_meta->LPub.multiStep.divider;
-  } else if (_parentRelativeType == CalloutType) {
-    divider = &_meta->LPub.callout.divider;
+  assem = &meta->LPub.assem;
+  if (parentRelativeType == StepGroupType) {
+    divider = &meta->LPub.multiStep.divider;
+  } else if (parentRelativeType == CalloutType) {
+    divider = &meta->LPub.callout.divider;
   } else {
     divider = NULL;
   }
-  meta  =  _meta;
-  parentRelativeType = _parentRelativeType;
-  setPixmap(pixmap);
-  setParentItem(parent);
+
+  origWidth = pixmap.width();
+  origHeight = pixmap.height();
+
   setTransformationMode(Qt::SmoothTransformation);
-  submodelLevel = _submodelLevel;
 
   setToolTip(step->path());
 
-  setFlag(QGraphicsItem::ItemIsSelectable,true);
   if (parentRelativeType == SingleStepType) {
+    setFlag(QGraphicsItem::ItemIsSelectable,true);
     setFlag(QGraphicsItem::ItemIsMovable,true);
   }
+  grabSize = toPixels(0.03,DPI);
+  modelScale = meta->LPub.assem.modelScale;
+  for (int i = 0; i < 8; i++) {
+    grab[i] = NULL;
+  }
+  oldScale = 1.0;
 }
+
 void CsiItem::setFlag(GraphicsItemFlag flag, bool value)
 {
   QGraphicsItem::setFlag(flag,value);
 }
+
 void CsiItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 {
   QMenu menu;
@@ -316,6 +330,7 @@ void CsiItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
   if (parentRelativeType == SingleStepType) {
     positionChanged = false;
     position = pos();
+    placeGrabs();
   }
   gui->showLine(step->topOfStep());
 }
@@ -332,6 +347,7 @@ void CsiItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
         callout->drawTips(delta);
       }      
       positionChanged = true;
+      placeGrabs();
     }
     QGraphicsPixmapItem::mouseMoveEvent(event);
   }
@@ -362,7 +378,7 @@ void CsiItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
         for (int i = 0; i < step->list.size(); i++) {
           Callout *callout = step->list[i];
           callout->updatePointers(deltaI);
-        }      
+        }
 
         changePlacementOffset(step->topOfStep(),&meta->LPub.assem.placement);  
       }
@@ -370,3 +386,226 @@ void CsiItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     }
   }
 }
+
+void CsiItem::placeGrabs()
+{
+  QRectF rect = sceneBoundingRect();
+  int left = rect.left();
+  int top  = rect.top();
+  int width = rect.width();
+  int height = rect.height();
+
+  points[TopLeft]     = QPointF(left,top);
+  points[TopRight]    = QPointF(left + width,top);
+  points[BottomRight] = QPointF(left + width, top + height);
+  points[BottomLeft]  = QPointF(left, top + height);
+
+  if (grab[0] == NULL) {
+    for (int i = 0; i < 4; i++) {
+      grab[i] = new CsiGrab(this);
+      grab[i]->setParentItem(parentItem());
+      grab[i]->setFlag(QGraphicsItem::ItemIsSelectable,true);
+      grab[i]->setFlag(QGraphicsItem::ItemIsMovable,true);
+      grab[i]->setZValue(100);
+      QPen pen(Qt::black);
+      grab[i]->setPen(pen);
+      grab[i]->setBrush(Qt::black);
+      grab[i]->setRect(0,0,grabSize,grabSize);
+    }
+  }
+
+  for (int i = 0; i < 4; i++) {
+    grab[i]->setPos(points[i].x()-grabSize/2,points[i].y()-grabSize/2);
+  }
+}
+
+void CsiItem::whatPoint(CsiGrab *grabbed)
+{
+  for (int i = 0; i < 4; i++) {
+    if (grabbed == grab[i]) {
+      selectedPoint = SelectedPoint(i);
+      break;
+    }
+  }
+  positionChanged = true;
+  position = pos();
+}
+
+void CsiItem::resize(QPointF grabbed)
+{
+  // recalculate corners Y
+  switch (selectedPoint) {
+    case TopLeft:
+    case TopRight:
+      points[TopLeft].setY(grabbed.y());
+      points[TopRight].setY(grabbed.y());
+    break;
+    case BottomLeft:
+    case BottomRight:
+      points[BottomLeft].setY(grabbed.y());
+      points[BottomRight].setY(grabbed.y());
+    break;
+    default:
+    break;
+  }
+  // relaculate corners X
+  switch (selectedPoint) {
+    case TopLeft:
+    case BottomLeft:
+      points[TopLeft].setX(grabbed.x());
+      points[BottomLeft].setX(grabbed.x());
+    break;
+    case TopRight:
+    case BottomRight:
+      points[TopRight].setX(grabbed.x());
+      points[BottomRight].setX(grabbed.x());
+    break;
+    default:
+    break;
+  }
+  qreal  rawWidth, rawHeight;
+
+  // calculate box raw size
+  switch (selectedPoint) {
+    case TopLeft:
+      rawWidth = points[BottomRight].x() - grabbed.x();
+      rawHeight = points[BottomRight].y() - grabbed.y();
+    break;
+    case TopRight:
+      rawWidth = grabbed.x()-points[BottomLeft].x();
+      rawHeight = points[BottomLeft].y() - grabbed.y();
+    break;
+    case BottomRight:
+      rawWidth = grabbed.x() - points[TopLeft].x();
+      rawHeight = grabbed.y() - points[TopLeft].y();
+    break;
+    default:
+      rawWidth = points[TopRight].x() - grabbed.x();
+      rawHeight = grabbed.y() - points[TopRight].y();
+    break;
+  }
+  
+  if (rawWidth > 0 && rawHeight > 0) {
+
+    // Force aspect ratio to match original aspect ratio of picture
+    // ratio = width/height
+    // width = height * ratio
+    qreal  pixmapSizeX = pixmap().size().width();
+    qreal  pixmapSizeY = pixmap().size().height();
+    
+    qreal width = rawHeight * pixmapSizeX / pixmapSizeY;
+    qreal height = rawWidth * pixmapSizeY / pixmapSizeX;
+    
+    if (width * rawHeight < rawWidth * height) {
+      height = rawHeight;
+    } else {
+      width = rawWidth;
+    }
+    
+    QPointF size = QPointF(width,height);
+    
+    // Place the scaled box
+
+    switch (selectedPoint) {
+      case TopLeft:
+        setPos(points[BottomRight].x()-width,points[BottomRight].y()-height);
+      break;
+      case TopRight:
+        setPos(points[BottomLeft].x(),points[BottomLeft].y()-height);
+      break;
+      case BottomRight:
+        setPos(points[TopLeft]);
+      break;
+      default:
+        setPos(points[TopRight].x()-width,points[TopRight].y());
+      break;
+    }
+    
+    // Calculate corners
+    
+    points[TopLeft] = pos();
+    points[TopRight] = QPointF(pos().x() + width,pos().y());
+    points[BottomRight] = pos() + size;
+    points[BottomLeft] = QPointF(pos().x(),pos().y()+height);
+  
+    for (int i = 0; i < 4; i++) {
+      grab[i]->setPos(points[i].x()-grabSize/2,points[i].y()-grabSize/2);
+    }
+    
+    // Unscale from last time
+    
+    volatile qreal newScale = width/origWidth;
+    scale(1.0/oldScale,1.0/oldScale);
+    
+    // Scale it to the new scale
+    
+    scale(newScale,newScale);
+    oldScale = newScale;
+  }
+}
+
+void CsiItem::changeModelScale()
+{
+  if (isSelected() && (flags() & QGraphicsItem::ItemIsMovable)) {
+    if (positionChanged) {
+
+      beginMacro(QString("DragCsi"));
+
+      QPointF delta(pos() - position);
+      qreal deltaX = (sceneBoundingRect().width() - origWidth)/2;
+      qreal deltaY = (sceneBoundingRect().height() - origHeight)/2;
+      
+      delta.setX(delta.x() + deltaX);
+      delta.setY(delta.y() + deltaY);
+
+      // back annotate the movement of the CSI into the LDraw file.
+      PlacementData placementData = meta->LPub.assem.placement.value();
+      placementData.offsets[0] += delta.x()/meta->LPub.page.size.value(0);
+      placementData.offsets[1] += delta.y()/meta->LPub.page.size.value(1);
+      meta->LPub.assem.placement.setValue(placementData);
+
+      QPoint deltaI(delta.x(),delta.y());
+
+      if (step) {
+        for (int i = 0; i < step->list.size(); i++) {
+          Callout *callout = step->list[i];
+          callout->updatePointers(deltaI);
+        }
+
+        changePlacementOffset(step->topOfStep(),&meta->LPub.assem.placement);  
+      }
+      
+      qreal scale = modelScale.value();
+      scale *= oldScale;
+      modelScale.setValue(scale);
+      
+      changeFloat(step->topOfStep(),step->bottomOfStep(),&modelScale);
+      
+      endMacro();
+    }
+  }
+}
+
+QVariant CsiItem::itemChange(GraphicsItemChange change, const QVariant &value)
+{
+  if (grab[0] && change == ItemSelectedChange) {
+    for (int i = 0; i < 4; i++) {
+      grab[i]->setVisible(value.toBool());
+    }
+  }
+  return QGraphicsItem::itemChange(change,value);
+}
+
+void CsiGrab::mousePressEvent(QGraphicsSceneMouseEvent * /* event */)
+{
+  csiItem->whatPoint(this);
+}
+void CsiGrab::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
+{
+  csiItem->resize(event->scenePos());
+}
+void CsiGrab::mouseReleaseEvent(QGraphicsSceneMouseEvent * /* event */)
+{
+  csiItem->changeModelScale();
+}
+
