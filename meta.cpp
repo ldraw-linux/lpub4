@@ -508,10 +508,70 @@ void BoolMeta::doc(QTextStream &out, QString preamble)
 
 /* ------------------ */ 
 
-QString placementNames[] =
+QString placementOptions[][3] = 
 {
-  "TOP_LEFT", "TOP", "TOP_RIGHT", "RIGHT",
-  "BOTTOM_RIGHT", "BOTTOM", "BOTTOM_LEFT", "LEFT", "CENTER"
+  { "TOP_LEFT",    "",      "OUTSIDE" },
+  { "TOP",         "LEFT",  "OUTSIDE" },
+  { "TOP",         "CENTER","OUTSIDE" },
+  { "TOP",         "RIGHT", "OUTSIDE" },
+  { "TOP_RIGHT",   "",      "OUTSIDE" },
+
+  { "LEFT",        "TOP",   "OUTSIDE" },
+  { "TOP_LEFT",    "",      "INSIDE" },
+  { "TOP",         "",      "INSIDE" },
+  { "TOP_RIGHT",   "",      "INSIDE" },
+  { "RIGHT",       "TOP",   "OUTSIDE" },
+
+  { "LEFT",        "CENTER","OUTSIDE" },
+  { "LEFT",        "",      "INSIDE" },
+  { "CENTER",      "",      "INSIDE" },
+  { "RIGHT",       "",      "INSIDE" },
+  { "RIGHT",       "CENTER","OUTSIDE" },
+
+  { "LEFT",        "BOTTOM", "OUTSIDE" },
+  { "BOTTOM_LEFT", "",       "INSIDE" },
+  { "BOTTOM",      "",       "INSIDE" },
+  { "BOTTOM_RIGHT",""        "INSIDE" },
+  { "BOTTOM",      "RIGHT",  "OUTSIDE" },
+
+  { "BOTTOM_LEFT", "",       "OUTSIDE" },
+  { "BOTTOM",      "LEFT",   "OUTSIDE" },
+  { "BOTTOM",      "CENTER", "OUTSIDE" },
+  { "BOTTOM",      "RIGHT",  "OUTSIDE" },
+  { "BOTTOM_RIGHT","",       "OUTSIDE" }
+};
+
+int placementDecode[][3] = 
+{
+  { TopLeft,     Center, Outside },
+  { Top,         Left,   Outside },
+  { Top,         Center, Outside },
+  { Top,         Right,  Outside },
+  { TopRight,    Center, Outside },
+
+  { Left,        Top,    Outside },
+  { TopLeft,     Center, Inside  },
+  { Top,         Center, Inside  },
+  { TopRight,    Center, Inside  },
+  { Right,       Top,    Outside },
+
+  { Left,        Center, Outside },
+  { Left,        Center, Inside  },
+  { Center,      Center, Inside  },
+  { Right,       Center, Inside  },
+  { Right,       Center, Outside },
+
+  { Left,        Bottom, Outside },
+  { BottomLeft,  Center, Inside },
+  { Bottom,      Center, Inside },
+  { BottomRight, Center, Inside },
+  { Right,       Bottom, Outside },
+  
+  { BottomLeft,  Center, Outside },
+  { Bottom,      Left,   Outside },
+  { Bottom,      Center, Outside },
+  { Bottom,      Right,  Outside },
+  { BottomRight, Center, Outside }
 };
 
 QString relativeNames[] = 
@@ -519,33 +579,38 @@ QString relativeNames[] =
   "PAGE","ASSEM","MULTI_STEP","STEP_NUMBER","PLI","CALLOUT","PAGE_NUMBER"
 };
 
-QString prepositionNames[] = 
-{
-  "INSIDE", "OUTSIDE"
-};
-
 PlacementMeta::PlacementMeta()
 {
-  _value[0].placement = TopLeft;
-  _value[0].justification = Center;
-  _value[0].relativeTo = PageType;
-  _value[0].preposition = Inside;
+  _value[0].placement     = PlacementEnc(placementDecode[TopLeftInsideCorner][0]);
+  _value[0].justification = PlacementEnc(placementDecode[TopLeftInsideCorner][1]);
+  _value[0].relativeTo    = PageType;
+  _value[0].preposition   = PrepositionEnc(placementDecode[TopLeftInsideCorner][2]);
+  _value[0].rectPlacement = TopLeftInsideCorner;
   _value[0].offsets[0] = 0;
   _value[0].offsets[1] = 0;
 }
+
+void PlacementMeta::setValue(
+  RectPlacement placement,
+  PlacementType relativeTo)
+{
+  _value[pushed].placement     = PlacementEnc(placementDecode[placement][0]);
+  _value[pushed].justification = PlacementEnc(placementDecode[placement][1]);
+  _value[pushed].relativeTo    = relativeTo;
+  _value[pushed].preposition   = PrepositionEnc(placementDecode[placement][2]);
+  _value[pushed].rectPlacement = placement;
+}
+
 Rc PlacementMeta::parse(QStringList &argv, int index,Where &here)
 {
-  PlacementEnc   _placement, _justification;
+  RectPlacement  _placementR;
   PlacementType  _relativeTo;
-  PrepositionEnc _preposition;
   float _offsets[2];
   Rc rc = FailureRc;
   QString foo;
 
-  _placement     = _value[pushed].placement;
-  _justification = _value[pushed].justification;
+  _placementR    = _value[pushed].rectPlacement;
   _relativeTo    = _value[pushed].relativeTo;
-  _preposition   = _value[pushed].preposition;
   _offsets[0]    = 0;
   _offsets[1]    = 0;
 
@@ -564,37 +629,38 @@ Rc PlacementMeta::parse(QStringList &argv, int index,Where &here)
     }
   }  
 
+  QString placement, justification, preposition, relativeTo;
+
   QRegExp rx("^(TOP|BOTTOM)$");
   if (argv[index].contains(rx)) {
-    _placement = PlacementEnc(tokenMap[argv[index++]]);
+    placement = argv[index++];
+
     if (index < argv.size()) {
       rx.setPattern("^(LEFT|CENTER|RIGHT)$");
       if (argv[index].contains(rx)) {
-        _justification = PlacementEnc(tokenMap[argv[index++]]);
+        justification = argv[index++];
         rc = OkRc;
+
       } else {
-        rx.setPattern("^(PAGE|ASSEM|MULTI_STEP|STEP_NUMBER|PLI|CALLOUT)$");
-        if (argv[index].contains(rx)) {
-          rc = OkRc;
-        }
+        rc = OkRc;
       }
     } 
   } else {
     rx.setPattern("^(LEFT|RIGHT)$");
     if (argv[index].contains(rx)) {
-      _placement = PlacementEnc(tokenMap[argv[index++]]);
+      placement = argv[index++];
+
       if (index < argv.size()) {
         rx.setPattern("^(TOP|CENTER|BOTTOM)$");
         if (argv[index].contains(rx)) {
-          _justification = PlacementEnc(tokenMap[argv[index++]]);
+          justification = argv[index++];
           rc = OkRc;
         }
       }
     } else {
       rx.setPattern("^(TOP_LEFT|TOP_RIGHT|BOTTOM_LEFT|BOTTOM_RIGHT|CENTER)$");
       if (argv[index].contains(rx)) {
-        _placement = PlacementEnc(tokenMap[argv[index++]]);
-        _justification = Center;
+        placement = argv[index++];
         rc = OkRc;
       }
     }
@@ -603,16 +669,11 @@ Rc PlacementMeta::parse(QStringList &argv, int index,Where &here)
   if (rc == OkRc && index < argv.size()) {
     rx.setPattern("^(PAGE|ASSEM|MULTI_STEP|STEP_NUMBER|PLI|CALLOUT|PAGE_NUMBER)$");
     if (argv[index].contains(rx)) {
-      _relativeTo = PlacementType(tokenMap[argv[index++]]);
-      if (_relativeTo == PageType) {
-        _preposition = Inside;
-      } else {
-        _preposition = Outside;
-      }
+      relativeTo = argv[index++];
       if (index < argv.size()) {
         rx.setPattern("^(INSIDE|OUTSIDE)$");
         if (argv[index].contains(rx)) {
-          _preposition = PrepositionEnc(tokenMap[argv[index++]]);
+          preposition = argv[index++];
           rc = OkRc;
         } 
         if (argv.size() - index == 2) {
@@ -629,14 +690,21 @@ Rc PlacementMeta::parse(QStringList &argv, int index,Where &here)
         rc = OkRc;
       }
     }
-    if (rc != OkRc) {
-      return rc;
-    }
 
-    _value[pushed].placement = _placement;
-    _value[pushed].justification = _justification;
-    _value[pushed].relativeTo = _relativeTo;
-    _value[pushed].preposition = _preposition;
+    int i;
+    for (i = 0; i < NumSpots; i++) {
+      if (placementOptions[i][0] == placement &&
+          placementOptions[i][1] == justification &&
+          placementOptions[i][2] == preposition) {
+        break;
+      }
+    }
+    if (i < NumSpots) {
+      _placementR = RectPlacement(i);
+    } else {
+      return FailureRc;
+    }
+    setValue(_placementR,_relativeTo);
     _value[pushed].offsets[0] = _offsets[0];
     _value[pushed].offsets[1] = _offsets[1];
     _here[pushed] = here;
@@ -649,22 +717,13 @@ Rc PlacementMeta::parse(QStringList &argv, int index,Where &here)
 QString PlacementMeta::format(bool local, bool global)
 {
   QString foo;
+  int placementR = _value[pushed].rectPlacement;
 
-  switch (_value[pushed].placement) {
-    case Top:
-    case Bottom:
-    case Right:
-    case Left:
-      foo = placementNames[_value[pushed].placement] + " "
-          + placementNames[_value[pushed].justification] + " "
-          + relativeNames [_value[pushed].relativeTo] + " "
-          + prepositionNames[_value[pushed].preposition];
-    break;
-    default:
-      foo = placementNames[_value[pushed].placement] + " "
-          + relativeNames [_value[pushed].relativeTo] + " "
-          + prepositionNames[_value[pushed].preposition];
-  }
+  foo = placementOptions[placementR][0] + " " +
+        placementOptions[placementR][1] + " " +
+        relativeNames[_value[pushed].relativeTo] + " " +
+        placementOptions[placementR][2];
+
   if (_value[pushed].offsets[0] || _value[pushed].offsets[1]) {
     QString bar = QString(" %1 %2") .arg(_value[pushed].offsets[0]) 
                                     .arg(_value[pushed].offsets[1]);
@@ -966,6 +1025,13 @@ Rc PointerMeta::parse(QStringList &argv, int index,Where &here)
     return FailureRc;
   }
 }
+
+QString placementNames[] =
+{
+  "TOP_LEFT", "TOP", "TOP_RIGHT", "RIGHT",
+  "BOTTOM_RIGHT", "BOTTOM", "BOTTOM_LEFT", "LEFT", "CENTER"
+};
+
 QString PointerMeta::format(bool local, bool global)
 {
   QString foo;
@@ -1419,6 +1485,11 @@ Rc InsertMeta::parse(QStringList &argv, int index, Where &here)
   
 }
 
+QString prepositionNames[] =
+{
+  "INSIDE", "OUTSIDE"
+};
+
 QString InsertMeta::format(bool local, bool global)
 {
   QString foo;
@@ -1629,7 +1700,7 @@ void CalloutCsiMeta::init(BranchMeta *parent, QString name)
 
 CalloutPliMeta::CalloutPliMeta()
 {
-  placement.setValue(Top,Center,CsiType,Outside);
+  placement.setValue(TopOutside,CsiType);
   perStep.setValue(true);
 }
 
@@ -1670,7 +1741,7 @@ void NumberMeta::init(
 
 NumberPlacementMeta::NumberPlacementMeta()
 {
-  placement.setValue(Right,Top,PartsListType,Outside);
+  placement.setValue(RightTopOutside,PartsListType);
 
   color.setValue("black");
   // font - default
@@ -1869,10 +1940,10 @@ PageMeta::PageMeta()
   background.setValue(BgSubmodelColor);
   dpn.setValue(true);
   togglePnPlacement.setValue(false);
-  number.placement.setValue(BottomRight,PageType,Inside);
+  number.placement.setValue(BottomRightInsideCorner,PageType);
   number.color.setValue("black");
   number.font.setValueUnit("Arial,20,-1,75,0,0,0,0,0");
-  instanceCount.placement.setValue(BottomRight,PageType,Inside);
+  instanceCount.placement.setValue(BottomRightInsideCorner,PageType);
   instanceCount.color.setValue("black");
   instanceCount.font.setValueUnit("Arial,48,-1,75,0,0,0,0,0");
 
@@ -1899,7 +1970,7 @@ void PageMeta::init(BranchMeta *parent, QString name)
 /* ------------------ */ 
 AssemMeta::AssemMeta()
 {
-  placement.setValue(Center,Center,PageType,Inside);
+  placement.setValue(CenterCenter,PageType);
   modelScale.setRange(-10000.0,10000.0);
   modelScale.setFormats(7,4,"99999.9");
   modelScale.setValue(1.0);
@@ -1920,7 +1991,7 @@ void AssemMeta::init(BranchMeta *parent, QString name)
 
 PliMeta::PliMeta()
 {
-  placement.setValue(Right,Top,StepNumberType,Outside);
+  placement.setValue(RightTopOutside,StepNumberType);
   ConstrainData constraint;
   constraint.type = PliConstrainArea;
   constraint.constraint = 0;
@@ -1992,7 +2063,7 @@ void BomBeginMeta::init(BranchMeta *parent, QString name)
 
 BomMeta::BomMeta()
 {
-  placement.setValue(Left,Top,PageType,Inside);
+  placement.setValue(TopLeftInsideCorner,PageType);
   ConstrainData constraint;
   constraint.type = PliConstrainArea;
   constraint.constraint = 0;
@@ -2057,7 +2128,7 @@ CalloutMeta::CalloutMeta()
 {
   stepNum.color.setValue("black");
   // stepNum.font - default
-  stepNum.placement.setValue(Left,Top,PartsListType,Outside);
+  stepNum.placement.setValue(LeftTopOutside,PartsListType);
   sep.setValueInches("Black",DEFAULT_THICKNESS,DEFAULT_MARGINS);
   BorderData borderData;
   borderData.type = BdrSquare;
@@ -2070,14 +2141,14 @@ CalloutMeta::CalloutMeta()
   // subModelFont - default
   instance.color.setValue("black");
   // instance - default
-  instance.placement.setValue(Right, Bottom, CalloutType,Outside);
+  instance.placement.setValue(RightBottomOutside, CalloutType);
   background.setValue(BgSubmodelColor);
   subModelColor.setValue("0xffffff");
   subModelColor.setValue("0xffffcc");
   subModelColor.setValue("0xffcccc");
   subModelColor.setValue("0xccccff");
   subModelFontColor.setValue("black");
-  placement.setValue(Right,Center,CsiType,Outside);
+  placement.setValue(RightOutside,CsiType);
   // freeform
   alloc.setValue(Vertical);
   pli.perStep.setValue(true);
@@ -2112,16 +2183,16 @@ void CalloutMeta::init(BranchMeta *parent, QString name)
 
 MultiStepMeta::MultiStepMeta()
 {
-  stepNum.placement.setValue(Left,Top,PartsListType,Outside);
+  stepNum.placement.setValue(LeftTopOutside,PartsListType);
   stepNum.color.setValue("black");
   // stepNum.font - default
-  placement.setValue(Center,Center,PageType,Inside);
+  placement.setValue(CenterCenter,PageType);
   sep.setValueUnit("black",DEFAULT_THICKNESS,DEFAULT_MARGINS);
   // subModelFont - default
   subModelFontColor.setValue("black");
   // freeform
   alloc.setValue(Vertical);
-  pli.placement.setValue(Left,Top,CsiType,Outside);
+  pli.placement.setValue(LeftTopOutside,CsiType);
   pli.perStep.setValue(true);
 }
 
@@ -2195,7 +2266,7 @@ void ResolutionMeta::doc(QTextStream &out, QString preamble)
 
 LPubMeta::LPubMeta()
 {
-  stepNumber.placement.setValue(TopLeft,PageType,Inside);
+  stepNumber.placement.setValue(TopLeftInsideCorner,PageType);
   stepNumber.color.setValue("black");
   // stepNumber - default 
 }

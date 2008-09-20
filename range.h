@@ -33,7 +33,6 @@
 #include "ranges_element.h"
 
 class QGraphicsItem;
-class QGraphicsView;
 class AbstractRangeElement;
 
 class Range : public AbstractStepsElement {

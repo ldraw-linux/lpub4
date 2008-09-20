@@ -807,26 +807,7 @@ public:
   {
     _value[pushed] = value;
   }
-  void setValue(
-    PlacementEnc   placement, 
-    PlacementEnc   justification, 
-    PlacementType  relativeTo, 
-    PrepositionEnc preposition)
-  {
-    _value[pushed].placement = placement;
-    _value[pushed].justification = justification;
-    _value[pushed].relativeTo = relativeTo;
-    _value[pushed].preposition = preposition;
-  }
-  void setValue(
-    PlacementEnc   placement, 
-    PlacementType  relativeTo, 
-    PrepositionEnc preposition)
-  {
-    _value[pushed].placement = placement;
-    _value[pushed].relativeTo = relativeTo;
-    _value[pushed].preposition = preposition;
-  }
+  void setValue(RectPlacement  placement, PlacementType relativeTo);
   void setValue(int loc[2])
   {
     _value[pushed].offsets[0] = loc[0];

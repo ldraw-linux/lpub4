@@ -37,6 +37,41 @@ enum AllocEnc {
   Vertical
 };
 
+enum RectPlacement{
+
+  TopLeftOutsideCorner, 
+  TopLeftOutside, 
+  TopOutside, 
+  TopRightOutSide, 
+  TopRightOutsideCorner,
+
+  LeftTopOutside,
+  TopLeftInsideCorner, 
+  TopInside,
+  TopRightInsideCorner,
+  RightTopOutside,
+
+  LeftOutside,
+  LeftInside,
+  CenterCenter,
+  RightInside,
+  RightOutside,
+
+  LeftBottomOutside,
+  BottomLeftInsideCorner,
+  BottomInside,
+  BottomRightInsideCorner,
+  RightBottomOutside,
+
+  BottomLeftOutsideCorner,
+  BottomLeftOutside,
+  BottomOutside,
+  BottomRightOutside,
+  BottomRightOutsideCorner,
+
+  NumSpots
+};
+
 enum PlacementEnc {
   TopLeft,
   Top,
@@ -122,9 +157,12 @@ public:
   PlacementEnc   justification;
   PlacementType  relativeTo;
   PrepositionEnc preposition;
+  RectPlacement  rectPlacement;
+
   float offsets[2];
   PlacementData()
   {
+    rectPlacement = TopLeftOutsideCorner;
     offsets[0] = 0;
     offsets[1] = 0;
   }
