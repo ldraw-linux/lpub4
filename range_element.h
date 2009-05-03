@@ -35,6 +35,7 @@
  * This is the base class for step and reserve
  */
 
+class Step;
 class Steps;
 class Callout;
 class AbstractStepsElement;
@@ -72,6 +73,7 @@ class AbstractRangeElement : public Placement {
     QString path();
 	  QString csiName();
     QStringList submodelStack();
+    bool    onlyChild();
 };
 
 #endif

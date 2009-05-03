@@ -47,6 +47,8 @@
 #include "lpub.h"
 #include "commonmenus.h"
 #include "lpub_preferences.h"
+#include "ranges_element.h"
+#include "range_element.h"
 
 QCache<QString,QString> Pli::orientation;
     
@@ -98,10 +100,10 @@ PliPart::~PliPart()
 
 float PliPart::maxMargin()
 {
-  float margin1 = qMax(instanceMeta.margin.value(XX),
-                       csiMargin.value(XX));
+  float margin1 = qMax(instanceMeta.margin.valuePixels(XX),
+                       csiMargin.valuePixels(XX));
   if (annotWidth) {
-    margin1 = qMax(margin1,annotateMeta.margin.value(XX));
+    margin1 = qMax(margin1,annotateMeta.margin.valuePixels(XX));
   }
   return margin1;
 }
@@ -291,15 +293,13 @@ int Pli::createPartImage(
   QPixmap  *pixmap)
 {
   float modelScale = pliMeta.modelScale.value();
-  ResolutionType resolutionType = meta->LPub.resolution.type();
-  QString        unitsName = resolutionType ? "DPI" : "DPCM";
-  float          resolution    = meta->LPub.resolution.value();
+  QString        unitsName = resolutionType() ? "DPI" : "DPCM";
 
   QString key = QString("%1_%2_%3_%4_%5_%6_%7")
                     .arg(partialKey) 
-                    .arg(meta->LPub.page.size.value(0)) 
-                    .arg(resolution)
-                    .arg(resolutionType == DPI ? "DPI" : "DPCM")
+                    .arg(meta->LPub.page.size.valuePixels(0)) 
+                    .arg(resolution())
+                    .arg(resolutionType() == DPI ? "DPI" : "DPCM")
                     .arg(modelScale)
                     .arg(pliMeta.angle.value(0))
                     .arg(pliMeta.angle.value(1));
@@ -374,9 +374,10 @@ int Pli::placePli(
   int   &width,
   int   &height)
 {
+  
   // Place the first row
   BorderData borderData;
-  borderData = pliMeta.border.value();
+  borderData = pliMeta.border.valuePixels();
   int left = 0;
   int nPlaced = 0;
   int tallest = 0;
@@ -389,7 +390,6 @@ int Pli::placePli(
 
   for (int i = 0; i < keys.size(); i++) {
     parts[keys[i]]->placed = false;
-
     if (parts[keys[i]]->height > yConstraint) {
       return -2;
     }
@@ -431,15 +431,15 @@ int Pli::placePli(
 
     QPair<int, int> margin;
 
-    margin.first = qMax(prevPart->instanceMeta.margin.value(XX),
-                        prevPart->csiMargin.value(XX));
+    margin.first = qMax(prevPart->instanceMeta.margin.valuePixels(XX),
+                        prevPart->csiMargin.valuePixels(XX));
 
     tallest = qMax(tallest,prevPart->height);
 
     int right = left + prevPart->width;
     int bot = prevPart->height;
 
-    float tmargin = prevPart->instanceMeta.margin.value(YY);
+    float tmargin = prevPart->instanceMeta.margin.valuePixels(YY);
     botMargin = qMax(botMargin,tmargin);
 
     // allocate new row
@@ -459,7 +459,7 @@ int Pli::placePli(
 
         if ( ! part->placed) {
 
-          float tmargin = part->instanceMeta.margin.value(YY);
+          float tmargin = part->instanceMeta.margin.valuePixels(YY);
           int splitMargin = qMax(prevPart->topMargin,tmargin);
 
           bot += splitMargin;
@@ -469,7 +469,6 @@ int Pli::placePli(
           // dropping part down into prev part (top part is right edge, bottom left)
 
           for (overlap = 1; overlap < limit1 && ! overlapped; ) {
-
             if (overlap > limit2) {
               for (int right = 0, left = 0;
                        right < limit2;
@@ -510,17 +509,15 @@ int Pli::placePli(
 
       PliPart *part = parts[keys[i]];
 
-      margin.first    = qMax(part->instanceMeta.margin.value(XX),
-                        part->csiMargin.value(XX));
-      float tmargin   = part->instanceMeta.margin.value(YY);
+      margin.first    = qMax(part->instanceMeta.margin.valuePixels(XX),
+                        part->csiMargin.valuePixels(XX));
+      float tmargin   = part->instanceMeta.margin.valuePixels(YY);
       int splitMargin = qMax(prevPart->topMargin,tmargin);
 
       prevPart = parts[keys[i]];
 
-      bot -= overlap;
-
       prevPart->left = left;
-      prevPart->bot  = bot;
+      prevPart->bot  = bot - overlap;
       prevPart->placed = true;
       prevPart->col = cols;
       nPlaced++;
@@ -536,19 +533,21 @@ int Pli::placePli(
 
       // try to do sub columns
 
-      if (packSubs && overlap == 0) {
+      if (packSubs && 0 /* && overlap == 0 */ ) {
         int subLeft = left + prevPart->width;
-        int top = bot + prevPart->height + prevPart->topMargin;
+        int top = bot + prevPart->height - overlap + prevPart->topMargin;
 
         // allocate new sub_col
 
         while (nPlaced < keys.size() && i < parts.size()) {
 
           PliPart *part = parts[keys[i]];
+          int subMargin = 0;
           for (i = 0; i < keys.size(); i++) {
             part = parts[keys[i]];
             if ( ! part->placed) {
-              if (subLeft + part->width <= right &&
+              subMargin = qMax(prevPart->csiMargin.valuePixels(XX),part->csiMargin.valuePixels(XX));
+              if (subLeft + subMargin + part->width <= right &&
                   bot + part->height + part->topMargin <= top) {
                 break;
               }
@@ -560,7 +559,7 @@ int Pli::placePli(
           }
 
           int width = part->width;
-          part->left = subLeft;
+          part->left = subLeft + subMargin;
           part->bot  = bot;
           part->placed = true;
           nPlaced++;
@@ -573,9 +572,10 @@ int Pli::placePli(
 
             for (i = 0; i < parts.size(); i++) {
               part = parts[keys[i]];
+              subMargin = qMax(prevPart->csiMargin.valuePixels(XX),part->csiMargin.valuePixels(XX));
               if ( ! part->placed &&
                   subBot + part->height + splitMargin <= top &&
-                  subLeft + part->width <= right) {
+                  subLeft + subMargin + part->width <= right) {
                 break;
               }
             }
@@ -584,7 +584,7 @@ int Pli::placePli(
               break;
             }
 
-            part->left = subLeft;
+            part->left = subLeft + subMargin;
             part->bot  = subBot;
             part->placed = true;
             nPlaced++;
@@ -594,6 +594,8 @@ int Pli::placePli(
           subLeft += width;
         }
       }
+      
+      bot -= overlap;
 
       // FIMXE:: try to pack something under bottom of the row.
 
@@ -608,9 +610,9 @@ int Pli::placePli(
 
     part = parts[keys[widest]];
     if (part->annotWidth) {
-      margin.second = qMax(part->annotateMeta.margin.value(XX),part->csiMargin.value(XX));
+      margin.second = qMax(part->annotateMeta.margin.valuePixels(XX),part->csiMargin.valuePixels(XX));
     } else {
-      margin.second = part->csiMargin.value(XX);
+      margin.second = part->csiMargin.valuePixels(XX);
     }
     margins.append(margin);
   }
@@ -658,10 +660,10 @@ void Pli::placeCols(
 
   // Place the first row
   BorderData borderData;
-  borderData = pliMeta.border.value();
+  borderData = pliMeta.border.valuePixels();
 
   float topMargin = qMax(borderData.margin[1]+borderData.thickness,parts[keys[0]]->topMargin);
-  float botMargin = qMax(borderData.margin[1]+borderData.thickness,parts[keys[0]]->instanceMeta.margin.value(YY));
+  float botMargin = qMax(borderData.margin[1]+borderData.thickness,parts[keys[0]]->instanceMeta.margin.valuePixels(YY));
 
   int height = 0;
   int width;
@@ -692,8 +694,8 @@ void Pli::placeCols(
   part = parts[keys[keys.size()-1]];
   width += qMax(part->maxMargin(),borderMargin);
   
-  Placement::size[0] = width;
-  Placement::size[1] = topMargin + height + botMargin;
+  size[0] = width;
+  size[1] = topMargin + height + botMargin;
 }
 
 void Pli::getLeftEdge(
@@ -738,32 +740,12 @@ void Pli::getRightEdge(
   }
 }
 
-int Pli::sizePli(Meta *_meta, PlacementType _parentRelativeType)
+int Pli::sortPli()
 {
-  meta = _meta;
-  switch (_parentRelativeType) {
-    case StepGroupType:
-      placement = meta->LPub.multiStep.pli.placement;
-    break;
-    case CalloutType:
-      placement = meta->LPub.callout.pli.placement;
-    break;
-    default:
-      placement = meta->LPub.pli.placement;
-    break;
-  }
-  parentRelativeType = _parentRelativeType;
-
-  margin.setValueUnits(0,0);
-
-  if (bom) {
-    pliMeta = meta->LPub.bom;
-    
-  } else {
-    pliMeta = meta->LPub.pli;
-  }
-
   QString key;
+  
+  widestPart = 0;
+  tallestPart = 0;
 
   foreach(key,parts.keys()) {
     PliPart *part;
@@ -785,6 +767,10 @@ int Pli::sizePli(Meta *_meta, PlacementType _parentRelativeType)
       QString imageName = Paths::partsDir + "/" + key + ".png";
 
       QPixmap *pixmap = new QPixmap();
+      
+      if (pixmap == NULL) {
+        return -1;
+      }
 
       if (createPartImage(key,part->type,part->color,pixmap)) {
         QMessageBox::warning(NULL,QMessageBox::tr("LPub"),
@@ -810,7 +796,7 @@ int Pli::sizePli(Meta *_meta, PlacementType _parentRelativeType)
 
       descr = QString("%1x") .arg(part->instances.size(),0,10);
       
-      QString font = pliMeta.instance.font.value();
+      QString font = pliMeta.instance.font.valueFoo();
       QString color = pliMeta.instance.color.value();
       
       part->instanceText = 
@@ -831,7 +817,7 @@ int Pli::sizePli(Meta *_meta, PlacementType _parentRelativeType)
 
       if (descr.size()) {
 
-        font = pliMeta.annotate.font.value();
+        font = pliMeta.annotate.font.valueFoo();
         color = pliMeta.annotate.color.value();
          part->annotateText = 
           new AnnotateTextItem(this,part,descr,font,color,parentRelativeType);
@@ -842,10 +828,10 @@ int Pli::sizePli(Meta *_meta, PlacementType _parentRelativeType)
           part->width = part->annotWidth;
         }
 
-        if (part->annotateMeta.margin.value(YY) > part->csiMargin.value(YY)) {
-          part->partTopMargin = part->annotateMeta.margin.value(YY);
+        if (part->annotateMeta.margin.valuePixels(YY) > part->csiMargin.valuePixels(YY)) {
+          part->partTopMargin = part->annotateMeta.margin.valuePixels(YY);
         } else {
-          part->partTopMargin = part->csiMargin.value(YY);
+          part->partTopMargin = part->csiMargin.valuePixels(YY);
         }
 
         for (int h = 0; h < part->annotHeight + part->partTopMargin; h++) {
@@ -853,21 +839,21 @@ int Pli::sizePli(Meta *_meta, PlacementType _parentRelativeType)
           part->rightEdge << part->width;
         }
 
-        part->topMargin = part->annotateMeta.margin.value(YY);
+        part->topMargin = part->annotateMeta.margin.valuePixels(YY);
       } else {
         part->annotateText = NULL;
         part->annotWidth  = 0;
         part->annotHeight = 0;
         part->partTopMargin = 0;
-        part->topMargin = part->csiMargin.value(YY);
+        part->topMargin = part->csiMargin.valuePixels(YY);
       }
       getLeftEdge(image,part->leftEdge);
       getRightEdge(image,part->rightEdge);
 
-      if (part->instanceMeta.margin.value(YY) > part->csiMargin.value(YY)) {
-        part->partBotMargin = part->instanceMeta.margin.value(YY);
+      if (part->instanceMeta.margin.valuePixels(YY) > part->csiMargin.valuePixels(YY)) {
+        part->partBotMargin = part->instanceMeta.margin.valuePixels(YY);
       } else {
-        part->partBotMargin = part->csiMargin.value(YY);
+        part->partBotMargin = part->csiMargin.valuePixels(YY);
       }
 
       for (int h = 0; h < part->textHeight + part->partBotMargin; h++) {
@@ -892,14 +878,16 @@ int Pli::sizePli(Meta *_meta, PlacementType _parentRelativeType)
                      .arg(part->type)
                      .arg(part->color);
       }
+      if (part->width > widestPart) {
+        widestPart = part->width;
+      }
+      if (part->height > tallestPart) {
+        tallestPart = part->height;
+      }
     } else {
       delete parts[key];
       parts.remove(key);
     }
-  }
-
-  if (parts.size() == 0) {
-    return 1;
   }
 
   sortedKeys = parts.keys();
@@ -915,6 +903,71 @@ int Pli::sizePli(Meta *_meta, PlacementType _parentRelativeType)
       }
     }
   }
+  
+  return 0;
+}
+
+int Pli::sizePli(Meta *_meta, PlacementType _parentRelativeType)
+{
+  int rc;
+
+  parentRelativeType = _parentRelativeType;
+  
+  if (parts.size() == 0) {
+    return 1;
+  }
+
+  meta = _meta;
+
+  if (bom) {
+    pliMeta = meta->LPub.bom;
+    
+  } else {
+    pliMeta = meta->LPub.pli;
+  }
+
+  rc = sortPli();
+  if (rc != 0) {
+    return rc;
+  }
+  
+  ConstrainData constrainData = pliMeta.constrain.value();
+  
+  return resizePli(meta,constrainData);
+}
+
+int Pli::sizePli(ConstrainData::PliConstrain constrain, unsigned height)
+{
+  if (parts.size() == 0) {
+    return 1;
+  }
+  
+  if (meta) {
+    ConstrainData constrainData;
+    constrainData.type = constrain;
+    constrainData.constraint = height;
+  
+    return resizePli(meta,constrainData);
+  }
+  return 1;
+}
+
+int Pli::resizePli(
+  Meta *meta,
+  ConstrainData &constrainData)
+{
+  
+  switch (parentRelativeType) {
+    case StepGroupType:
+      placement = meta->LPub.multiStep.pli.placement;
+    break;
+    case CalloutType:
+      placement = meta->LPub.callout.pli.placement;
+    break;
+    default:
+      placement = meta->LPub.pli.placement;
+    break;
+  }
 
   // Fill the part list image using constraint
   //   Constrain Height
@@ -928,9 +981,7 @@ int Pli::sizePli(Meta *_meta, PlacementType _parentRelativeType)
   bool sortType = pliMeta.sort.value();
   int pliWidth,pliHeight;
 
-  ConstrainData constrainData = pliMeta.constrain.value();
-
-  if (constrainData.type == PliConstrainHeight) {
+  if (constrainData.type == ConstrainData::PliConstrainHeight) {
     int cols;
     int rc;
     rc = placePli(sortedKeys,
@@ -942,13 +993,9 @@ int Pli::sizePli(Meta *_meta, PlacementType _parentRelativeType)
                   pliWidth,
                   pliHeight);
     if (rc == -2) {
-      Where here;
-      here = pliMeta.constrain.here();
-      gui->parseError("Error: Packing PLI failed. Part taller than constraint",here);
-      clear();
-      return -1;
+      constrainData.type = ConstrainData::PliConstrainArea;
     }
-  } else if (constrainData.type == PliConstrainColumns) {
+  } else if (constrainData.type == ConstrainData::PliConstrainColumns) {
 	  if (parts.size() <= constrainData.constraint) {
 	    placeCols(sortedKeys);
 	    pliWidth = Placement::size[0];
@@ -959,7 +1006,7 @@ int Pli::sizePli(Meta *_meta, PlacementType _parentRelativeType)
 
       int maxHeight = 0;
       for (int i = 0; i < parts.size(); i++) {
-        maxHeight += parts[sortedKeys[i]]->height + parts[sortedKeys[i]]->csiMargin.value(1);
+        maxHeight += parts[sortedKeys[i]]->height + parts[sortedKeys[i]]->csiMargin.valuePixels(1);
       }
 
       maxHeight += maxHeight;
@@ -979,7 +1026,7 @@ int Pli::sizePli(Meta *_meta, PlacementType _parentRelativeType)
 		    }
       }
     }
-  } else if (constrainData.type == PliConstrainWidth) {
+  } else if (constrainData.type == ConstrainData::PliConstrainWidth) {
 
     int height = 0;
     for (int i = 0; i < parts.size(); i++) {
@@ -989,7 +1036,7 @@ int Pli::sizePli(Meta *_meta, PlacementType _parentRelativeType)
     int cols;
     int good_height = height;
 
-    for ( ; height > 0; height--) {
+    for ( ; height > 0; height -= 4) {
 
       int rc = placePli(sortedKeys,10000000,
                         height,
@@ -1022,7 +1069,7 @@ int Pli::sizePli(Meta *_meta, PlacementType _parentRelativeType)
              cols,
              pliWidth,
              pliHeight);
-  } else if (constrainData.type == PliConstrainArea) {
+  } else if (constrainData.type == ConstrainData::PliConstrainArea) {
 
     int height = 0;
     for (int i = 0; i < parts.size(); i++) {
@@ -1077,7 +1124,7 @@ int Pli::sizePli(Meta *_meta, PlacementType _parentRelativeType)
              cols,
              pliWidth,
              pliHeight);
-  } else if (constrainData.type == PliConstrainSquare) {
+  } else if (constrainData.type == ConstrainData::PliConstrainSquare) {
 
     int height = 0;
     for (int i = 0; i < parts.size(); i++) {
@@ -1103,8 +1150,6 @@ int Pli::sizePli(Meta *_meta, PlacementType _parentRelativeType)
         break;
       }
 
-
-
       int h = pliWidth;
       int w = pliHeight;
 
@@ -1128,32 +1173,17 @@ int Pli::sizePli(Meta *_meta, PlacementType _parentRelativeType)
              pliHeight);
   }
 
-  Placement::size[0] = pliWidth;
-  Placement::size[1] = pliHeight;
+  size[0] = pliWidth;
+  size[1] = pliHeight;
 
   return 0;
 }
 
-int Pli::addPli(
-  int       submodelLevel,
-  QGraphicsItem *parent)
+void Pli::positionChildren(
+  int height,
+  qreal scaleX,
+  qreal scaleY)
 {
-  int width = Placement::size[0];
-  int height = Placement::size[1];
-
-  background = 
-    new PliBackgroundItem(
-          this,
-          width,
-          height,
-          parentRelativeType,
-          submodelLevel,
-          parent);
-          
-  if ( ! background) {
-    return -1;
-  }
-
   QString key;
 
   foreach (key, sortedKeys) {
@@ -1170,30 +1200,56 @@ int Pli::addPli(
     if (part->annotateText) {
       part->annotateText->setParentItem(background);
       part->annotateText->setPos(
-        x + part->width - part->annotWidth,
-        y - part->height /*+ part->annotHeight*/);
+        (x + part->width - part->annotWidth)/scaleX,
+        (y - part->height /*+ part->annotHeight*/)/scaleY);
     }
 
     part->pixmap->setParentItem(background);
     part->pixmap->setPos(
-      x + center,
-      y - part->height + part->annotHeight + part->partTopMargin);
+      (x + center)/scaleX,
+      (y - part->height + part->annotHeight + part->partTopMargin)/scaleY);
     part->pixmap->setTransformationMode(Qt::SmoothTransformation);
 
     part->instanceText->setParentItem(background);
     part->instanceText->setPos(
-      x,
-      y - part->textHeight);
+      x/scaleX,
+      (y - part->textHeight)/scaleY);
   }
-  size[0] = width;
-  size[1] = height;
+}
 
+int Pli::addPli(
+  int       submodelLevel,
+  QGraphicsItem *parent)
+{
+  if (parts.size()) {
+    background = 
+      new PliBackgroundItem(
+            this,
+            size[0],
+            size[1],
+            parentRelativeType,
+            submodelLevel,
+            parent);
+          
+    if ( ! background) {
+      return -1;
+    }
+  
+    background->size[0] = size[0];
+    background->size[1] = size[1];
+
+    positionChildren(size[1],1.0,1.0);
+  } else {
+    background = NULL;
+  }
   return 0;
 }
 
 void Pli::setPos(float x, float y)
 {
-  background->setPos(x,y);
+  if (background) {
+    background->setPos(x,y);
+  }
 }
 
 QString PGraphicsPixmapItem::pliToolTip(
@@ -1208,7 +1264,7 @@ QString PGraphicsPixmapItem::pliToolTip(
   }
   QString toolTip;
 
-  toolTip = LDrawColor::name(color) + " " + type + " \"" + title + "\"";
+  toolTip = LDrawColor::name(color) + " " + type + " \"" + title + "\" - popup menu";
   return toolTip;
 }
 
@@ -1222,6 +1278,8 @@ PliBackgroundItem::PliBackgroundItem(
 {
   pli       = _pli;
   placement = _pli->placement;
+  grabHeight = height;
+  grabber = NULL;
 
   parentRelativeType = _parentRelativeType;
 
@@ -1230,17 +1288,16 @@ PliBackgroundItem::PliBackgroundItem(
   QString toolTip;
 
   if (_pli->bom) {
-    toolTip = "Bill Of Materials";
+    toolTip = "Bill Of Materials - popup menu";
   } else {
-    toolTip = "Part List";
+    toolTip = "Part List - popup menu";
   }
 
   placement = pli->pliMeta.placement;
 
   setBackground( pixmap,
                  PartsListType,
-                 _parentRelativeType,
-                 pli->placement,
+                 pli->meta,
                  pli->pliMeta.background,
                  pli->pliMeta.border,
                  pli->pliMeta.margin,
@@ -1253,6 +1310,33 @@ PliBackgroundItem::PliBackgroundItem(
   if (parentRelativeType != SingleStepType) {
     setFlag(QGraphicsItem::ItemIsMovable,false);
   }
+}
+
+void PliBackgroundItem::placeGrabbers()
+{
+  QRectF rect = currentRect();
+  point = QPointF(rect.left() + rect.width()/2,rect.bottom());
+  if (grabber == NULL) {
+    grabber = new Grabber(BottomInside,this,myParentItem());
+  }
+  grabber->setPos(point.x()-grabSize()/2,point.y()-grabSize()/2);
+}
+
+void PliBackgroundItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
+{     
+  position = pos();
+  positionChanged = false;
+  QGraphicsItem::mousePressEvent(event);
+  placeGrabbers();
+} 
+  
+void PliBackgroundItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
+{ 
+  positionChanged = true;
+  QGraphicsItem::mouseMoveEvent(event);
+  if (isSelected() && (flags() & QGraphicsItem::ItemIsMovable)) {
+    placeGrabbers();
+  }   
 }
 
 void PliBackgroundItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
@@ -1268,11 +1352,11 @@ void PliBackgroundItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     if (newPosition.x() || newPosition.y()) {
       positionChanged = true;
       PlacementData placementData = placement.value();
-      placementData.offsets[0] += newPosition.x()/pli->relativeToWidth;
-      placementData.offsets[1] += newPosition.y()/pli->relativeToHeight;
+      placementData.offsets[0] += newPosition.x()/pli->relativeToSize[0];
+      placementData.offsets[1] += newPosition.y()/pli->relativeToSize[1];
       placement.setValue(placementData);
 
-      changePlacementOffset(pli->topOfStep(),&placement);
+      changePlacementOffset(pli->topOfStep(),&placement,PartsListType);
     }
   }
 }
@@ -1373,6 +1457,74 @@ void PliBackgroundItem::contextMenuEvent(
   }
 }
 
+/*
+ * Code for resizing the PLI - part of the resize class described in
+ * resize.h
+ */
+
+void PliBackgroundItem::resize(QPointF grabbed)
+{
+  // recalculate corners Y
+  
+  point = grabbed;
+  grabHeight = grabbed.y()-pos().y();
+  
+  if (pli && pli->parentRelativeType == CalloutType && pli->callout && pli->callout->parentStep) {
+    Step *step = pli->callout->parentStep;
+    grabHeight -= step->parent->loc[YY];
+    grabHeight -= step->parent->parent->loc[YY];
+  }
+    
+  ConstrainData constrainData;
+  constrainData.type = ConstrainData::PliConstrainHeight;
+  constrainData.constraint = grabHeight;
+
+  pli->resizePli(pli->meta, constrainData);
+    
+  qreal width = pli->size[0];
+  qreal height = pli->size[1];
+  qreal scaleX = width/size[0];
+  qreal scaleY = height/size[1];
+
+  pli->positionChildren(height,scaleX,scaleY);
+  
+  point = QPoint(pos().x()+width/2,pos().y()+height);
+  grabber->setPos(point.x()-grabSize()/2,point.y()-grabSize()/2);
+
+  resetTransform();
+  scale(scaleX,scaleY);
+    
+  QList<QGraphicsItem *> kids = children();
+    
+  for (int i = 0; i < kids.size(); i++) {
+    kids[i]->resetTransform();
+    kids[i]->scale(1.0/scaleX,1.0/scaleY);
+  }
+    
+  sizeChanged = true;
+}
+
+void PliBackgroundItem::change()
+{
+  ConstrainData constrainData;
+    
+  constrainData.type = ConstrainData::PliConstrainHeight;
+  constrainData.constraint = int(grabHeight);
+  
+  pli->pliMeta.constrain.setValue(constrainData);
+
+  changeConstraint(pli->topOfStep(),pli->bottomOfStep(),&pli->pliMeta.constrain);
+}
+QRectF PliBackgroundItem::currentRect()
+{
+  if (pli->parentRelativeType == CalloutType) {
+    QRectF foo (pos().x(),pos().y(),size[0],size[1]);
+    return foo;
+  } else {
+    return sceneBoundingRect();
+  }
+}
+
 void AnnotateTextItem::contextMenuEvent(
   QGraphicsSceneContextMenuEvent *event)
 {
@@ -1412,8 +1564,6 @@ void AnnotateTextItem::contextMenuEvent(
 
   if (selectedAction == fontAction) {
     changeFont(top,bottom,&pli->pliMeta.annotate.font);
-
-
   } else if (selectedAction == colorAction) {
     changeColor(top,bottom,&pli->pliMeta.annotate.color);
   } else if (selectedAction == marginAction) {
@@ -1466,7 +1616,7 @@ void InstanceTextItem::contextMenuEvent(
   } else if (selectedAction == colorAction) {
     changeColor(top,bottom,&pli->pliMeta.instance.color,1,false);
   } else if (selectedAction == marginAction) {
-    changeMargins("Margins",top,bottom,&pli->pliMeta.instance.margin,1,false);
+    changeMargins("Margins",top,bottom,&pli->pliMeta.instance.margin,true,1,false);
   }
 }
 
@@ -1508,3 +1658,4 @@ void PGraphicsPixmapItem::contextMenuEvent(
 #endif
   }
 }
+

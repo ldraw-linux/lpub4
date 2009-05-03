@@ -35,9 +35,10 @@ enum ResolutionType {
   DPCM,
 };
 
-extern ResolutionType resolutionType;
-extern float          resolution;
-
+float resolution();
+void setResolution(float);
+ResolutionType resolutionType();
+void setResolutionType(ResolutionType);
 void  defaultResolutionType(bool centimeters);
 float inches2centimeters(float inches);
 float centimeters2inches(float centimeters);

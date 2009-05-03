@@ -27,26 +27,52 @@
 
 #include "resolution.h"
 
-ResolutionType resolutionType = DPI;
-float          resolution     = 150;
+static ResolutionType _resolutionType = DPI;
+static float          _resolution     = 150;  // presumably always inches
 
 float inches2centimeters(float inches)
 {
   return inches*2.54;
 }
+
 float centimeters2inches(float centimeters)
 {
-  return centimeters*0.3937;
+  return centimeters * 0.3937;
+}
+
+float resolution()
+{
+  return _resolution;
+}
+
+void setResolution(float res)
+{
+  if (_resolutionType == DPCM) {
+    _resolution = inches2centimeters(res);
+  } else {
+    _resolution = res;
+  }
+}
+
+ResolutionType resolutionType()
+{
+  return _resolutionType;
+}
+
+void setResolutionType(ResolutionType type)
+{
+  _resolutionType = type;
 }
 
 void defaultResolutionType(
   bool centimeters)
 {
   if (centimeters) {
-    resolutionType = DPCM;
-    resolution /= inches2centimeters(1);
+    _resolutionType = DPCM;
+    _resolution = 150;
   } else {
-    resolutionType = DPI;
+    _resolutionType = DPI;
+    _resolution = 150;
   }
 }
 
@@ -66,19 +92,19 @@ float toPixels(
   float          value,
   ResolutionType type)
 {
-  if (type == resolutionType) {
-    if (type == DPI) {
+  if (type == resolutionType()) {
+    if (type == DPCM) {
       value = inches2centimeters(value);
     } else {
       value = centimeters2inches(value);
     }
   }
-  return value*resolution;
+  return value*resolution();
 }
 
 QString units2abbrev()
 {
-  switch (resolutionType) {
+  switch (resolutionType()) {
     case DPI:
       return "in";
     default:
@@ -88,7 +114,7 @@ QString units2abbrev()
 
 QString units2name()
 {
-  switch (resolutionType) {
+  switch (resolutionType()) {
     case DPI:
       return "inches";
     default:

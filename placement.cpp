@@ -75,6 +75,7 @@ void Placement::appendRelativeTo(Placement *element)
     }
     if (relativeToList.size() < 100) {
       relativeToList.append(element);
+      element->relativeToParent = this;
     }
   }
 }
@@ -88,25 +89,27 @@ void Placement::appendRelativeTo(Placement *element)
  * foreach thing relative to page, we make a list
  * of things that are relative to them.
  */
-int rc;
 int Placement::relativeTo(
-  Placement *pe)
+  Step *step)
 {
-  rc = 0;
-  
-  Step *step = dynamic_cast<Step *>(pe);
+  int rc = 0;
+
   if (step) {
-    if (step->csiPixmap.placement.value().relativeTo == relativeType) {
-      placeRelative(&step->csiPixmap);
-      appendRelativeTo(&step->csiPixmap);
+    volatile PlacementType stepRelativeTo;
+    stepRelativeTo = step->csiItem->placement.value().relativeTo;
+    if (stepRelativeTo == relativeType) {
+      placeRelative(step->csiItem);
+      appendRelativeTo(step->csiItem);
     }
 
-    if (step->pli.placement.value().relativeTo == relativeType) {
+    stepRelativeTo = step->pli.placement.value().relativeTo;
+    if (stepRelativeTo == relativeType) {
       placeRelative(&step->pli);
       appendRelativeTo(&step->pli);
     }
 
-    if (step->stepNumber.placement.value().relativeTo == relativeType) {
+    stepRelativeTo = step->stepNumber.placement.value().relativeTo;
+    if (stepRelativeTo == relativeType) {
       placeRelative(&step->stepNumber);
       appendRelativeTo(&step->stepNumber);
     }
@@ -116,84 +119,67 @@ int Placement::relativeTo(
     for (int i = 0; i < step->list.size(); i++) {
       if (step->list[i]->relativeType == CalloutType) {
         Callout *callout = step->list[i];
-        if (callout->placement.value().relativeTo == relativeType) {
+        stepRelativeTo = callout->placement.value().relativeTo;
+        if (stepRelativeTo == relativeType) {
           placeRelative(callout);
           appendRelativeTo(callout);
         }
       }
     } // callouts
-    // Everything placed    
+    // Everything placed
   } // if step
 
   /* try to find relation for things relative to us */
-    
+
   int limit = relativeToList.size();
-      
-  if (limit < 100) {
-    for (int i = 0; i < limit; i++) {
-      rc = relativeToList[i]->relativeTo(pe);
-      if (rc) {
-        break;
-      }
+  for (int i = 0; i < limit; i++) {
+    rc = relativeToList[i]->relativeTo(step);
+    if (rc) {
+      break;
     }
-  } else {
-    rc = -1;
   }
 
   return rc;
 }
 
-int Placement::relativeToMs(
-  Placement *placement)
+int Placement::relativeToSg(
+  Steps *steps)
 {
-  if (placement->relativeType == CalloutType ||
-      placement->relativeType == StepGroupType) {
-    Steps *steps = dynamic_cast<Steps *>(placement);
+  if (steps) {
+    // PLI
+    if (steps->pli.tsize() && 
+        steps->pli.placement.value().relativeTo == relativeType) {
+      placeRelative(&steps->pli);
+      appendRelativeTo(&steps->pli);
+    }
+    for (int j = 0; j < steps->list.size(); j++) {
+      if (steps->list[j]->relativeType == RangeType) {
+        Range *range = dynamic_cast<Range *>(steps->list[j]);
+        for (int i = 0; i < range->list.size(); i++) {
+          if (range->list[i]->relativeType == StepType) {
+            Step *step = dynamic_cast<Step *>(range->list[i]);
+            
+            /* callouts */
 
-    if (steps) {
-      if (steps->pli.tsize() && 
-          steps->pli.placement.value().relativeTo == relativeType) {
-        placeRelative(&steps->pli);
-        appendRelativeTo(&steps->pli);
-      }
-      for (int i = 0; i < steps->list.size(); i++) {
-        if (steps->list[i]->relativeType == RangeType) {
-          Range *range = dynamic_cast<Range *>(steps->list[i]);
-          for (int i = 0; i < range->list.size(); i++) {
-            if (range->list[i]->relativeType == StepType) {
-              Step *step = dynamic_cast<Step *>(range->list[i]);
+            for (int i = 0; i < step->list.size(); i++) {
+              if (step->list[i]->relativeType == CalloutType) {
+                Callout *callout = dynamic_cast<Callout *>(step->list[i]);
 
-              /* callouts */
+                PlacementData placementData = callout->placement.value();
 
-              for (int i = 0; i < step->list.size(); i++) {
-                if (step->list[i]->relativeType == CalloutType) {
-                  Callout *callout = dynamic_cast<Callout *>(step->list[i]);
+                if (placementData.relativeTo == relativeType) {
+                  placeRelative(callout);
 
-                  PlacementData placementData = callout->placement.value();
-
-                  if ((placementData.relativeTo == PageType ||
-                       placementData.relativeTo == StepGroupType) &&
-                       placementData.relativeTo == relativeType) {
-                    placeRelative(callout);
-                    placement->appendRelativeTo(callout);
-                  }
-                } // if callout
-              } // callouts
-            } // if step
-          } // foreach step
-        } // if range
-      } // foreach range
-    } // if ranges
+                  steps->appendRelativeTo(callout);
+                }
+              } // if callout
+            } // callouts
+          } // if step
+        } // foreach step
+      } // if range
+    } // foreach range
 
     /* try to find relation for things relative to us */
-
-    for (int i = 0; i < relativeToList.size(); i++) {
-      if (relativeToList[i]->relativeToMs(steps)) {
-        return -1;
-      }
-    }
-
-    // Everything placed
 
     return 0;
   } else {
@@ -204,152 +190,109 @@ int Placement::relativeToMs(
 void Placement::placeRelative(
   Placement *them)
 {
-  int disp[2];
+  int lmargin[2] = { them->margin.valuePixels(XX), them->margin.valuePixels(YY) };
+  int margin2[2] = { margin.valuePixels(XX), margin.valuePixels(YY) };
   
-  volatile PlacementData pld = them->placement.value();
+  for (int i = 0; i < 2; i++) {  
+    lmargin[i] = margin2[i] > lmargin[i] ? margin2[i] : lmargin[i];
+  }
+  
+  placeRelative(them,them->size,lmargin);
 
-  disp[XX] = (int) (size[XX] * them->placement.value().offsets[XX]);
-  disp[YY] = (int) (size[YY] * them->placement.value().offsets[YY]);
+  for (int i = 0; i < 2; i++) {  
+    them->boundingLoc[i] = them->loc[i];
+  
+    volatile int top, bottom, height;
 
-  float lmargin[2];
-  lmargin[XX] = qMax(margin.value(XX),them->margin.value(XX));
-  lmargin[YY] = qMax(margin.value(YY),them->margin.value(YY));
+    // calculate changes in our size due to neighbors
+    // if neighbor is left or top, calculate bounding top left
+    // corner
 
-  PlacementData placementData = them->placement.value();
-
-  them->relativeToWidth = size[XX];
-  them->relativeToHeight = size[YY];
-
-  if (placementData.preposition == Outside) {
-    switch (placementData.placement) {
-      case TopLeft:
-      case Left:
-      case BottomLeft:
-        them->loc[XX] = loc[XX] - them->size[XX] - lmargin[XX];
-      break;
-      case TopRight:
-      case Right:
-      case BottomRight:
-        them->loc[XX] = loc[XX] + size[XX] + lmargin[XX];
-      break;
-      case Top:
-      case Bottom:
-        them->loc[XX] = loc[XX];
-        switch (placementData.justification) {
-          case Center:
-            them->loc[XX] += (size[XX]-them->size[XX])/2;
-          break;
-          case Right:
-            them->loc[XX] += size[XX]-them->size[XX];
-          break;
-          default:
-          break;
-        }
-      break;
-      case Center:
-        them->loc[XX] = loc[XX];
-      break;
-      default:
-      break;
-    }
-    switch (placementData.placement) {
-      case TopLeft:
-      case Top:
-      case TopRight:
-        them->loc[YY] = loc[YY] - them->size[YY] - lmargin[YY];
-      break;
-      case BottomLeft:
-      case Bottom:
-      case BottomRight:
-        them->loc[YY] = loc[YY] + size[YY] + lmargin[YY];
-      break;
-      case Left:
-      case Right:
-        them->loc[YY] = loc[YY];
-        switch(placementData.justification) {
-          case Center:
-            them->loc[YY] += (size[YY]-them->size[YY])/2;
-          break;
-          case Bottom:
-            them->loc[YY] += size[YY]-them->size[YY];
-          break;
-          default:
-          break;
-        }
-      break;
-      default:
-      break;
-    }
-  } else {
-    switch (placementData.placement) {
-      case TopLeft:
-      case Left:
-      case BottomLeft:
-        them->loc[XX] = loc[XX] + lmargin[XX];
-      break;
-      case Top:
-      case Bottom:
-        them->loc[XX] = loc[XX] + (size[XX]-them->size[XX])/2;
-      break;
-      case TopRight:
-      case Right:
-      case BottomRight:
-        them->loc[XX] = loc[XX] + size[XX] - them->size[XX] - lmargin[XX];
-      break;
-      case Center:
-        them->loc[XX] = loc[XX] + (size[XX]-them->size[XX])/2;
-      break;
-      default:
-      break;
-    }
-
-    switch (placementData.placement) {
-      case TopLeft:
-      case Top:
-      case TopRight:
-        them->loc[YY] = loc[YY] + lmargin[YY];
-      break;
-      case Left:
-      case Right:
-        them->loc[YY] = loc[YY] + (size[YY] - them->size[YY])/2;
-      break;
-      case BottomLeft:
-      case Bottom:
-      case BottomRight:
-        them->loc[YY] = loc[YY] + size[YY] - them->size[YY] - lmargin[YY];
-      break;
-      case Center:
-        them->loc[YY] = loc[YY] + (size[YY] - them->size[YY])/2;
-      break;
-      default:
-      break;
+    top = them->loc[i];
+    height = boundingLoc[i] - top;
+    if (height > 0) {
+      boundingLoc[i] -= height;
+      boundingSize[i] += height;
+    }     
+    
+    bottom = top + them->size[i];
+    height = bottom - (boundingLoc[i] + boundingSize[i]);
+    if (height > 0) {
+      boundingSize[i] += height;
     }
   }
-  them->loc[XX] += disp[XX];
-  them->loc[YY] += disp[YY];
 }
 
 void Placement::placeRelative(
   Placement   *them,
   int          margin[2])
 {
-  int lmargin[2];
-  lmargin[XX] = them->margin.value(XX);
-  lmargin[YY] = them->margin.value(YY);
-  lmargin[XX] = qMax(margin[XX],lmargin[XX]);
-  lmargin[YY] = qMax(margin[YY],lmargin[YY]);
+  int lmargin[2] = { them->margin.valuePixels(XX), them->margin.valuePixels(YY) };
+  
+  for (int i = 0; i < 2; i++) {  
+    lmargin[i] = margin[i] > lmargin[i] ? margin[i] : lmargin[i];
+  }
+  
+  placeRelative(them,them->size,lmargin);
 
-  PlacementData placementData = them->placement.value();
+  for (int i = 0; i < 2; i++) {  
+    them->boundingLoc[i] = them->loc[i];
+  
+    volatile int top, bottom, height;
 
-  them->relativeToWidth = size[XX];
-  them->relativeToHeight = size[YY];
+    top = them->loc[i];
+    height = boundingLoc[i] - top;
+    if (height > 0) {
+      boundingLoc[i] -= height;
+      boundingSize[i] += height;
+    }     
+    bottom = top + them->size[i];
+    height = bottom - boundingLoc[i] - boundingSize[i];
+    if (height > 0) {
+      boundingSize[i] += height;
+    }
+  }
+}
+
+void Placement::placeRelativeBounding(
+  Placement *them)
+{
+  int lmargin[2] = { them->margin.valuePixels(XX), them->margin.valuePixels(YY) };
+  int margin2[2] = { margin.valuePixels(XX), margin.valuePixels(YY) };
+  
+  for (int i = 0; i < 2; i++) {  
+    lmargin[i] = margin2[i] > lmargin[i] ? margin2[i] : lmargin[i];
+  }
+
+  volatile int bias[2];
+  
+  bias[XX] = them->loc[XX] - them->boundingLoc[XX];
+  bias[YY] = them->loc[YY] - them->boundingLoc[YY];
+
+  placeRelative(them, them->boundingSize, lmargin);
+  
+  them->loc[XX] += bias[XX];
+  them->loc[YY] += bias[YY];
+}
+
+void Placement::placeRelative(
+  Placement *them,
+  int   them_size[2],
+  int   lmargin[2])
+{
+  PlacementData volatile placementData = them->placement.value();
+
+  them->relativeToLoc[0] = loc[0];
+  them->relativeToLoc[1] = loc[1];
+  them->relativeToSize[0] = size[XX];
+  them->relativeToSize[1] = size[YY];
 
   if (placementData.preposition == Outside) {
     switch (placementData.placement) {
       case TopLeft:
       case Left:
       case BottomLeft:
-        them->loc[XX] = loc[XX] - them->size[XX] - lmargin[XX];
+        them->loc[XX] = loc[XX] - (them_size[XX] + lmargin[XX]);
       break;
       case TopRight:
       case Right:
@@ -361,10 +304,10 @@ void Placement::placeRelative(
         them->loc[XX] = loc[XX];
         switch (placementData.justification) {
           case Center:
-            them->loc[XX] += (size[XX]-them->size[XX])/2;
+            them->loc[XX] += (size[XX] - them_size[XX])/2;
           break;
           case Right:
-            them->loc[XX] += size[XX]-them->size[XX];
+            them->loc[XX] += size[XX] - them_size[XX];
           break;
           default:
           break;
@@ -380,7 +323,7 @@ void Placement::placeRelative(
       case TopLeft:
       case Top:
       case TopRight:
-        them->loc[YY] = loc[YY] - them->size[YY] - lmargin[YY];
+        them->loc[YY] = loc[YY] - (them_size[YY] + lmargin[YY]);
       break;
       case BottomLeft:
       case Bottom:
@@ -392,10 +335,10 @@ void Placement::placeRelative(
         them->loc[YY] = loc[YY];
         switch(placementData.justification) {
           case Center:
-            them->loc[YY] += (size[YY]-them->size[YY])/2;
+            them->loc[YY] += (size[YY] - them_size[YY])/2;
           break;
           case Bottom:
-            them->loc[YY] += size[YY]-them->size[YY];
+            them->loc[YY] += size[YY] - them_size[YY];
           break;
           default:
           break;
@@ -412,16 +355,14 @@ void Placement::placeRelative(
         them->loc[XX] = loc[XX] + lmargin[XX];
       break;
       case Top:
+      case Center:
       case Bottom:
-        them->loc[XX] = loc[XX] + (size[XX]-them->size[XX])/2;
+        them->loc[XX] = loc[XX] + (size[XX] - them_size[XX])/2;
       break;
       case TopRight:
       case Right:
       case BottomRight:
-        them->loc[XX] = loc[XX] + size[XX] - them->size[XX] - lmargin[XX];
-      break;
-      case Center:
-        them->loc[XX] = loc[XX] + (size[XX]-them->size[XX])/2;
+        them->loc[XX] = loc[XX] +  size[XX] - them_size[XX] - lmargin[XX];
       break;
       default:
       break;
@@ -434,27 +375,21 @@ void Placement::placeRelative(
         them->loc[YY] = loc[YY] + lmargin[YY];
       break;
       case Left:
+      case Center:
       case Right:
-        them->loc[YY] = loc[YY] + (size[YY] - them->size[YY])/2;
+        them->loc[YY] = loc[YY] + (size[YY] - them_size[YY])/2;
       break;
       case BottomLeft:
       case Bottom:
       case BottomRight:
-        them->loc[YY] = loc[YY] + size[YY] - them->size[YY] - lmargin[YY];
-      break;
-      case Center:
-        them->loc[YY] = loc[YY] + (size[YY]-them->size[YY])/2;
+        them->loc[YY] = loc[YY] +  size[YY] - them_size[YY] - lmargin[YY];
       break;
       default:
       break;
     }
   }
-  int disp[2];
-
-  disp[XX] = (int) (size[XX] * them->placement.value().offsets[XX]);
-  disp[YY] = (int) (size[YY] * them->placement.value().offsets[YY]);
-  them->loc[XX] += disp[XX];
-  them->loc[YY] += disp[YY];
+  them->loc[XX] += size[XX] * them->placement.value().offsets[XX];
+  them->loc[YY] += size[YY] * them->placement.value().offsets[YY];
 }
 
 void Placement::justifyX(
@@ -509,339 +444,81 @@ void Placement::justifyY(
   }
 }
 
-InsertPixmapItem::InsertPixmapItem(
-  QPixmap    &pixmap,
-  InsertMeta &insertMeta,
-  QGraphicsItem *parent)
-      
-  : QGraphicsPixmapItem(pixmap,parent),
-    insertMeta(insertMeta)
+void Placement::calcOffsets(
+  PlacementData &placementData,
+  float offset[2],
+  qreal topLeft[2],
+  qreal size[2])
 {
-  InsertData insertData = insertMeta.value();
-
-  size[0] = pixmap.width() *insertData.picScale;
-  size[1] = pixmap.height()*insertData.picScale;
-  setFlag(QGraphicsItem::ItemIsSelectable,true);
-  setFlag(QGraphicsItem::ItemIsMovable,true);
-      
-  origWidth  = size[0]; // pixmap.width();
-  origHeight = size[1]; // pixmap.height();
+  topLeft[0] -= relativeToLoc[0];
+  topLeft[1] -= relativeToLoc[1];
   
-  setTransformationMode(Qt::SmoothTransformation);
-  
-  grabSize = toPixels(0.03,DPI);
-  for (int i = 0; i < 8; i++) {
-    grab[i] = NULL;
-  }
-  oldScale = insertData.picScale;
-  oldScale = 1.0;
-}
-
-void InsertPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
-{     
-  QGraphicsItem::mousePressEvent(event);
-  positionChanged = false;
-  position = pos();
-  placeGrabs();
-} 
-  
-void InsertPixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
-{ 
-  QGraphicsItem::mouseMoveEvent(event);
-  if (isSelected() && (flags() & QGraphicsItem::ItemIsMovable)) {
-    positionChanged = true;
-    placeGrabs();
-  }   
-}
-
-void InsertPixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
-{
-  QGraphicsItem::mouseReleaseEvent(event);
-
-  if (isSelected() && (flags() & QGraphicsItem::ItemIsMovable)) {
-
-    QPointF newPosition;
-
-    // back annotate the movement of the PLI into the LDraw file.
-    newPosition = pos() - position;
-    
-    if (newPosition.x() || newPosition.y()) {
-      positionChanged = true;
-
-      InsertData insertData = insertMeta.value();
-      
-      volatile float offset[2] = { newPosition.x()/relativeToWidth, newPosition.y()/relativeToHeight };
-      
-      insertData.offsets[0] += offset[0];
-      insertData.offsets[1] += offset[1];
-
-      insertMeta.setValue(insertData);
-
-      changeInsertOffset(&insertMeta);
-    }
-  }
-}
-
-QVariant InsertPixmapItem::itemChange(GraphicsItemChange change, const QVariant &value)
-{
-  if (grab[0] && change == ItemSelectedChange) {
-    for (int i = 0; i < 4; i++) {
-      grab[i]->setVisible(value.toBool());
-    }
-  }
-  return QGraphicsItem::itemChange(change,value);
-}
-
-void InsertPixmapItem::placeGrabs()
-{
-  QRectF rect = sceneBoundingRect();
-  int left = rect.left();
-  int top  = rect.top();
-  int width = rect.width();
-  int height = rect.height();
-
-  points[TopLeft]     = QPointF(left,top);
-  points[TopRight]    = QPointF(left + width,top);
-  points[BottomRight] = QPointF(left + width, top + height);
-  points[BottomLeft]  = QPointF(left, top + height);
-
-  if (grab[0] == NULL) {
-    for (int i = 0; i < 4; i++) {
-      grab[i] = new IpiGrab(this);
-      grab[i]->setParentItem(parentItem());
-      grab[i]->setFlag(QGraphicsItem::ItemIsSelectable,true);
-      grab[i]->setFlag(QGraphicsItem::ItemIsMovable,true);
-      grab[i]->setZValue(100);
-      QPen pen(Qt::black);
-      grab[i]->setPen(pen);
-      grab[i]->setBrush(Qt::black);
-      grab[i]->setRect(0,0,grabSize,grabSize);
-    }
-  }
-
-  for (int i = 0; i < 4; i++) {
-    grab[i]->setPos(points[i].x()-grabSize/2,points[i].y()-grabSize/2);
-  }
-}
-
-void InsertPixmapItem::whatPoint(IpiGrab *grabbed)
-{
-  for (int i = 0; i < 4; i++) {
-    if (grabbed == grab[i]) {
-      selectedPoint = SelectedPoint(i);
-      break;
-    }
-  }
-  positionChanged = true;
-  position = pos();
-}
-
-void InsertPixmapItem::resize(QPointF grabbed)
-{
-  // recalculate corners Y
-  switch (selectedPoint) {
-    case TopLeft:
-    case TopRight:
-      points[TopLeft].setY(grabbed.y());
-      points[TopRight].setY(grabbed.y());
-    break;
-    case BottomLeft:
-    case BottomRight:
-      points[BottomLeft].setY(grabbed.y());
-      points[BottomRight].setY(grabbed.y());
-    break;
-    default:
-    break;
-  }
-  // relaculate corners X
-  switch (selectedPoint) {
-    case TopLeft:
-    case BottomLeft:
-      points[TopLeft].setX(grabbed.x());
-      points[BottomLeft].setX(grabbed.x());
-    break;
-    case TopRight:
-    case BottomRight:
-      points[TopRight].setX(grabbed.x());
-      points[BottomRight].setX(grabbed.x());
-    break;
-    default:
-    break;
-  }
-  qreal  rawWidth, rawHeight;
-
-  // calculate box raw size
-  switch (selectedPoint) {
-    case TopLeft:
-      rawWidth = points[BottomRight].x() - grabbed.x();
-      rawHeight = points[BottomRight].y() - grabbed.y();
-    break;
-    case TopRight:
-      rawWidth = grabbed.x()-points[BottomLeft].x();
-      rawHeight = points[BottomLeft].y() - grabbed.y();
-    break;
-    case BottomRight:
-      rawWidth = grabbed.x() - points[TopLeft].x();
-      rawHeight = grabbed.y() - points[TopLeft].y();
-    break;
-    default:
-      rawWidth = points[TopRight].x() - grabbed.x();
-      rawHeight = grabbed.y() - points[TopRight].y();
-    break;
-  }
-  
-  if (rawWidth > 0 && rawHeight > 0) {
-
-    // Force aspect ratio to match original aspect ratio of picture
-    // ratio = width/height
-    // width = height * ratio
-    qreal  pixmapSizeX = pixmap().size().width();
-    qreal  pixmapSizeY = pixmap().size().height();
-    
-    qreal width = rawHeight * pixmapSizeX / pixmapSizeY;
-    qreal height = rawWidth * pixmapSizeY / pixmapSizeX;
-    
-    if (width * rawHeight < rawWidth * height) {
-      height = rawHeight;
-    } else {
-      width = rawWidth;
-    }
-    
-    // Place the scaled box
-
-    switch (selectedPoint) {
+  if (placementData.preposition == Inside) {
+    switch (placementData.placement) {
       case TopLeft:
-        setPos(points[BottomRight].x()-width,points[BottomRight].y()-height);
+      case Left:
+      case BottomLeft:
+        offset[0] = topLeft[0];
       break;
       case TopRight:
-        setPos(points[BottomLeft].x(),points[BottomLeft].y()-height);
-      break;
+      case Right:
       case BottomRight:
-        setPos(points[TopLeft]);
+        offset[0] = (topLeft[0]+size[0]) - relativeToSize[0];
       break;
       default:
-        setPos(points[TopRight].x()-width,points[TopRight].y());
+        offset[0] = topLeft[0] + size[0]/2 - relativeToSize[0]/2;
       break;
     }
-    
-    // Calculate corners
-    
-    points[TopLeft] = pos();
-    points[TopRight] = QPointF(pos().x() + width,pos().y());
-    points[BottomRight] = pos() + QPointF(width,height);
-    points[BottomLeft] = QPointF(pos().x(),pos().y()+height);
-  
-    for (int i = 0; i < 4; i++) {
-      grab[i]->setPos(points[i].x()-grabSize/2,points[i].y()-grabSize/2);
+    switch (placementData.placement) {
+      case TopLeft:
+      case Top:
+      case TopRight:
+        offset[1] = topLeft[1];
+      break;
+      case BottomLeft:
+      case Bottom:
+      case BottomRight:
+        offset[1] = (topLeft[1] + size[1]) - relativeToSize[1];
+      break;
+      default:
+        offset[1] = topLeft[1] + size[1]/2 - relativeToSize[1]/2;
+      break;
     }
-    
-    // Unscale from last time
-    
-    volatile qreal newScale = width/origWidth;
-    scale(1.0/oldScale,1.0/oldScale);
-    
-    // Scale it to the new scale
-    
-    scale(newScale,newScale);
-    oldScale = newScale;
-  }
-}
-
-void InsertPixmapItem::changePicScale()
-{
-  if (isSelected() && (flags() & QGraphicsItem::ItemIsMovable)) {
-    if (positionChanged) {
-
-      beginMacro(QString("DragIpi"));
-      
-      InsertData insertData = insertMeta.value();
-      if (insertData.placement == Center) {
-
-        QPointF delta(pos() - position);
-        volatile qreal deltax = delta.x();
-        volatile qreal deltay = delta.y();
-        volatile qreal deltaX = (sceneBoundingRect().width() - origWidth)/2;
-        volatile qreal deltaY = (sceneBoundingRect().height() - origHeight)/2;
-      
-        delta.setX(deltax + deltaX);
-        delta.setY(deltay + deltaY);
-      
-        // Back annotate to LDraw file
-        insertData.offsets[0] += delta.x()/relativeToWidth;
-        insertData.offsets[1] += delta.y()/relativeToHeight;
-      }
-      insertData.picScale *= oldScale;
-      insertMeta.setValue(insertData);
-      
-      changeInsertOffset(&insertMeta);
-      
-      endMacro();
+  } else {
+    switch (placementData.placement) {
+      case TopLeft:
+      case Left:
+      case BottomLeft:
+        offset[0] = topLeft[0] + size[0];
+      break;
+      case TopRight:
+      case Right:
+      case BottomRight:
+        offset[0] = topLeft[0] - relativeToSize[0];
+      break;
+      default:
+        offset[0] = topLeft[0] + size[0]/2 - relativeToSize[0]/2;
+      break;
+    }
+    switch (placementData.placement) {
+      case TopLeft:
+      case Top:
+      case TopRight:
+        offset[1] = topLeft[1] + size[1];
+      break;
+      case BottomLeft:
+      case Bottom:
+      case BottomRight:
+        offset[1] = topLeft[1] - relativeToSize[1];
+      break;
+      default:
+        offset[1] = topLeft[1] + size[1]/2 - relativeToSize[0]/2;
+      break;
     }
   }
+  offset[0] /= relativeToSize[0];
+  offset[1] /= relativeToSize[1];
 }
-
-void IpiGrab::mousePressEvent(QGraphicsSceneMouseEvent * /* event */)
-{
-  ipiItem->whatPoint(this);
-}
-
-void IpiGrab::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
-{
-  ipiItem->resize(event->scenePos());
-}
-
-void IpiGrab::mouseReleaseEvent(QGraphicsSceneMouseEvent * /* event */)
-{
-  ipiItem->changePicScale();
-}
-
-
-#if 0
-
-void PlacementPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
-{     
-  QGraphicsItem::mousePressEvent(event);
-  positionChanged = false;
-  position = pos();
-} 
-  
-void PlacementPixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
-{ 
-  QGraphicsItem::mouseMoveEvent(event);
-  if (isSelected() && (flags() & QGraphicsItem::ItemIsMovable)) {
-    positionChanged = true;
-  }   
-}
-
-void PlacementPixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
-{
-  QGraphicsItem::mouseReleaseEvent(event);
-
-  if (isSelected() && (flags() & QGraphicsItem::ItemIsMovable)) {
-
-    QPointF newPosition;
-
-    // back annotate the movement of the PLI into the LDraw file.
-    newPosition = pos() - position;
-    
-    if (newPosition.x() || newPosition.y()) {
-      positionChanged = true;
-
-      PlacementData placementData = placement.value();
-      
-      float offset[2] = { newPosition.x()/relativeToWidth, newPosition.y()/relativeToHeight };
-      
-      placementData.offsets[0] += offset[0];
-      placementData.offsets[1] += offset[1];
-
-      placement.setValue(placementData);
-
-      changePlacementOffset(&placement,true,false);
-    }
-  }
-}
-
-#endif
 
 
 

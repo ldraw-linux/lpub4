@@ -29,7 +29,7 @@ class Preferences
 	  static void pliPreferences();
     static void unitsPreferences();
 	  static void getRequireds();
-	  static bool getPreferences(bool fileOpen = false);
+	  static bool getPreferences();
 
     static QString ldrawPath;
     static QString ldgliteExe;

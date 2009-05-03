@@ -41,6 +41,7 @@ Steps::Steps()
 {
   relativeType  = SingleStepType;
   pli.steps = this;
+  isMirrored = false;
 }
 
 Steps::Steps(Meta &_meta,QGraphicsView *_view)
@@ -199,9 +200,9 @@ void Steps::sizeIt(void)
     }
   } else {
     if (allocEnc == Vertical) {
-      sizeitVert();
+      sizeit(allocEnc,XX,YY);
     } else {
-      sizeitHoriz();
+      sizeit(allocEnc,YY,XX);
     }
   }
 }
@@ -210,8 +211,10 @@ void Steps::sizeIt(void)
  * This provides Vertical packing
  */
 
-void Steps::sizeitVert(void)
+void Steps::sizeit(AllocEnc allocEnc, int x, int y)
 {
+  /* if a single step, then skip the step number */
+  
   if (relativeType == CalloutType && list.size() == 1) {
     if (list[0]->relativeType == RangeType) {
       Range *range = dynamic_cast<Range *>(list[0]);
@@ -229,18 +232,19 @@ void Steps::sizeitVert(void)
    * accumulating its width, and finding the maximum height
    */
 
+  loc[XX] = 0;
+  loc[YY] = 0;
   size[XX] = 0;
   size[YY] = 0;
 
   SepData divider;
 
   if (relativeType == CalloutType) {
-    divider = meta.LPub.callout.sep.value();
+    divider = meta.LPub.callout.sep.valuePixels();
   } else {
-    divider = meta.LPub.multiStep.sep.value();
+    divider = meta.LPub.multiStep.sep.valuePixels();
   }
   
-
   /* foreach range */
 
   for (int i = 0; i < list.size(); i++) {
@@ -248,26 +252,30 @@ void Steps::sizeitVert(void)
       Range *range = dynamic_cast<Range *>(list[i]);
       if (range) {
 
-        range->sizeitVert();
-
+        if (allocEnc == Vertical) {
+          range->sizeitVert();
+        } else {
+          range->sizeitHoriz();
+        }
+        
         /* find the tallest range */
 
-        if (range->size[YY] > size[YY]) {
-          size[YY] = range->size[YY];
+        if (range->size[y] > size[y]) {
+          size[y] = range->size[y];
         }
 
         /* place each range Horizontally */
 
-        range->loc[YY] = 0;
-        range->loc[XX] = size[XX];
+        range->loc[y] = 0;
+        range->loc[x] = size[x];
 
-        size[XX] += range->size[XX];
+        size[x] += range->size[x];
 
         if (i + 1 < list.size()) {
 
           /* accumulate total width of ranges */
 
-          size[XX] += 2*divider.margin[XX] + divider.thickness;
+          size[x] += 2*divider.margin[x] + divider.thickness;
         }
       }
     }
@@ -285,94 +293,12 @@ void Steps::sizeitVert(void)
 
         /* space steps within column based on tallest column */
 
-        range->placeitVert(size[YY]);
+        range->placeit(size[y],x,y);
       }
     }
   }
-}
-
-/*
- * This provides Horizontal packing
- */
-
-void Steps::sizeitHoriz(void)
-{
-  if (relativeType == CalloutType && list.size() == 1) {
-    if (list[0]->relativeType == RangeType) {
-      Range *range = dynamic_cast<Range *>(list[0]);
-      if (range && range->list.size() == 1) {
-        if (range->list[0]->relativeType == StepType) {
-          Step *step = dynamic_cast<Step *>(range->list[0]);
-          step->stepNumber.number = -1;
-        }
-      }
-    }
-  }
-
-  /*
-   * Size each range, determining its width and height
-   * accumulating its width, and finding the maximum height
-   */
-
-  size[XX] = 0;
-  size[YY] = 0;
-
-  SepData divider;
-
-  if (relativeType == CalloutType) {
-    divider = meta.LPub.callout.sep.value();
-  } else {
-    divider = meta.LPub.multiStep.sep.value();
-  }
-
-  /* foreach range */
-
-  for (int i = 0; i < list.size(); i++) {
-    if (list[i]->relativeType == RangeType) {
-      Range *range = dynamic_cast<Range *>(list[i]);
-      if (range) {
-
-        range->sizeitHoriz();
-
-        /* find the widest range */
-
-        if (range->size[XX] > size[XX]) {
-          size[XX] = range->size[XX];
-        }
-
-        /* place each range Horizontally */
-
-        range->loc[XX] = 0;
-        range->loc[YY] = size[YY];
-
-        size[YY] += range->size[YY];
-
-        if (i + 1 < list.size()) {
-
-          /* accumulate total width of ranges */
-
-          size[YY] += 2*divider.margin[YY] + divider.thickness;
-        }
-      }
-    }
-  }
-
-  /*
-   * Each range is placed, but nowe we need to
-   * evenly space the steps within a range
-   */
-
-  for (int i = 0; i < list.size(); i++) {
-    if (list[i]->relativeType == RangeType) {
-      Range *range = dynamic_cast<Range *>(list[i]);
-      if (range) {
-
-        /* space steps within column based on tallest column */
-
-        range->placeitHoriz(size[XX]);
-      }
-    }
-  }
+  
+  setBoundingSize();
 }
 
 void Steps::sizeitFreeform(
@@ -396,6 +322,8 @@ void Steps::sizeitFreeform(
    * accumulating its width, and finding the maximum height
    */
 
+  loc[XX] = 0;
+  loc[YY] = 0;
   size[xx] = 0;
   size[yy] = 0;
 
@@ -428,7 +356,7 @@ void Steps::sizeitFreeform(
 
         /* accumulate total width of ranges */
 
-        lastMargin = range->margin.value(xx);
+        lastMargin = range->margin.valuePixels(xx);
         size[xx] += range->size[xx] + lastMargin;
       }
     }
@@ -452,6 +380,10 @@ void Steps::sizeitFreeform(
   }
 }
 
+/*
+ * This is used only by step groups
+ */
+
 void Steps::addGraphicsItems(
   int ox,
   int oy,
@@ -468,12 +400,7 @@ void Steps::addGraphicsItems(
   } else {
     allocEnc = meta.LPub.multiStep.alloc.value();
   }
-
-  if (allocEnc == Vertical) {
-    addGraphicsItemsVert(ox,oy,backDrop);
-  } else {
-    addGraphicsItemsHoriz(ox,oy,backDrop);
-  }
+  addGraphicsItems(allocEnc,ox,oy,backDrop);
 }
 
 /*
@@ -484,12 +411,12 @@ void Steps::addGraphicsItems(
  *       TransparentRect
  */
 
-void Steps::addGraphicsItemsVert(
-  int offset_x,
-  int offset_y,
+void Steps::addGraphicsItems(
+  AllocEnc allocEnc,
+  int offsetX,
+  int offsetY,
   QGraphicsItem *parent)
 {
-
   if (pli.tsize()) {
     pli.addPli(meta.submodelStack.size(), parent);
   }
@@ -502,14 +429,15 @@ void Steps::addGraphicsItemsVert(
 
         if (relativeType == CalloutType) {
           rb = parent;
-        } else {       
+        } else {
           rb = new MultiStepRangeBackgroundItem(this,range,&meta,
-                    offset_x + loc[XX],
-                    offset_y + loc[YY],
+                    offsetX + loc[XX],
+                    offsetY + loc[YY],
                     parent);
         }
-        range->addGraphicsItemsVert(
-          offset_x + loc[XX], offset_y + loc[YY], &meta, relativeType, rb);
+        
+        range->addGraphicsItems(
+          offsetX + loc[XX], offsetY + loc[YY], &meta, relativeType, rb);
 
         if (list.size() > 1 && i < list.size() - 1) {
           // add divider here
@@ -517,62 +445,14 @@ void Steps::addGraphicsItemsVert(
           if (size) {
             Step *step = dynamic_cast<Step *>(range->list[size-1]);          
             if (step) {
-              DividerItem *divider = new DividerItem(
-                              step,
-                             &meta,
-                              offset_x + loc[XX] + range->loc[XX] + range->size[XX],
-                              offset_y + loc[YY] + range->loc[YY]);
-              divider->setParentItem(parent);
-            }
-          }
-        }
-      }
-    }
-  }
-}
-
-/*
- *
- */
-
-void Steps::addGraphicsItemsHoriz(
-  int offset_x,
-  int offset_y,
-  QGraphicsItem *parent)
-{
-  if (pli.tsize()) {
-    pli.addPli(meta.submodelStack.size(), parent);
-  }
-
-  for (int i = 0; i < list.size(); i++) {
-    if (list[i]->relativeType == RangeType) {
-      Range *range = dynamic_cast<Range *>(list[i]);
-      if (range) {
-        QGraphicsItem *rb;
-
-        if (relativeType == CalloutType) {
-          rb = parent;
-        } else {       
-          rb = new MultiStepRangeBackgroundItem(this,range,&meta,
-                    offset_x + loc[XX],
-                    offset_y + loc[YY],
-                    parent);
-        }
-
-        range->addGraphicsItemsHoriz(
-          offset_x + loc[XX], offset_y + loc[YY], &meta, relativeType, rb);
-
-        if (list.size() > 1 && i < list.size() - 1) {
-          int size = range->list.size();
-          
-          if (size) {
-            Step *step = dynamic_cast<Step *>(range->list[size-1]);
-            if (step) {
-              DividerItem *divider = new DividerItem(
-                         step,
-                        &meta,
-                          offset_x + loc[XX] + range->loc[XX],
-                          offset_y + loc[YY] + range->loc[YY] + range->size[YY]);
+              int oX = offsetX + loc[XX] + range->loc[XX];
+              int oY = offsetY + loc[YY] + range->loc[YY];
+              if (allocEnc == Vertical) {
+                oX += range->size[XX];
+              } else {
+                oY += range->size[YY];
+              }
+              DividerItem *divider = new DividerItem(step,&meta,oX,oY);
               divider->setParentItem(parent);
             }
           }

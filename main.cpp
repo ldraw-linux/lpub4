@@ -18,14 +18,20 @@
 
 #include "lpub_preferences.h"
 #include "lpub.h"
+#include "resolution.h"
+#include <QMessageBox>
 
 int main(int argc, char *argv[])
 {
-    Q_INIT_RESOURCE(lpub);
+    Q_INIT_RESOURCE(LPub);
 
     QApplication app(argc, argv);
 	
+    //QMessageBox::information(NULL,QMessageBox::tr("LPub"),QMessageBox::tr("Startup"));
+    
     Preferences::ldrawPreferences(false);
+    Preferences::unitsPreferences();
+    defaultResolutionType(Preferences::preferCentimeters);
 
     Gui     LPubWin;
     LPubWin.show();

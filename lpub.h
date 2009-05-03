@@ -509,9 +509,10 @@ signals:
 
   void displayFileSig(LDrawFile *ldrawFile, const QString &subFile);
   void showLineSig(int lineNumber);
-private:    
+public:
   Page            page;            // the abstract version of page contents
 
+private:    
   QGraphicsScene *KpageScene;      // top of displayed page's graphics items
   LGraphicsView  *KpageView;       // the visual representation of the scene
 
@@ -537,25 +538,27 @@ private:
 
   int findPage(                    // traverse the hierarchy until we get to the
     LGraphicsView  *view,          // page of interest, let traverse process the
-	  QGraphicsScene *scene,         // page, and then finish by counting the rest
+    QGraphicsScene *scene,         // page, and then finish by counting the rest
     int           &pageNum,        // of the pages
-	  QString const &addLine,
+    QString const &addLine,
     Where          current,
-    bool           mirrored,    
-	  Meta          &meta);
+    bool           mirrored,
+    Meta           meta);
 
   int drawPage(                    // process the page of interest and any callouts
     LGraphicsView  *view,
-	  QGraphicsScene *scene,
+    QGraphicsScene *scene,
     Steps          *steps,
     int            stepNum,
-	  QString const &addLine,
+    QString const &addLine,
     Where         &current,
     QStringList    csiParts,
     Pli           &pli,
     bool           isMirrored,
     QHash<QString, QStringList> &bfx,
     bool           calledOut = false);
+  
+  void attitudeAdjustment(); // reformat the LDraw file to fix LPub backward compatibility issues 
     
   void include(Meta &meta);
 
@@ -564,7 +567,7 @@ private:
     bool            coverPage,
     bool            endOfSubmodel,
     int             instances,
-	  LGraphicsView  *view, 
+    LGraphicsView  *view,
     QGraphicsScene *scene);
 
 private slots:
@@ -584,8 +587,8 @@ private slots:
     void firstPage();
     void lastPage();
 
-	  void zoomIn();
-	  void zoomOut();
+    void zoomIn();
+    void zoomOut();
 
     void zoomIn(LGraphicsView *view);
     void zoomOut(LGraphicsView *view);
@@ -597,8 +600,8 @@ private slots:
     void mpdComboChanged(int index);
 
     void clearPage(
-	    LGraphicsView  *view,
-	    QGraphicsScene *scene);
+      LGraphicsView  *view,
+      QGraphicsScene *scene);
 
     void redrawPage();
     void clearAndRedrawPage();
@@ -720,7 +723,7 @@ public:
   LGraphicsView(QGraphicsScene *scene)
   {
     setScene(scene);
-	  pageBackgroundItem = NULL;
+    pageBackgroundItem = NULL;
   }
   PageBackgroundItem *pageBackgroundItem;
 

@@ -32,9 +32,10 @@ public:
   QString    topLevelFile;
   QList<MetaGui *> children;
 
-  GlobalProjectPrivate(const QString &_topLevelFile)
+  GlobalProjectPrivate(const QString &_topLevelFile, Meta &_meta)
   {
     topLevelFile = _topLevelFile;
+    meta = _meta;
 
     MetaItem mi; // examine all the globals and then return
 
@@ -49,9 +50,9 @@ public:
  *********************************************************************/
 
 GlobalProjectDialog::GlobalProjectDialog(
-  const QString &topLevelFile)
+  const QString &topLevelFile, Meta &meta)
 {
-  data = new GlobalProjectPrivate(topLevelFile);
+  data = new GlobalProjectPrivate(topLevelFile,meta);
 
   setWindowTitle(tr("Project Globals Setup"));
 
@@ -86,9 +87,9 @@ GlobalProjectDialog::GlobalProjectDialog(
 }
 
 void GlobalProjectDialog::getProjectGlobals(
-  const QString topLevelFile)
+  const QString topLevelFile, Meta &meta)
 {
-  GlobalProjectDialog *dialog = new GlobalProjectDialog(topLevelFile);
+  GlobalProjectDialog *dialog = new GlobalProjectDialog(topLevelFile,meta);
   dialog->exec();
 }
 

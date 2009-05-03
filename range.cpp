@@ -66,6 +66,32 @@ void Range::append(AbstractRangeElement *gi)
  *
  ********************************************/
 
+void Range::sizeMargins(
+  int cols[NumPlaces],
+  int colsMargin[][2],
+  int margins[NumPlaces])
+{
+  int active = 0;
+
+  for (int i = 0; i < NumPlaces; i++) {
+    margins[i] = 0;
+    if (cols[i]) {
+      ++active;
+    }
+  }
+
+  for (int i = TblSn0; active && i < TblCo5 - 1; i++) {
+    if (cols[i] && --active) {
+      margins[i] = qMax(colsMargin[i][1],colsMargin[i+1][0]);
+      for (int j = i + 1; j < NumPlaces; j++) {
+        if (cols[j]) {
+          margins[i] = qMax(colsMargin[i][1],colsMargin[j][0]);
+          break;
+        }
+      }
+    }
+  }
+}
 
 /*
  * to size a range Vertically
@@ -93,6 +119,7 @@ void Range::sizeitVert()
   int     rowsMargin[NumPlaces][2];
   int     cols[NumPlaces];
   int     colsMargin[NumPlaces][2];
+  int     margins[NumPlaces];
 
   /* we accumulate the widest of the columns within the steps */
 
@@ -119,17 +146,19 @@ void Range::sizeitVert()
 
       /* size the step both Vertically and Horizontally */
 
-      step->sizeitVert(rows,cols,rowsMargin,colsMargin);
+      step->sizeit(rows,cols,rowsMargin,colsMargin,XX,YY);
+      
+      sizeMargins(rows,rowsMargin,margins);
 
       /* place the step components Vertically */
 
-      step->placeitVert(rows,rowsMargin,YY);
-
+      step->placeit(rows,margins,YY);
+      
       /* accumulate minimum height of column */
 
-      int topMargin, botMargin;
+      int topMargin = 0, botMargin = 0;
 
-      step->vertMargin(topMargin,botMargin);
+      step->maxMargin(topMargin,botMargin,YY);
       if (topMargin > lastMargin) {
         lastMargin = topMargin;
       }
@@ -140,10 +169,16 @@ void Range::sizeitVert()
       size[YY] += reserve->size[YY];
     }
   }
-
+  
   size[YY] -= lastMargin;
 
   /* place all step's components into columns */
+
+  /*********************************/
+  /* determine the margins needed  */
+  /*********************************/
+  
+  sizeMargins(cols,colsMargin,margins);
 
   size[XX] = 0;
   for (int i = 0; i < list.size(); i++) {
@@ -152,7 +187,7 @@ void Range::sizeitVert()
 
       /* place the step's components Horizontally (columns) */
 
-      step->placeitVert(cols,colsMargin,XX);
+      step->placeit(cols,margins,XX, true);
 
       if (step->size[XX] > size[XX]) {
         size[XX] = step->size[XX];
@@ -171,58 +206,59 @@ void Range::sizeitVert()
       step->placeInside();
     }
   }
+  
+  setBoundingSize();
 }
 
 /*
  * we know the tallest of all the columns, so evenly
  * space the steps within the column
  */
-void Range::placeitVert(int max)
+void Range::placeit(int max, int x, int y)
 {
   /* determine the spacing needed */
 
-  int spacing;
-  int y;
+  int spacing = 0, top = 0;
 
   if (list.size() < 3) {
-    spacing = (max - size[YY])/(list.size() + 1);
-    y = spacing;
+    spacing = (max - size[y])/(list.size() + 1);
+    top = spacing;
   } else {
-    spacing = (max - size[YY])/(list.size() - 1);
-    y = 0;
+    spacing = (max - size[y])/(list.size() - 1);
   }
 
   /* evenly space the steps Vertically */
-  int lastMargin = 0;
 
+  int lastMargin = 0;
   for (int i = 0; i < list.size(); i++) {
     if (list[i]->relativeType == StepType) {
       Step *step = dynamic_cast<Step *>(list[i]);
 
-      step->loc[YY] = y;
-      step->loc[XX] = 0;
+      step->loc[x] = 0;
+      step->loc[y] = top;
 
-      y += step->size[YY] + spacing;
+      top += step->size[y] + spacing;
 
       /* accumulate minimum height of column */
 
       int topMargin, botMargin;
 
-      step->vertMargin(topMargin,botMargin);
+      step->maxMargin(topMargin,botMargin,YY);
       if (topMargin > lastMargin) {
         lastMargin = topMargin;
       }
 
-      y += lastMargin;
+      top += lastMargin;
     } else if (list[i]->relativeType == ReserveType) {
       Reserve *reserve = dynamic_cast<Reserve *>(list[i]);
       if (reserve) {
-        y += reserve->size[YY];
+        top += reserve->size[y];
       }
     }
-    size[YY] = y - spacing;
+    size[y] = top - spacing;
   }
-  size[YY] = max;
+  size[y] = max;
+  setBoundingSize();
 }
 
 void Range::sizeitHoriz()
@@ -231,6 +267,7 @@ void Range::sizeitHoriz()
   int     rowsMargin[NumPlaces][2];
   int     cols[NumPlaces];
   int     colsMargin[NumPlaces][2];
+  int margins[NumPlaces];
 
   /* we accumulate the tallest of the rows within the steps */
 
@@ -257,17 +294,19 @@ void Range::sizeitHoriz()
 
       /* size the step both Vertically and Horizontally */
 
-      step->sizeitHoriz(rows,cols,rowsMargin,colsMargin);
+      step->sizeit(rows,cols,rowsMargin,colsMargin,XX,YY);
+      
+      sizeMargins(cols,colsMargin,margins);
 
       /* place the step components Horizontally */
 
-      step->placeitHoriz(cols,colsMargin,XX);
+      step->placeit(cols,margins,XX);
 
       /* accumulate minimum width of row */
 
       int topMargin, botMargin;
 
-      step->vertMargin(topMargin,botMargin);
+      step->maxMargin(topMargin,botMargin,XX);
       if (topMargin > lastMargin) {
         lastMargin = topMargin;
       }
@@ -281,6 +320,8 @@ void Range::sizeitHoriz()
   size[XX] -= lastMargin;
 
   /* place all step's components into rows */
+  
+  sizeMargins(rows,rowsMargin,margins);
 
   size[YY] = 0;
   for (int i = 0; i < list.size(); i++) {
@@ -289,7 +330,7 @@ void Range::sizeitHoriz()
 
       /* place the step's components Horizontally (columns) */
 
-      step->placeitHoriz(rows,rowsMargin,YY);
+      step->placeit(rows,margins,YY, true);
 
       if (step->size[YY] > size[YY]) {
         size[YY] = step->size[YY];
@@ -308,55 +349,7 @@ void Range::sizeitHoriz()
       step->placeInside();
     }
   }
-}
-
-/*
- * we know the tallest of all the columns, so evenly
- * space the steps within the column
- */
-void Range::placeitHoriz(int max)
-{
-  /* determine the spacing needed */
-
-  int spacing,x;
-
-  if (list.size() < 3) {
-    spacing = (max - size[XX])/(list.size() + 1);
-    x = spacing;
-  } else {
-    spacing = (max - size[XX])/(list.size() - 1);
-    x = 0;
-  }
-
-  /* evenly space the steps Vertically */
-
-  int lastMargin = 0;
-  for (int i = 0; i < list.size(); i++) {
-    if (list[i]->relativeType == StepType) {
-      Step *step = dynamic_cast<Step *>(list[i]);
-
-      step->loc[XX] = x;
-      step->loc[YY] = 0;
-
-      x += step->size[XX] + spacing;
-
-      int topMargin, botMargin;
-
-      step->vertMargin(topMargin,botMargin);
-      if (topMargin > lastMargin) {
-        lastMargin = topMargin;
-      }
-
-      x += lastMargin;
-    } else if (list[i]->relativeType == ReserveType) {
-      Reserve *reserve = dynamic_cast<Reserve *>(list[i]);
-      if (reserve) {
-        x += reserve->size[XX];
-      }
-    }
-    size[XX] = x - spacing;
-  }
-  size[XX] = max;
+  setBoundingSize();
 }
 
 /*****************************************************************************
@@ -375,7 +368,7 @@ void Range::sizeitFreeform(
   int left, right;
 
   size[xx] = 0;
-  size[yy] = margin.value(yy);
+  size[yy] = margin.valuePixels(yy);
 
   for (int i = 0; i < list.size(); i++) {
     if (list[i]->relativeType == StepType) {
@@ -388,7 +381,7 @@ void Range::sizeitFreeform(
       if (right > maxRight) {
         maxRight = right;
       }
-      size[yy] += step->size[yy] + step->margin.value(yy);
+      size[yy] += step->size[yy] + step->margin.valuePixels(yy);
     } else if (list[i]->relativeType == ReserveType) {
       Reserve *reserve = dynamic_cast<Reserve *>(list[i]);
 
@@ -398,7 +391,8 @@ void Range::sizeitFreeform(
 
   leftAdjust = -maxLeft;
 
-  size[xx] += maxRight - maxLeft + 2*margin.value(xx);
+  size[xx] += maxRight - maxLeft + 2*margin.valuePixels(xx);
+  setBoundingSize();
 }
 
 /*
@@ -415,7 +409,7 @@ void Range::placeitFreeform(
 
   int spacing = (max - size[yy])/(list.size() + 1);
 
-  int y = margin.value(yy) + spacing;
+  int y = margin.valuePixels(yy) + spacing;
 
   /* evenly space the steps Vertically */
 
@@ -430,18 +424,17 @@ void Range::placeitFreeform(
       switch (justification) {
         case Left:
         case Top:
-          step->loc[xx] = margin.value(xx);
+          step->loc[xx] = margin.valuePixels(xx);
         break;
         case Center:
-          step->loc[xx] = size[xx]/2 + margin.value(xx);
+          step->loc[xx] = size[xx]/2 + margin.valuePixels(xx);
         break;
-        case Right:
-        case Bottom:
-          step->loc[xx] = size[xx] + margin.value(xx);
+        default:
+          step->loc[xx] = size[xx] + margin.valuePixels(xx);
         break;
       }
 
-      y += step->size[yy] + spacing + step->margin.value(yy);
+      y += step->size[yy] + spacing + step->margin.valuePixels(yy);
     } else if (list[i]->relativeType == ReserveType) {
       Reserve *reserve = dynamic_cast<Reserve *>(list[i]);
       y += reserve->size[yy];
@@ -449,28 +442,14 @@ void Range::placeitFreeform(
     size[yy] = y - spacing;
   }
   size[yy] = max;
+  setBoundingSize();
 }
 
 /******************************************************************************
  * Qt Graphics Scene routines
  *****************************************************************************/
 
-void Range::addGraphicsItemsVert(
-  int xx,
-  int yy,
-  Meta *meta,
-  PlacementType  parentRelativeType,
-  QGraphicsItem *parent)
-{
-  for (int i = 0; i < list.size(); i++) {
-    if (list[i]->relativeType == StepType) {
-      Step *step = dynamic_cast<Step *>(list[i]);
-      step->addGraphicsItems(xx+loc[XX],yy+loc[YY],meta,parentRelativeType,parent);
-    }
-  }
-}
-
-void Range::addGraphicsItemsHoriz(
+void Range::addGraphicsItems(
   int xx,
   int yy,
   Meta *meta,

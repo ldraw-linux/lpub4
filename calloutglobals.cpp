@@ -34,9 +34,10 @@ public:
   QString    topLevelFile;
   QList<MetaGui *> children;
 
-  GlobalCalloutPrivate(QString &_topLevelFile)
+  GlobalCalloutPrivate(QString &_topLevelFile, Meta &_meta)
   {
     topLevelFile = _topLevelFile;
+    meta = _meta;
 
     MetaItem mi; // examine all the globals and then return
 
@@ -44,9 +45,9 @@ public:
   }
 };
 
-GlobalCalloutDialog::GlobalCalloutDialog(QString &topLevelFile)
+GlobalCalloutDialog::GlobalCalloutDialog(QString &topLevelFile, Meta &meta)
 {
-  data = new GlobalCalloutPrivate(topLevelFile);
+  data = new GlobalCalloutPrivate(topLevelFile, meta);
 
   setWindowTitle(tr("Callout Globals Setup"));
 
@@ -136,9 +137,9 @@ GlobalCalloutDialog::GlobalCalloutDialog(QString &topLevelFile)
 }
 
 void GlobalCalloutDialog::getCalloutGlobals(
-  QString topLevelFile)
+  QString topLevelFile, Meta &meta)
 {
-  GlobalCalloutDialog *dialog = new GlobalCalloutDialog(topLevelFile);
+  GlobalCalloutDialog *dialog = new GlobalCalloutDialog(topLevelFile,meta);
   dialog->exec();
 }
 

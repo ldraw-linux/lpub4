@@ -30,7 +30,6 @@
 
 #include "backgrounditem.h"
 
-//class CalloutPointerItem;
 class Callout;
 
 class CalloutBackgroundItem : public PlacementBackgroundItem

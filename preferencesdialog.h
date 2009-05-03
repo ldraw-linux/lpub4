@@ -31,7 +31,6 @@ class PreferencesDialog : public QDialog
 	QString const ldviewExe();
 	QString const preferredRenderer();
   bool    const centimeters();
-  void          disableUnits();
 	
   private slots:
   void on_browseLDraw_clicked();

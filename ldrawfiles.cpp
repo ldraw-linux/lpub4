@@ -34,11 +34,290 @@
 #include "name.h"
 #include "paths.h"
 
+LDrawSubFile::LDrawSubFile(
+  const QStringList &contents,
+  QDateTime   &datetime)
+{
+  _contents << contents;
+  _datetime = datetime;
+  _modified = false;
+  _numSteps = 0;
+  _instances = 0;
+  _mirrorInstances = 0;
+  _rendered = false;
+  _mirrorRendered = false;
+}
+
 void LDrawFile::empty()
 {
-    _subFiles.clear();
-    _subFileOrder.clear();
-    _mpd = false;
+  _subFiles.clear();
+  _subFileOrder.clear();
+  _mpd = false;
+}
+
+/* Add a new subFile */
+
+void LDrawFile::insert(const QString     &mcFileName, 
+                      QStringList &contents, 
+                      QDateTime   &datetime)
+{
+  QString    fileName = mcFileName.toLower();
+  QMap<QString, LDrawSubFile>::iterator i = _subFiles.find(fileName);
+
+  if (i != _subFiles.end()) {
+    _subFiles.erase(i);
+  }
+  LDrawSubFile subFile(contents,datetime);
+  _subFiles.insert(fileName,subFile);
+  _subFileOrder << fileName;
+}
+
+/* return the number of lines in the file */
+
+int LDrawFile::size(const QString &mcFileName)
+{
+  QString fileName = mcFileName.toLower();
+  int mySize;
+      
+  QMap<QString, LDrawSubFile>::iterator i = _subFiles.find(fileName);
+
+  if (i == _subFiles.end()) {
+    mySize = 0;
+  } else {
+    mySize = i.value()._contents.size();
+  }
+  return mySize;
+}
+
+bool LDrawFile::isMpd()
+{
+  return _mpd;
+}
+
+/* return the name of the top level file */
+
+QString LDrawFile::topLevelFile()
+{
+  if (_subFileOrder.size()) {
+    return _subFileOrder[0];
+  } else {
+    return _emptyString;
+  }
+}
+
+/* return the number of steps within the file */
+
+int LDrawFile::numSteps(const QString &mcFileName)
+{
+  QString fileName = mcFileName.toLower();
+  QMap<QString, LDrawSubFile>::iterator i = _subFiles.find(fileName);
+  if (i != _subFiles.end()) {
+    return i.value()._numSteps;
+  }
+  return 0;
+}
+
+QDateTime LDrawFile::lastModified(const QString &mcFileName)
+{
+  QString fileName = mcFileName.toLower();
+  QMap<QString, LDrawSubFile>::iterator i = _subFiles.find(fileName);
+  if (i != _subFiles.end()) {
+    return i.value()._datetime;
+  }
+  return QDateTime();
+}
+
+bool LDrawFile::contains(const QString &file)
+{
+  for (int i = 0; i < _subFileOrder.size(); i++) {
+    if (_subFileOrder[i].toLower() == file.toLower()) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool LDrawFile::modified()
+{
+  QString key;
+  bool    modified = false;
+  foreach(key,_subFiles.keys()) {
+    modified |= _subFiles[key]._modified;
+  }
+  return modified;
+}
+
+bool LDrawFile::modified(const QString &mcFileName)
+{
+  QString fileName = mcFileName.toLower();
+  QMap<QString, LDrawSubFile>::iterator i = _subFiles.find(fileName);
+  if (i != _subFiles.end()) {
+    return i.value()._modified;
+  } else {
+    return false;
+  }
+}
+
+QStringList LDrawFile::contents(const QString &mcFileName)
+{
+  QString fileName = mcFileName.toLower();
+  QMap<QString, LDrawSubFile>::iterator i = _subFiles.find(fileName);
+
+  if (i != _subFiles.end()) {
+    return i.value()._contents;
+  } else {
+    return _emptyList;
+  }
+}
+
+void LDrawFile::setContents(const QString     &mcFileName, 
+                 const QStringList &contents)
+{
+  QString fileName = mcFileName.toLower();
+  QMap<QString, LDrawSubFile>::iterator i = _subFiles.find(fileName);
+
+  if (i != _subFiles.end()) {
+    i.value()._modified = true;
+    //i.value()._datetime = QDateTime::currentDateTime();
+    i.value()._contents = contents;
+  }
+}
+
+bool LDrawFile::older(const QStringList &submodelStack, 
+           const QDateTime &datetime)
+{
+  QString fileName;
+  foreach (fileName, submodelStack) {
+    QMap<QString, LDrawSubFile>::iterator i = _subFiles.find(fileName);
+    if (i != _subFiles.end()) {
+      QDateTime fileDatetime = i.value()._datetime;
+      if (fileDatetime > datetime) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+QStringList LDrawFile::subFileOrder() {
+  return _subFileOrder;
+}
+
+QString LDrawFile::readLine(const QString &mcFileName, int lineNumber)
+{
+  QString fileName = mcFileName.toLower();
+  QMap<QString, LDrawSubFile>::iterator i = _subFiles.find(fileName);
+
+  if (i != _subFiles.end()) {
+    return i.value()._contents[lineNumber];
+  }
+  QString empty;
+  return empty;
+}
+
+void LDrawFile::insertLine(const QString &mcFileName, int lineNumber, const QString &line)
+{  
+  QString fileName = mcFileName.toLower();
+  QMap<QString, LDrawSubFile>::iterator i = _subFiles.find(fileName);
+  
+  if (i != _subFiles.end()) {
+    i.value()._contents.insert(lineNumber,line);
+    i.value()._modified = true;
+ //   i.value()._datetime = QDateTime::currentDateTime();
+  }
+}
+  
+void LDrawFile::replaceLine(const QString &mcFileName, int lineNumber, const QString &line)
+{
+  QString fileName = mcFileName.toLower();
+  QMap<QString, LDrawSubFile>::iterator i = _subFiles.find(fileName);
+
+  if (i != _subFiles.end()) {
+    i.value()._contents[lineNumber] = line;
+    i.value()._modified = true;
+//    i.value()._datetime = QDateTime::currentDateTime();
+  }
+}
+
+void LDrawFile::deleteLine(const QString &mcFileName, int lineNumber)
+{
+  QString fileName = mcFileName.toLower();
+  QMap<QString, LDrawSubFile>::iterator i = _subFiles.find(fileName);
+
+  if (i != _subFiles.end()) {
+    i.value()._contents.removeAt(lineNumber);
+    i.value()._modified = true;
+//    i.value()._datetime = QDateTime::currentDateTime();
+  }
+}
+
+void LDrawFile::changeContents(const QString &mcFileName, 
+                          int      position, 
+                          int      charsRemoved, 
+                    const QString &charsAdded)
+{
+  QString fileName = mcFileName.toLower();
+  if (charsRemoved || charsAdded.size()) {
+    QString all = contents(fileName).join("\n");
+    all.remove(position,charsRemoved);
+    all.insert(position,charsAdded);
+    setContents(fileName,all.split("\n"));
+  }
+}
+
+void LDrawFile::unrendered()
+{
+  QString key;
+  foreach(key,_subFiles.keys()) {
+    _subFiles[key]._rendered = false;
+    _subFiles[key]._mirrorRendered = false;
+  }
+}
+
+void LDrawFile::setRendered(const QString &mcFileName, bool mirrored)
+{
+  QString fileName = mcFileName.toLower();
+  QMap<QString, LDrawSubFile>::iterator i = _subFiles.find(fileName);
+
+  if (i != _subFiles.end()) {
+    if (mirrored) {
+      i.value()._mirrorRendered = true;
+    } else {
+      i.value()._rendered = true;
+    }
+  }
+}
+
+bool LDrawFile::rendered(const QString &mcFileName, bool mirrored)
+{
+  QString fileName = mcFileName.toLower();
+  QMap<QString, LDrawSubFile>::iterator i = _subFiles.find(fileName);
+
+  if (i != _subFiles.end()) {
+    if (mirrored) {
+      return i.value()._mirrorRendered;
+    } else {
+      return i.value()._rendered;
+    }
+  }
+  return false;
+}      
+
+int LDrawFile::instances(const QString &mcFileName, bool mirrored)
+{
+  QString fileName = mcFileName.toLower();
+  QMap<QString, LDrawSubFile>::iterator i = _subFiles.find(fileName);
+  
+  int instances = 0;
+
+  if (i != _subFiles.end()) {
+    if (mirrored) {
+      instances = i.value()._mirrorInstances;
+    } else {
+      instances = i.value()._instances;
+    }
+  }
+  return instances;
 }
 
 void LDrawFile::loadFile(const QString &fileName)
@@ -92,7 +371,6 @@ void LDrawFile::loadFile(const QString &fileName)
       loadLDRFile(fileInfo.absolutePath(),fileInfo.fileName());
     }
     
-    countInstances(topLevelFile(),false);
     QApplication::restoreOverrideCursor();
 }
 
@@ -112,28 +390,26 @@ void LDrawFile::loadMPDFile(const QString &fileName, QDateTime &datetime)
 
     QStringList contents;
     QString     mpdName;
-    QRegExp sof("^\\s*0\\s+FILE\\s+(.*)$");
-    QRegExp eof("^\\s*0\\s+NOFILE\\s*$");
+    QRegExp sofRE("^\\s*0\\s+FILE\\s+(.*)$");
+    QRegExp eofRE("^\\s*0\\s+NOFILE\\s*$");
 
     while ( ! in.atEnd()) {
 
       const QString line = in.readLine(0);
+      bool sof = line.contains(sofRE);
+      bool eof = line.contains(eofRE);
 
-      if (line.contains(sof)) {
+      if (sof || eof) {
         if ( ! mpdName.isEmpty()) {
           insert(mpdName,contents,datetime);
           writeToTmp(mpdName,contents);
         }
         contents.clear();
-        mpdName = sof.cap(1);
-
-      } else if (line.contains(eof)) {
-        if ( ! mpdName.isEmpty()) {
-          insert(mpdName,contents,datetime);
-          writeToTmp(mpdName,contents);
+        if (sof) {
+          mpdName = sofRE.cap(1);
+        } else {
+          mpdName.clear();
         }
-        mpdName.clear();
-
       } else if ( ! mpdName.isEmpty() && line != "") {
         contents << line;
       }
@@ -231,13 +507,16 @@ bool LDrawFile::mirrored(
   return a*e*i - a*f*h - b*d*i + b*f*g + c*d*h - c*e*g < 0;
 }
 
-void LDrawFile::countInstances(const QString &fileName, bool isMirrored)
+void LDrawFile::countInstances(const QString &mcFileName, bool isMirrored)
 {
+  QString fileName = mcFileName.toLower();
+  QByteArray FileName = fileName.toAscii();
   bool partsAdded = false;
   
   QMap<QString, LDrawSubFile>::iterator f = _subFiles.find(fileName);
   if (f != _subFiles.end()) {
     int j = f->_contents.size();
+    f->_numSteps = 0;
     for (int i = 0; i < j; i++) {
       QStringList tokens;
       split(f->_contents[i],tokens);
@@ -256,7 +535,7 @@ void LDrawFile::countInstances(const QString &fileName, bool isMirrored)
               tokens[0] == "0" && 
               (tokens[1] == "LPUB" || tokens[1] == "!LPUB") && 
               tokens[2] == "CALLOUT" && 
-              tokens[4] == "END") {
+              tokens[3] == "END") {
             
             break;
           }
@@ -272,7 +551,7 @@ void LDrawFile::countInstances(const QString &fileName, bool isMirrored)
       }
     }
     f->_numSteps += partsAdded &&
-                    (   isMirrored && f->_mirrorInstances == 0 ||
+                       (isMirrored && f->_mirrorInstances == 0 ||
                       ! isMirrored && f->_instances == 0);
     if (isMirrored) {
       ++f->_mirrorInstances;
@@ -280,6 +559,17 @@ void LDrawFile::countInstances(const QString &fileName, bool isMirrored)
       ++f->_instances;
     }
   }
+}
+
+void LDrawFile::countInstances()
+{
+  for (int i = 0; i < _subFileOrder.size(); i++) {
+    QString fileName = _subFileOrder[i].toLower();
+    QMap<QString, LDrawSubFile>::iterator i = _subFiles.find(fileName);
+    i->_instances = 0;
+    i->_mirrorInstances = 0;
+  }
+  countInstances(topLevelFile(),false);
 }
 
 bool LDrawFile::saveMPDFile(const QString &fileName)
@@ -365,6 +655,15 @@ void LDrawFile::writeToTmp(
   }
 }
 
+void LDrawFile::writeToTmp()
+{
+  for (int i = 0; i < _subFileOrder.size(); i++) {
+    QString fileName = _subFileOrder[i].toLower();
+    QStringList c = contents(fileName);
+    writeToTmp(fileName,c);
+  }
+}
+
 int split(const QString &line, QStringList &argv)
 {
   QString     chopped = line;
@@ -381,6 +680,8 @@ int split(const QString &line, QStringList &argv)
     }
   }
   
+  argv.clear();
+  
   if (chopped[p] == '1') {
 
     argv << "1";
@@ -391,18 +692,6 @@ int split(const QString &line, QStringList &argv)
     while (chopped[p] == ' ') {
       if (++p >= length) {
         return -1;
-      }
-    }
-    
-    if (chopped.mid(p,5) == "GHOST") {
-      p += 6;
-      if (p >= length) {
-        return -1;
-      }
-      while (chopped[p] == ' ') {
-        if (++p >= length) {
-          return -1;
-        }
       }
     }
     
@@ -426,9 +715,57 @@ int split(const QString &line, QStringList &argv)
     }
     
     argv << chopped.mid(p);
-  } else if (chopped[p] == '0' || chopped[p] >= '2' && chopped[p] <= '5') {
+  
+    if (argv.size() > 1 && argv[1] == "WRITE") {
+      argv.removeAt(1);
+    }
+  } else if (chopped[p] >= '2' && chopped[p] <= '5') {
     chopped = chopped.mid(p);  
     argv << chopped.split(" ",QString::SkipEmptyParts);
+  } else if (chopped[p] == '0') {
+
+    /* Parse the input line into argv[] */
+  
+    int soq = chopped.indexOf("\"");
+    if (soq == -1) {
+      argv << chopped.split(" ",QString::SkipEmptyParts);
+    } else {
+      while (chopped.size()) {
+        soq = chopped.indexOf("\"");
+        if (soq == -1) {
+          argv << chopped.split(" ",QString::SkipEmptyParts);
+          chopped.clear();
+        } else {
+        // we found a double quote
+          QString left = chopped.left(soq);
+
+          left = left.trimmed();
+  
+          argv << left.split(" ",QString::SkipEmptyParts);
+
+          chopped = chopped.mid(soq+1);
+  
+          soq = chopped.indexOf("\"");
+  
+          if (soq == -1) {
+            argv << left;
+            return -1;
+          }
+          argv << chopped.left(soq);
+  
+          chopped = chopped.mid(soq+1);
+  
+          if (chopped == "\"") {
+            chopped.clear();
+          }
+        }
+      }
+    }
+  
+    if (argv.size() > 1 && argv[0] == "0" && argv[1] == "GHOST") {
+      argv.removeFirst();
+      argv.removeFirst();
+    }
   }
   
   return 0;

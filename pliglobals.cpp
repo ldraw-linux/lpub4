@@ -34,16 +34,16 @@
 class GlobalPliPrivate
 {
 public:
-  Meta       meta;
+  Meta      meta;
   QString    topLevelFile;
   QList<MetaGui *> children;
   MetaGui *viewAngle;
   MetaGui *scale;
 
-  GlobalPliPrivate(QString &_topLevelFile)
+  GlobalPliPrivate(QString &_topLevelFile, Meta &_meta)
   {
     topLevelFile = _topLevelFile;
-
+    meta = _meta;
     MetaItem mi; // examine all the globals and then return
 
     mi.sortedGlobalWhere(meta,topLevelFile,"ZZZZZZZ");
@@ -51,9 +51,9 @@ public:
 };
 
 GlobalPliDialog::GlobalPliDialog(
-  QString &topLevelFile)
+  QString &topLevelFile, Meta &meta)
 {
-  data = new GlobalPliPrivate(topLevelFile);
+  data = new GlobalPliPrivate(topLevelFile,meta);
 
   setWindowTitle(tr("Parts List Globals Setup"));
 
@@ -162,9 +162,9 @@ GlobalPliDialog::GlobalPliDialog(
 }
 
 void GlobalPliDialog::getPliGlobals(
-  QString topLevelFile)
+  QString topLevelFile, Meta &meta)
 {
-  GlobalPliDialog *dialog = new GlobalPliDialog(topLevelFile);
+  GlobalPliDialog *dialog = new GlobalPliDialog(topLevelFile, meta);
   dialog->exec();
 }
 

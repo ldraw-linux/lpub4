@@ -45,7 +45,7 @@ UnitsDialog::UnitsDialog(
   QGroupBox *box = new QGroupBox(_name,this);
   layout->addWidget(box);
 
-  meta.setValueUnits(values[0],values[1]);
+  meta.setValue(values[0],values[1]);
   units = new UnitsGui("",&meta,box);
 
   QDialogButtonBox *buttonBox;
@@ -75,8 +75,8 @@ bool UnitsDialog::getUnits(
 
   bool ok = dialog->exec() == QDialog::Accepted;
   if (ok) {
-    values[0] = dialog->meta.valueUnit(0);
-    values[1] = dialog->meta.valueUnit(1);
+    values[0] = dialog->meta.value(0);
+    values[1] = dialog->meta.value(1);
   }
   return ok;
 }

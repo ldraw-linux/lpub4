@@ -98,13 +98,14 @@ float LDGLite::cameraDistance(
 {
   float onexone;
   float factor;
+  float resolution = meta.LPub.resolution.value();
 
   // Do the math in pixels
 
   onexone  = 20*meta.LPub.resolution.ldu(); // size of 1x1 in units
-  onexone *= meta.LPub.resolution.value();  // size of 1x1 in pixels
+  onexone *= resolution;                  // size of 1x1 in pixels
   onexone *= scale;
-  factor   = meta.LPub.page.size.value(0)/onexone; // in pixels;
+  factor   = meta.LPub.page.size.valuePixels(0)/onexone; // in pixels;
   
   return factor*LduDistance; 
 }
@@ -134,15 +135,15 @@ int LDGLite::renderCsi(
 
   int cd = cameraDistance(meta,meta.LPub.assem.modelScale.value());
 
-  int width = meta.LPub.page.size.value(0);
-  int height = meta.LPub.page.size.value(1);
+  int width = meta.LPub.page.size.valuePixels(0);
+  int height = meta.LPub.page.size.valuePixels(1);
 
   QString v  = QString("-v%1,%2")   .arg(width)
                                     .arg(height);
   QString o  = QString("-o0,-%1")   .arg(height/6);
   QString mf = QString("-mF%1")     .arg(pngName);
   
-  int lineThickness = resolution/150+0.5;
+  int lineThickness = resolution()/150+0.5;
   if (lineThickness == 0) {
     lineThickness = 1;
   }
@@ -180,7 +181,7 @@ int LDGLite::renderCsi(
   ldglite.setStandardErrorFile(QDir::currentPath() + "/stderr");
   ldglite.setStandardOutputFile(QDir::currentPath() + "/stdout");
   ldglite.start(Preferences::ldgliteExe,arguments);
-  if ( ! ldglite.waitForFinished()) {
+  if ( ! ldglite.waitForFinished(5*60*1000)) {
     if (ldglite.exitCode() != 0) {
       QByteArray status = ldglite.readAll();
       QString str;
@@ -191,7 +192,7 @@ int LDGLite::renderCsi(
       return -1;
     }
   }
-  //QFile::remove(ldrName);
+  QFile::remove(ldrName);
   return 0;
 }
 
@@ -201,8 +202,8 @@ int LDGLite::renderPli(
   const QString &pngName,
   Meta    &meta)
 {
-  int width  = meta.LPub.page.size.value(0);
-  int height = meta.LPub.page.size.value(1);
+  int width  = meta.LPub.page.size.valuePixels(0);
+  int height = meta.LPub.page.size.valuePixels(1);
   
   /* determine camera distance */
 
@@ -217,7 +218,7 @@ int LDGLite::renderPli(
   QString o  = QString("-o0,-%1")   .arg(height/6);
   QString mf = QString("-mF%1")     .arg(pngName);
                                     // ldglite always deals in 72 DPI
-  QString w  = QString("-W%1")      .arg(int(resolution/72.0+0.5));
+  QString w  = QString("-W%1")      .arg(int(resolution()/72.0+0.5));
 
   QStringList arguments;
   arguments << "-l3";
@@ -304,7 +305,7 @@ float LDView::cameraDistance(
   onexone  = 20*meta.LPub.resolution.ldu(); // size of 1x1 in units
   onexone *= meta.LPub.resolution.value();  // size of 1x1 in pixels
   onexone *= scale;
-  factor   = (meta.LPub.page.size.value(0)*0.775)/onexone; // in pixels;
+  factor   = (meta.LPub.page.size.valuePixels(0)*0.775)/onexone; // in pixels;
   
   return factor*LduDistance; 
 }
@@ -332,8 +333,8 @@ int LDView::renderCsi(
   QStringList arguments;
 
   int cd = cameraDistance(meta,meta.LPub.assem.modelScale.value())*1376/1074;
-  int width = meta.LPub.page.size.value(0);
-  int height = meta.LPub.page.size.value(1);
+  int width = meta.LPub.page.size.valuePixels(0);
+  int height = meta.LPub.page.size.valuePixels(1);
 
   QString w  = QString("-SaveWidth=%1") .arg(width);
   QString h  = QString("-SaveHeight=%1") .arg(height);
@@ -370,7 +371,7 @@ int LDView::renderCsi(
   ldview.setWorkingDirectory(QDir::currentPath()+"/"+Paths::tmpDir);
   ldview.start(Preferences::ldviewExe,arguments);
 
-  if ( ! ldview.waitForFinished()) {
+  if ( ! ldview.waitForFinished(5*60*1000)) {
     if (ldview.exitCode() != 0 || 1) {
       QByteArray status = ldview.readAll();
       QString str;
@@ -391,8 +392,8 @@ int LDView::renderPli(
   const QString &pngName,
   Meta    &meta)
 {
-  int width  = meta.LPub.page.size.value(0);
-  int height = meta.LPub.page.size.value(1);
+  int width  = meta.LPub.page.size.valuePixels(0);
+  int height = meta.LPub.page.size.valuePixels(1);
   
   QFileInfo fileInfo(ldrName);
   

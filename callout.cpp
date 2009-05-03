@@ -44,13 +44,14 @@
 
 Callout::Callout(
   Meta                 &_meta,
-  QGraphicsView        *_view)
+  QGraphicsView        *view)
+  : view(view)
 {
-  view          = _view;
   relativeType  = CalloutType;
   meta = _meta;
   instances = 1;
   pli.callout = this;
+  shared = false;
 }
 
 Callout::~Callout()
@@ -85,124 +86,118 @@ void Callout::appendPointer(const Where &here, CalloutMeta &attrib)
 
 void Callout::sizeIt()
 {
-  if (meta.LPub.callout.alloc.value() == Vertical) {
-    sizeitVert();
+  AllocEnc allocEnc = meta.LPub.callout.alloc.value();
+  if (allocEnc == Vertical) {
+    Steps::sizeit(allocEnc,XX,YY);
   } else {
-    sizeitHoriz();
+    Steps::sizeit(allocEnc,YY,XX);
   }
-}
 
-void Callout::sizeitVert()
-{
-  Steps::sizeitVert();
-  BorderData borderData = meta.LPub.callout.border.value();
+  BorderData borderData = meta.LPub.callout.border.valuePixels();
 
   size[XX] += borderData.margin[XX];
   size[YY] += borderData.margin[YY];
 
   size[XX] += borderData.thickness;
   size[YY] += borderData.thickness;
+  
+  /* If we've got multiple instances of a submodel, we need to add
+     the usage count in the lower right corner.  for assem, pli, and
+     step number, determine if bottom right corner overlaps with the
+     top left corner of the count.  If it fits, place the count
+     inside.  If not, calculate the area created by adding to side,
+     and compare the area created by adding to the bottom.  Add the
+     smaller area to the callout, and place the count accordingly */
 
   if (instances > 1) {
     instanceCount.number = instances;
     instanceCount.placement = meta.LPub.callout.instance.placement;
     instanceCount.margin    = meta.LPub.callout.instance.margin;
-    instanceCount.font = meta.LPub.callout.instance.font.value();
+    instanceCount.font = meta.LPub.callout.instance.font.valueFoo();
     instanceCount.sizeit();
+    
+    for (int j = 0; j < list.size(); j++) {
+      if (list[j] && list[j]->relativeType == RangeType) {
+        Range *range = dynamic_cast<Range *>(list[j]);
+        for (int i = 0; i < range->list.size(); i++) {
+          if (range->list[i]->relativeType == StepType) {
+            Step *step = dynamic_cast<Step *>(range->list[i]);
+            
+            /* Describe the instance count rectangle */
+            
+            volatile int  instanceTop, instanceLeft, instanceWidth, instanceHeight;
+              
+            instanceWidth  = instanceCount.size[XX] + instanceCount.margin.valuePixels(XX);
+            instanceHeight = instanceCount.size[YY] + instanceCount.margin.valuePixels(YY);
+            instanceLeft = size[XX] - instanceWidth;
+            instanceTop  = size[YY] - instanceHeight;
 
-    PlacementData placementData = meta.LPub.callout.instance.placement.value();
+            /* if there is something yo work with */
+            
+            volatile int  right;
+            volatile int  bottom;
+            bool          fit = true;
+            
+            // Overlap count with CSI?
+              
+            right  = step->csiPlacement.loc[XX] + step->csiPlacement.size[XX];
+            bottom = step->csiPlacement.loc[YY] + step->csiPlacement.size[YY];
+              
+            if (right > instanceLeft && bottom > instanceTop) {
+              fit = false;
+            } else {      
+              right  = step->pli.loc[XX] + step->pli.size[XX];
+              bottom = step->pli.loc[YY] + step->pli.size[YY];
 
-    if (placementData.preposition == Outside) {
-      BorderData borderData = meta.LPub.callout.border.value();
-      int margin[2] = {borderData.margin[0], borderData.margin[1]};
-      placeRelative(&instanceCount,margin);
-      switch (placementData.placement) {
-        case TopLeft:
-        case Left:
-        case BottomLeft:
-        case TopRight:
-        case Right:
-        case BottomRight:
-          size[XX] += instanceCount.margin.value(XX) + instanceCount.size[XX];
-        break;
-        default:
-        break;
-      } 
-      switch (placementData.placement) {
-        case TopLeft:
-        case Top:
-        case TopRight:
-        case BottomLeft:
-        case Bottom:
-        case BottomRight:
-          size[YY] += instanceCount.margin.value(YY) + instanceCount.size[YY];
-        break;
-        default:
-        break;
-      }
-    } else {
-      placeRelative(&instanceCount);
-    }
-  }
+              // Overlap with PLI?
+                
+              if (right > instanceLeft && bottom > instanceTop) {
+                fit = false;
+              } else {
+                right  = step->stepNumber.loc[XX] + step->stepNumber.size[XX];
+                bottom = step->stepNumber.loc[YY] + step->stepNumber.size[YY];
 
-  size[XX] += borderData.margin[XX];
-  size[YY] += borderData.margin[YY];
-
-  size[XX] += borderData.thickness;
-  size[YY] += borderData.thickness;
-}
-
-void Callout::sizeitHoriz()
-{
-  Steps::sizeitHoriz();
-  BorderData borderData = meta.LPub.callout.border.value();
-
-  size[XX] += borderData.margin[XX];
-  size[YY] += borderData.margin[YY];
-
-  size[XX] += borderData.thickness;
-  size[YY] += borderData.thickness;
-
-  if (instances > 1) {
-    instanceCount.number = instances;
-    instanceCount.placement = meta.LPub.callout.instance.placement;
-    instanceCount.margin    = meta.LPub.callout.instance.margin;
-    instanceCount.font = meta.LPub.callout.instance.font.value();
-    instanceCount.sizeit();
-
-    PlacementData placementData = instanceCount.placement.value();
-
-    if (placementData.preposition == Outside) {
-      BorderData borderData = meta.LPub.callout.border.value();
-      int margin[2] = {borderData.margin[0], borderData.margin[1]};
-      placeRelative(&instanceCount,margin);
-      switch (placementData.placement) {
-        case TopLeft:
-        case Left:
-        case BottomLeft:
-        case TopRight:
-        case Right:
-        case BottomRight:
-          size[XX] += instanceCount.margin.value(XX) + instanceCount.size[XX];
-        break;
-        default:
-        break;
-      }
-      switch (placementData.placement) {
-        case TopLeft:
-        case Top:
-        case TopRight:
-        case BottomLeft:
-        case Bottom:
-        case BottomRight:
-          size[YY] += instanceCount.margin.value(YY) + instanceCount.size[YY];
-        break;
-        default:
-        break;
-      }
-    } else {
-      placeRelative(&instanceCount);
-    }
+                // Overlap with Step Number?
+                  
+                fit = ! (right > instanceLeft && bottom > instanceTop);
+                if (fit) {
+                  for (int i = 0; i < step->list.size(); i++) {
+                    Callout *callout = step->list[i];
+                    if (callout) {
+                      right = callout->loc[XX] + callout->size[XX];
+                      bottom = callout->loc[YY] + callout->size[YY];
+                      if (right > instanceLeft && bottom > instanceTop) {
+                        fit = false;
+                        break;
+                      }
+                    }
+                  }
+                }
+              }
+            }
+            if (fit) {
+              instanceCount.loc[XX] = instanceLeft + instanceCount.margin.valuePixels(XX);
+              instanceCount.loc[YY] = instanceTop + instanceCount.margin.valuePixels(YY);
+            } else {
+              // enlarge the callout to make room
+                    
+              volatile int a = instanceWidth  * size[YY];
+              volatile int b = instanceHeight * size[XX];
+              
+              if (a < b) {
+                instanceCount.loc[XX] = size[XX] + instanceCount.margin.valuePixels(XX);
+                instanceCount.loc[YY] = instanceTop + instanceCount.margin.valuePixels(YY);
+                size[XX] += instanceWidth;
+              } else {
+                instanceCount.loc[XX] = instanceLeft + instanceCount.margin.valuePixels(XX);
+                instanceCount.loc[YY] = size[YY] + instanceCount.margin.valuePixels(YY);
+                size[YY] += instanceHeight;
+              }
+            }
+          } // if step
+        } // foreach step
+      } // if range
+    } // foreach range
   }
 
   size[XX] += borderData.margin[XX];
@@ -218,7 +213,17 @@ void Callout::addGraphicsItems(
   QRect         &csiRect,
   QGraphicsItem *parent)
 {
-  QRect calloutRect(offsetX + loc[XX],offsetY + loc[YY],size[XX],size[YY]);
+  PlacementData placementData = placement.value();
+  
+  if (placementData.relativeTo == PageType ||
+      placementData.relativeTo == StepGroupType) {
+    offsetX = 0;
+    offsetY = 0;
+  }
+  
+  volatile int newLoc[2] = { offsetX + loc[XX], offsetY + loc[YY] };
+  
+  QRect calloutRect(newLoc[XX],newLoc[YY],size[XX],size[YY]);
 
   background = new CalloutBackgroundItem(
                      this,
@@ -231,30 +236,27 @@ void Callout::addGraphicsItems(
                      parent,
                      view);
 
-  background->setPos(offsetX + loc[XX],offsetY + loc[YY]);
+  background->setPos(newLoc[XX],newLoc[YY]);
 
   int saveX = loc[XX];
   int saveY = loc[YY];
 
-  BorderData borderData = meta.LPub.callout.border.value();
+  BorderData borderData = meta.LPub.callout.border.valuePixels();
 
   loc[XX] = borderData.margin[0];
   loc[YY] = borderData.margin[1];
  
   if (meta.LPub.callout.alloc.value() == Vertical) {
-    addGraphicsItemsVert(0,
-                         borderData.thickness,
-                         background);
+    addGraphicsItems(Vertical,0,borderData.thickness,background);
   } else {
-    addGraphicsItemsHoriz(borderData.thickness,
-                          0,
-                          background);
+    addGraphicsItems(Horizontal,borderData.thickness,0,background);
   }
   loc[XX] = saveX;
   loc[YY] = saveY;
 }
 
-void Callout::addGraphicsItemsVert(
+void Callout::addGraphicsItems(
+  AllocEnc       allocEnc,
   int            offsetX,
   int            offsetY,
   QGraphicsItem *parent)
@@ -267,7 +269,7 @@ void Callout::addGraphicsItemsVert(
       case TopLeft:
       case Left:
       case BottomLeft:
-        margin   = meta.LPub.callout.instance.margin.value(XX);
+        margin   = meta.LPub.callout.instance.margin.valuePixels(XX);
         offsetX += instanceCount.size[XX] + margin;
       break;
       default:
@@ -278,60 +280,22 @@ void Callout::addGraphicsItemsVert(
       case TopLeft:
       case Top:
       case TopRight:
-        margin   = meta.LPub.callout.instance.margin.value(YY);
+        margin   = meta.LPub.callout.instance.margin.valuePixels(YY);
         offsetY += instanceCount.size[YY] + margin;
       break;
       default:
       break;
     }
     CalloutInstanceItem *item = new CalloutInstanceItem(
-      this,
-     &meta, 
-      "x%d",
-      instanceCount.number,
-      parent);
+      this,&meta,"x%d",instanceCount.number,parent);
     item->setPos(offsetX + instanceCount.loc[0], offsetY + instanceCount.loc[1]);
+    item->setZValue(1000);
   }
 
-  Steps::addGraphicsItemsVert(offsetX,
-                              offsetY,
-                              parent);
-}
-
-void Callout::addGraphicsItemsHoriz(
-  int            offsetX,
-  int            offsetY,
-  QGraphicsItem *parent)
-{
-  if (instanceCount.number > 1) {
-    PlacementData placementData = instanceCount.placement.value();
-    switch (placementData.placement) {
-      case TopLeft:
-      case Left:
-      case BottomLeft:
-        offsetX += instanceCount.size[XX] + meta.LPub.callout.instance.margin.value(XX);
-      break;
-      default:
-      break;
-    }
-
-    switch (placementData.placement) {
-      case TopLeft:
-      case Top:
-      case TopRight:
-        offsetY += instanceCount.size[YY] + meta.LPub.callout.instance.margin.value(YY);
-      break;
-      default:
-      break;
-    }
-    CalloutInstanceItem *item = new CalloutInstanceItem(
-      this,&meta, "x%d",instanceCount.number,parent);
-    item->setPos(offsetX + instanceCount.loc[0], offsetY + instanceCount.loc[1]);
-  }
-
-  Steps::addGraphicsItemsHoriz(offsetX,
-                               offsetY,
-                               parent);
+  Steps::addGraphicsItems(allocEnc,
+                          offsetX,
+                          offsetY,
+                          parent);
 }
 
 void Callout::sizeitFreeform(
@@ -340,8 +304,8 @@ void Callout::sizeitFreeform(
 {
   Steps::sizeitFreeform(xx,yy);
 
-  size[XX] += 2*meta.LPub.callout.border.value().thickness;
-  size[YY] += 2*meta.LPub.callout.border.value().thickness;
+  size[XX] += 2*meta.LPub.callout.border.valuePixels().thickness;
+  size[YY] += 2*meta.LPub.callout.border.valuePixels().thickness;
 
   if (instanceCount.number > 1) {
     instanceCount.sizeit("%1x");
@@ -355,7 +319,7 @@ void Callout::sizeitFreeform(
         case TopRight:
         case Right:
         case BottomRight:
-          size[XX] += margin.value(XX) + instanceCount.size[XX];
+          size[XX] += margin.valuePixels(XX) + instanceCount.size[XX];
         break;
         default:
         break;
@@ -367,7 +331,7 @@ void Callout::sizeitFreeform(
         case BottomLeft:
         case Bottom:
         case BottomRight:
-          size[YY] += margin.value(YY) + instanceCount.size[YY];
+          size[YY] += margin.valuePixels(YY) + instanceCount.size[YY];
         break;
         default:
         break;
@@ -381,7 +345,7 @@ void Callout::sizeitFreeform(
       placementData.preposition = Inside;
       instanceCount.placement.setValue(placementData);
     } else {
-      size[YY] += margin.value(YY);
+      size[YY] += margin.valuePixels(YY);
       placeRelative(&instanceCount);
     }
   }
@@ -395,7 +359,7 @@ CalloutInstanceItem::CalloutInstanceItem(
   QGraphicsItem       *_parent)
 {
   callout = _callout;
-  QString toolTip("Number of times model in callout is used on this page");
+  QString toolTip("Times used - popup menu");
   setAttributes(PageNumberType,
                 CalloutType,
                 _meta->LPub.callout.instance,
@@ -406,28 +370,15 @@ CalloutInstanceItem::CalloutInstanceItem(
 }
 
 void Callout::addGraphicsPointerItem(
-  int      calloutOffsetX,
-  int      calloutOffsetY,
-  int      csiOffsetX,
-  int      csiOffsetY,
-  int      csiOffset[2],
-  int      csiSize[2],
   Pointer *pointer,
   QGraphicsItem *parent)
 {
-  QRect    calloutRect(calloutOffsetX,calloutOffsetY,size[XX],size[YY]);
-  QRect    csiRect(csiOffsetX + csiOffset[XX] - calloutOffsetX,
-                   csiOffsetY + csiOffset[YY] - calloutOffsetY,
-                   csiSize[XX], csiSize[YY]);
-
   CalloutPointerItem *t = 
     new CalloutPointerItem(
-          calloutRect,
-          csiRect,
+          this,
          &meta,
           pointer,
-          meta.submodelStack.size(),
-          parent,
+           parent,
           view);
   graphicsPointerList.append(t);
 }
@@ -474,7 +425,7 @@ void CalloutInstanceItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event
 
     changeMargins("Times Used Margin",
                   callout->topOfCallout(), callout->bottomOfCallout(),
-                  &margin);
+                  &margin, false);
   }
 }
 
@@ -486,9 +437,9 @@ void CalloutInstanceItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     // back annotate the movement of the PLI into the LDraw file.
     newPosition = pos() - position;
     PlacementData placementData = placement.value();
-    placementData.offsets[0] += newPosition.x()/relativeToWidth;
-    placementData.offsets[1] += newPosition.y()/relativeToHeight;
+    placementData.offsets[0] += newPosition.x()/relativeToSize[0];
+    placementData.offsets[1] += newPosition.y()/relativeToSize[1];
     placement.setValue(placementData);
-    changePlacementOffset(callout->topOfCallout(),&placement);
+    changePlacementOffset(callout->topOfCallout(),&placement,CalloutType,false);
   }
 }

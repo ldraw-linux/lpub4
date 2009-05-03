@@ -83,32 +83,32 @@ void Gui::bestPageSizeOrientation(
 	  }
 	}
  
-    widthDiff = pageSizes[i].height - widthMm;
+  widthDiff = pageSizes[i].height - widthMm;
 	heightDiff  = pageSizes[i].width - heightMm;
 	
-    if (widthDiff >= 0  && heightDiff >= 0) {
+  if (widthDiff >= 0  && heightDiff >= 0) {
 	  if (widthDiff <= diffWidth && heightDiff <= diffHeight) {
-		pageSize = pageSizes[i].pageSize;
-		orient = QPrinter::Landscape;
-		diffWidth = widthDiff;
-		diffHeight = heightDiff;
+	  	pageSize = pageSizes[i].pageSize;
+		  orient = QPrinter::Landscape;
+		  diffWidth = widthDiff;
+		  diffHeight = heightDiff;
+	    }
 	  }
-	}
   }
 }
 
 void Gui::printToFile()
 {
   QPrinter printer(QPrinter::HighResolution);
-  float pageWidth = page.meta.LPub.page.size.valueUnit(0);
-  float pageHeight = page.meta.LPub.page.size.valueUnit(1);
+  float pageWidth = page.meta.LPub.page.size.valuePixels(0);
+  float pageHeight = page.meta.LPub.page.size.valuePixels(1);
   if (page.meta.LPub.resolution.type() == DPI) {
     // convert to MM
   	pageWidth = int(inches2centimeters(pageWidth)*10);
 	  pageHeight = int(inches2centimeters(pageHeight)*10);
   }
-  QPrinter::PageSize pageSize;
-  QPrinter::Orientation orientation;
+  QPrinter::PageSize pageSize = QPrinter::PageSize();
+  QPrinter::Orientation orientation = QPrinter::Orientation();
   bestPageSizeOrientation(pageWidth,pageHeight,pageSize,orientation);
 	
   printer.setOrientation(orientation);
@@ -143,10 +143,10 @@ void Gui::printToFile()
   
   QGraphicsScene scene;
   LGraphicsView  view(&scene);
-  QRectF boundingRect(0.0,0.0,page.meta.LPub.page.size.value(0),page.meta.LPub.page.size.value(1));
-  QRect  bounding(0,0,page.meta.LPub.page.size.value(0),page.meta.LPub.page.size.value(1));
-  view.setMinimumSize(page.meta.LPub.page.size.value(0),page.meta.LPub.page.size.value(1));
-  view.setMaximumSize(page.meta.LPub.page.size.value(0),page.meta.LPub.page.size.value(1));
+  QRectF boundingRect(0.0,0.0,page.meta.LPub.page.size.valuePixels(0),page.meta.LPub.page.size.valuePixels(1));
+  QRect  bounding(0,0,page.meta.LPub.page.size.valuePixels(0),page.meta.LPub.page.size.valuePixels(1));
+  view.setMinimumSize(page.meta.LPub.page.size.valuePixels(0),page.meta.LPub.page.size.valuePixels(1));
+  view.setMaximumSize(page.meta.LPub.page.size.valuePixels(0),page.meta.LPub.page.size.valuePixels(1));
   view.setGeometry(bounding);
   view.setSceneRect(boundingRect);
   view.setRenderHints(QPainter::Antialiasing | 

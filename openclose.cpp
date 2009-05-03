@@ -206,6 +206,7 @@ void Gui::openFile(QString &fileName)
   QDir::setCurrent(info.absolutePath());
   Paths::mkdirs();
   ldrawFile.loadFile(fileName);
+  attitudeAdjustment();
   mpdCombo->setMaxCount(0);
   mpdCombo->setMaxCount(1000);
   mpdCombo->addItems(ldrawFile.subFileOrder());

@@ -83,11 +83,6 @@ void CalloutBackgroundItem::contextMenuEvent(
   QMenu menu;
   QString co = "Callout ";
 
-  QAction *addPointerAction = menu.addAction("Add Pointer");
-  addPointerAction->setWhatsThis("Add triangle shaped pointer from this callout to the step where it is used");
-
-  menu.addSeparator();
-
   QString       name = "Move This Callout";  
   QAction      *placementAction      = menu.addAction(name);
   PlacementData placementData = callout->meta.LPub.callout.placement.value();
@@ -123,19 +118,21 @@ void CalloutBackgroundItem::contextMenuEvent(
 
   QAction *unCalloutAction      = menu.addAction("Unpack Callout");
 
+  QAction *addPointerAction = menu.addAction("Add Arrow");
+  addPointerAction->setWhatsThis("Add arrow from this callout to the step where it is used");
+
   QAction *selectedAction = menu.exec(event->screenPos());
 
   if (selectedAction == addPointerAction) {
     Pointer *pointer = new Pointer(callout->topOfCallout(),calloutMeta);
     CalloutPointerItem *calloutPointer = 
-      new CalloutPointerItem(calloutRect,
-                             csiRect,&callout->meta,pointer,submodelLevel,this,view);
+      new CalloutPointerItem(callout,&callout->meta,pointer,this,view);
     calloutPointer->defaultPointer();
 
   } else if (selectedAction == perStepAction) {
     changeBool(callout->topOfCallout(),
                callout->bottomOfCallout(),
-               &callout->meta.LPub.callout.pli.perStep);
+               &callout->meta.LPub.callout.pli.perStep,true,0);
 
   } else if (selectedAction == placementAction) {
     changePlacement(parentRelativeType, 
@@ -143,25 +140,25 @@ void CalloutBackgroundItem::contextMenuEvent(
                     "Placement",
                     callout->topOfCallout(),
                     callout->bottomOfCallout(),
-                    &placement,1,false);
+                    &placement,false,0,false,false);
 
   } else if (selectedAction == editBackgroundAction) {
     changeBackground("Background",
                      callout->topOfCallout(), 
                      callout->bottomOfCallout(),
-                     &background,1,false);
+                     &background,false,0,false);
 
   } else if (selectedAction == editBorderAction) {
     changeBorder("Border",
                  callout->topOfCallout(), 
                  callout->bottomOfCallout(),
-                 &border,1,false);
+                 &border,false,0,false);
 
   } else if (selectedAction == marginAction) {
     changeMargins("Callout Margins",
                   callout->topOfCallout(), 
                   callout->bottomOfCallout(), 
-                  &margin,1,false);
+                  &margin,false,0,false);
 
   } else if (selectedAction == unCalloutAction) {
     removeCallout(callout->modelName(),
@@ -170,7 +167,8 @@ void CalloutBackgroundItem::contextMenuEvent(
   } else if (selectedAction == allocAction) {
     changeAlloc(callout->topOfCallout(),
                 callout->bottomOfCallout(),
-                callout->allocMeta());
+                callout->allocMeta(),
+                0);
   }
 }
 
@@ -203,10 +201,7 @@ void CalloutBackgroundItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
                  position.y() - pos().y() + 0.5);
 
     if (delta.x() || delta.y()) {
-      for (int i = 0; i < callout->graphicsPointerList.size(); i++) {
-        CalloutPointerItem *pointer = callout->graphicsPointerList[i];
-        pointer->drawTip(delta);
-      }
+      callout->drawTips(delta);
       positionChanged = true;
     }
   }
@@ -229,8 +224,8 @@ void CalloutBackgroundItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
       }
       PlacementData placementData = placement.value();
 
-      float w = delta.x()/callout->meta.LPub.page.size.value(0);
-      float h = delta.y()/callout->meta.LPub.page.size.value(1);
+      float w = delta.x()/callout->meta.LPub.page.size.valuePixels(0);
+      float h = delta.y()/callout->meta.LPub.page.size.valuePixels(1);
 
       if (placementData.relativeTo == CsiType) {
         w = delta.x()/csiRect.width();
@@ -241,7 +236,7 @@ void CalloutBackgroundItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
       placementData.offsets[1] -= h;
       placement.setValue(placementData);
 
-      changePlacementOffset(callout->topOfCallout(),&placement);  
+      changePlacementOffset(callout->topOfCallout(),&placement,CalloutType,false,0);  
     }
     QGraphicsItem::mouseReleaseEvent(event);
     gui->endMacro();

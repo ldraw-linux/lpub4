@@ -53,20 +53,9 @@ class LDrawSubFile {
     LDrawSubFile()
     {
     }
-
     LDrawSubFile(
       const QStringList &contents,
-            QDateTime   &datetime)
-    {
-      _contents << contents;
-      _datetime = datetime;
-      _modified = false;
-      _numSteps = 0;
-      _instances = 0;
-      _mirrorInstances = 0;
-      _rendered = false;
-      _mirrorRendered = false;
-    }
+            QDateTime   &datetime);
     ~LDrawSubFile()
     {
       _contents.clear();
@@ -80,19 +69,6 @@ class LDrawFile {
     QStringList                  _emptyList;
     QString                      _emptyString;
     bool                                _mpd;
-    void insert(const QString     &fileName, 
-                      QStringList &contents, 
-                      QDateTime   &datetime)
-    {
-      QMap<QString, LDrawSubFile>::iterator i = _subFiles.find(fileName);
-
-      if (i != _subFiles.end()) {
-        _subFiles.erase(i);
-      }
-      LDrawSubFile subFile(contents,datetime);
-      _subFiles.insert(fileName,subFile);
-      _subFileOrder << fileName;
-    }
 
   public:
     LDrawFile();
@@ -100,227 +76,53 @@ class LDrawFile {
     {
       _subFiles.empty();
     }
-    bool isMpd()
-    {
-      return _mpd;
-    }
-    QString topLevelFile()
-    {
-      if (_subFileOrder.size()) {
-        return _subFileOrder[0];
-      } else {
-        return _emptyString;
-      }
-    }
-    int numSteps(const QString &fileName)
-    {
-      QMap<QString, LDrawSubFile>::iterator i = _subFiles.find(fileName);
-      if (i != _subFiles.end()) {
-        return i.value()._numSteps;
-      }
-      return 0;
-    }
-    QDateTime lastModified(const QString &fileName)
-    {
-      QMap<QString, LDrawSubFile>::iterator i = _subFiles.find(fileName);
-      if (i != _subFiles.end()) {
-        return i.value()._datetime;
-      }
-      return QDateTime();
-    }
-
-    bool contains(const QString &file)
-    {
-      return _subFiles.contains(file);
-    }
-    void empty();
-    bool modified()
-    {
-      QString key;
-      bool    modified = false;
-      foreach(key,_subFiles.keys()) {
-        modified |= _subFiles[key]._modified;
-      }
-      return modified;
-    }
-    bool modified(const QString &fileName)
-    {
-      QMap<QString, LDrawSubFile>::iterator i = _subFiles.find(fileName);
-      if (i != _subFiles.end()) {
-        return i.value()._modified;
-      } else {
-        return false;
-      }
-    }
-    QStringList contents(const QString &fileName)
-    {
-      QMap<QString, LDrawSubFile>::iterator i = _subFiles.find(fileName);
-
-      if (i != _subFiles.end()) {
-        QStringList contents = i.value()._contents;
-        QString string = contents.join("\n");
-        return contents;
-      } else {
-        return _emptyList;
-      }
-    }
-    void setContents(const QString     &fileName, 
-                     const QStringList &contents)
-    {
-      QMap<QString, LDrawSubFile>::iterator i = _subFiles.find(fileName);
-
-      if (i != _subFiles.end()) {
-        i.value()._modified = true;
-        //i.value()._datetime = QDateTime::currentDateTime();
-        i.value()._contents = contents;
-      }
-    }
-    bool older(const QStringList &submodelStack, 
-               const QDateTime &datetime)
-    {
-      QString fileName;
-      foreach (fileName, submodelStack) {
-        QMap<QString, LDrawSubFile>::iterator i = _subFiles.find(fileName);
-        if (i != _subFiles.end()) {
-          QDateTime fileDatetime = i.value()._datetime;
-          if (fileDatetime > datetime) {
-            return false;
-          }
-        }
-      }
-      return true;
-    }
-    void loadFile(const QString &fileName);
-    void loadMPDFile(const QString &fileName, QDateTime &datetime);
-    void loadLDRFile(const QString &path, const QString &fileName);
-
-    QStringList subFileOrder() {
-      return _subFileOrder;
-    }
-
-    QString readLine(const QString &fileName, int lineNumber)
-    {
-      QMap<QString, LDrawSubFile>::iterator i = _subFiles.find(fileName);
-
-      if (i != _subFiles.end()) {
-        return i.value()._contents[lineNumber];
-      }
-      QString empty;
-      return empty;
-    }
-
-    void insertLine(const QString &fileName, int lineNumber, const QString &line)
-    {
-      QMap<QString, LDrawSubFile>::iterator i = _subFiles.find(fileName);
-
-      if (i != _subFiles.end()) {
-        i.value()._contents.insert(lineNumber,line);
-        i.value()._modified = true;
- //       i.value()._datetime = QDateTime::currentDateTime();
-      }
-    }
-      
-    void replaceLine(const QString &fileName, int lineNumber, const QString &line)
-    {
-      QMap<QString, LDrawSubFile>::iterator i = _subFiles.find(fileName);
-
-      if (i != _subFiles.end()) {
-        i.value()._contents[lineNumber] = line;
-        i.value()._modified = true;
-//        i.value()._datetime = QDateTime::currentDateTime();
-      }
-    }
-
-    void deleteLine(const QString &fileName, int lineNumber)
-    {
-      QMap<QString, LDrawSubFile>::iterator i = _subFiles.find(fileName);
-
-      if (i != _subFiles.end()) {
-        i.value()._contents.removeAt(lineNumber);
-        i.value()._modified = true;
-//        i.value()._datetime = QDateTime::currentDateTime();
-      }
-    }
-
-    void changeContents(const QString &fileName, 
-                              int      position, 
-                              int      charsRemoved, 
-                        const QString &charsAdded)
-    {
-      QString all = contents(fileName).join("\n");
-      all.remove(position,charsRemoved);
-      all.insert(position,charsAdded);
-      setContents(fileName,all.split("\n"));
-    }
-
-    int size(const QString &fileName)
-    {
-      QMap<QString, LDrawSubFile>::iterator i = _subFiles.find(fileName);
-
-      if (i != _subFiles.end()) {
-        return i.value()._contents.size();
-      }
-      return 0;
-    }
-    void unrendered()
-    {
-      QString key;
-      foreach(key,_subFiles.keys()) {
-        _subFiles[key]._rendered = false;
-        _subFiles[key]._mirrorRendered = false;
-      }
-    }
-
-    void setRendered(const QString &fileName, bool mirrored)
-    {
-      QMap<QString, LDrawSubFile>::iterator i = _subFiles.find(fileName);
-
-      if (i != _subFiles.end()) {
-        if (mirrored) {
-          i.value()._mirrorRendered = true;
-        } else {
-          i.value()._rendered = true;
-        }
-      }
-    }
-
-    bool rendered(const QString &fileName, bool mirrored)
-    {
-      QMap<QString, LDrawSubFile>::iterator i = _subFiles.find(fileName);
-
-      if (i != _subFiles.end()) {
-        if (mirrored) {
-          return i.value()._mirrorRendered;
-        } else {
-          return i.value()._rendered;
-        }
-      }
-      return false;
-    }      
-
-    int instances(const QString &fileName, bool mirrored)
-    {
-      QMap<QString, LDrawSubFile>::iterator i = _subFiles.find(fileName);
-      
-      int instances = 0;
-
-      if (i != _subFiles.end()) {
-        if (mirrored) {
-          instances = i.value()._mirrorInstances;
-        } else {
-          instances = i.value()._instances;
-        }
-      }
-      return instances;
-    }
-    
-    bool mirrored(const QStringList &tokens);
-    void countInstances(const QString &fileName, bool mirrored);
 
     bool saveFile(const QString &fileName);
     bool saveMPDFile(const QString &filename);
     bool saveLDRFile(const QString &filename);
     void writeToTmp(const QString &fileName, const QStringList &);
+    void writeToTmp();
+
+    void insert(const QString     &fileName, 
+                      QStringList &contents, 
+                      QDateTime   &datetime);
+
+    int  size(const QString &fileName);
+    void empty();
+
+    QStringList contents(const QString &fileName);
+    void setContents(const QString     &fileName, 
+                     const QStringList &contents);
+    void loadFile(const QString &fileName);
+    void loadMPDFile(const QString &fileName, QDateTime &datetime);
+    void loadLDRFile(const QString &path, const QString &fileName);
+    QStringList subFileOrder();
+    
+    QString readLine(const QString &fileName, int lineNumber);
+    void insertLine(const QString &fileName, int lineNumber, const QString &line);
+    void replaceLine(const QString &fileName, int lineNumber, const QString &line);
+    void deleteLine(const QString &fileName, int lineNumber);
+    void changeContents(const QString &fileName, 
+                              int      position, 
+                              int      charsRemoved, 
+                        const QString &charsAdded);
+
+    bool isMpd();
+    QString topLevelFile();
+    int numSteps(const QString &fileName);
+    QDateTime lastModified(const QString &fileName);
+    bool contains(const QString &file);
+    bool modified();
+    bool modified(const QString &fileName);
+    bool older(const QStringList &submodelStack, 
+               const QDateTime &datetime);
+    bool mirrored(const QStringList &tokens);
+    void unrendered();
+    void setRendered(const QString &fileName, bool mirrored);
+    bool rendered(const QString &fileName, bool mirrored);
+    int instances(const QString &fileName, bool mirrored);
+    void countInstances();
+    void countInstances(const QString &fileName, bool mirrored);
 };
 
 int split(const QString &line, QStringList &argv);

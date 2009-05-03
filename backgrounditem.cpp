@@ -54,7 +54,7 @@ void BackgroundItem::setBackground(
   submodelLevel =  _submodelLevel;
   parentRelativeType = _parentRelativeType;
 
-  BorderData     borderData     = _border.value();
+  BorderData     borderData     = _border.valuePixels();
   BackgroundData backgroundData = _background.value();
 
   int bt = borderData.thickness;
@@ -68,7 +68,7 @@ void BackgroundItem::setBackground(
   QPainter painter(pixmap);
 
   switch(backgroundData.type) {
-    case BgImage:
+    case BackgroundData::BgImage:
     {
       QString image_name = backgroundData.string;
       QFile file(image_name);
@@ -97,11 +97,11 @@ void BackgroundItem::setBackground(
       brushColor = Qt::transparent;
     }
     break;
-    case BgTransparent:
+    case BackgroundData::BgTransparent:
     break;
-    case BgColor:
-    case BgSubmodelColor:
-      if (backgroundData.type == BgColor) {
+    case BackgroundData::BgColor:
+    case BackgroundData::BgSubmodelColor:
+      if (backgroundData.type == BackgroundData::BgColor) {
         brushColor = LDrawColor::color(backgroundData.string);
       } else {
         brushColor = LDrawColor::color(_subModel.value(submodelLevel));
@@ -125,7 +125,7 @@ void BackgroundItem::setBackground(
     }
   }
 
-  if (borderData.type == BdrNone) {
+  if (borderData.type == BorderData::BdrNone) {
     penColor = Qt::transparent;
   } else {
     penColor =  LDrawColor::color(borderData.color);
@@ -141,7 +141,7 @@ void BackgroundItem::setBackground(
   painter.setRenderHints(QPainter::HighQualityAntialiasing,true);
   painter.setRenderHints(QPainter::Antialiasing,true);
 
-  if (borderData.type == BdrRound) {
+  if (borderData.type == BorderData::BdrRound) {
     painter.drawRoundRect(prect,rx,ry);
   } else {
     painter.drawRect(prect);
@@ -202,8 +202,8 @@ void PlacementBackgroundItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     // back annotate the movement of the PLI into the LDraw file.
     newPosition = pos() - position;
     PlacementData placementData = placement.value();
-    placementData.offsets[0] += newPosition.x()/meta->LPub.page.size.value(0);
-    placementData.offsets[1] += newPosition.y()/meta->LPub.page.size.value(1);
+    placementData.offsets[0] += newPosition.x()/meta->LPub.page.size.valuePixels(0);
+    placementData.offsets[1] += newPosition.y()/meta->LPub.page.size.valuePixels(1);
     placement.setValue(placementData);
   }
 }

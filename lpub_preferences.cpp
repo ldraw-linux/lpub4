@@ -215,13 +215,9 @@ void Preferences::unitsPreferences()
   }
 }
 
-bool Preferences::getPreferences(bool fileOpen)
+bool Preferences::getPreferences()
 {
   PreferencesDialog *dialog = new PreferencesDialog();
-  
-  if (fileOpen) {
-    dialog->disableUnits();
-  }
   
   QSettings settings(LPUB,SETTINGS);
 

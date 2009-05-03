@@ -49,11 +49,11 @@ class PageBackgroundItem : public BackgroundItem
       int width,height;
 
       relativeType = page->relativeType;
-      width = page->meta.LPub.page.size.value(0);
-      height= page->meta.LPub.page.size.value(1);
+      width = page->meta.LPub.page.size.valuePixels(0);
+      height= page->meta.LPub.page.size.valuePixels(1);
       pixmap = new QPixmap(width,height);
 
-      QString toolTip("");
+      QString toolTip("Page background - popup menu");
       setBackground(pixmap,
                     PageType,
                    &page->meta,

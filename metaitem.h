@@ -57,8 +57,13 @@ class MetaItem {
 public:
   void setGlobalMeta(QString &topLevelFile, LeafMeta *leaf);
 
-  void convertToCallout(       Meta *, const QString &);
-  int  nestCallouts(           const QString &);
+  void convertToCallout(       Meta *, const QString &, bool isMirrored);
+  void addCalloutMetas(        Meta *, const QString &, bool isMirrored);
+  int  nestCallouts(           Meta *, const QString &, bool isMirrored);
+  QString makeMonoName(QString &fileName, QString &color);
+  int monoColorSubmodel(QString &modelName,QString &color);
+  QPointF defaultPointerTip(Meta  &meta,Where &instance,bool isMirrored);
+
   void removeCallout(          const QString &, const Where &, const Where &);
   void unnestCallouts(         const QString &);
   void updatePointer(          const Where &,   PointerMeta *pointer);
@@ -93,10 +98,20 @@ public:
                         PlacementType placedType, 
                         QString, 
                         const Where &top,
-                        const Where &bottom, 
+                        const Where &bottom,
                         PlacementMeta *,
+                        bool useTop = true, 
                         int  append = 1, 
+                        bool local = true,
                         bool checkLocal = true);
+
+  void changePlacementOffset(
+                        Where defaultconst,
+                        PlacementMeta *placement, 
+                        PlacementType type, 
+                        bool useTop = true,
+                        bool local = true, 
+                        bool global = false);  
 
   void changeAlloc(     const Where &, 
                         const Where &, 
@@ -106,6 +121,7 @@ public:
   void changeBool(      const Where &, 
                         const Where &, 
                         BoolMeta    *,
+                        bool  useTop = true,
                         int   append = 1, 
                         bool allowLocal = false);
 
@@ -125,6 +141,7 @@ public:
                         const Where &, 
                         const Where &,
                         BackgroundMeta*,
+                        bool  useTop = true,
                         int   append = 1, 
                         bool checkLocal = true);
 
@@ -132,6 +149,7 @@ public:
                         const Where &, 
                         const Where &,
                         BorderMeta  *,
+                        bool useTop = true,
                         int  append = 1, 
                         bool checkLocal = true);
 
@@ -160,6 +178,7 @@ public:
                         const Where &, 
                         const Where &, 
                         MarginsMeta *,
+                        bool  useTop = true,
                         int   append = 1,   
                         bool checkLocal = true);
 
@@ -192,20 +211,30 @@ public:
                         int  append = 1,
                         bool checkLocal = true);
 
+  void setMeta(         const Where &,
+                        const Where &,
+                        LeafMeta *,
+                        bool  useTop = true,
+                        int   append = 1,
+                        bool  local = false,
+                        bool  askLocal = true,
+                        bool  global = false);
   void setMetaTopOf(    const Where &,
                         const Where &,
                         LeafMeta *,
-                        int   append,
+                        int   append = 1,
                         bool  local = false,
+                        bool  askLocal = true,
                         bool  global = false);
 
   void setMetaBottomOf( const Where &,
                         const Where &,
                         LeafMeta *,
+                        int  append = 1,
                         bool local = false,
+                        bool askLocal = true,
                         bool global = true);
-
-  void changePlacementOffset(Where defaultconst, PlacementMeta *placement, bool local = true, bool global = false);  
+  void changeConstraint(Where topOfStep, Where bottomOfStep, ConstrainMeta *constraint,int append = 1);
   void changeInsertOffset(InsertMeta *placement);
 
   void replaceMeta(const Where &here, const QString &line);

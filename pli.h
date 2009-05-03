@@ -47,6 +47,7 @@
 #include "backgrounditem.h"
 #include "where.h"
 #include "name.h"
+#include "resize.h"
 
 class Pli;
 
@@ -140,13 +141,14 @@ class Pli : public Placement {
     bool               bom;
     PliMeta            pliMeta;
     Meta              *meta;
-    
     Steps             *steps;   // topOfSteps()
                                 // bottomOfSteps()
     Callout           *callout; // topOfCallout()
                                 // bottomOfCallout()                              
     Step              *step;    // topOfStep()
                                 // bottomOfStep()
+    int                widestPart;
+    int                tallestPart;
 
     Pli(bool _bom = false)
     {
@@ -156,6 +158,10 @@ class Pli : public Placement {
       steps = NULL;
       callout = NULL;
       step = NULL;
+      meta = NULL;
+      widestPart = 1;
+      tallestPart = 1;
+      background = NULL;
     }
     
     ~Pli()
@@ -191,17 +197,20 @@ class Pli : public Placement {
 
     void unite(Pli &pli);
 
-	  int  placeSort(QList<QString> &);
+    int  sizePli(Meta *, PlacementType);
+    int  sizePli(ConstrainData::PliConstrain, unsigned height);
+	  int  sortPli();
+    int  resizePli(Meta *, ConstrainData &constrainData);
     int  placePli(QList<QString> &, int,int,bool,bool,int&,int&,int&);
+    void positionChildren(int height, qreal scaleX, qreal scaleY);
+    int  addPli (int, QGraphicsItem *);
+    
 	  void placeCols(QList<QString> &);
     bool initAnnotationString();
     void getAnnotate(QString &, QString &);
     void partClass(QString &, QString &);
     int  createPartImage(QString &, QString &, QString &, QPixmap*);
     QString orient(QString &color, QString part);
-
-    int  addPli (int, QGraphicsItem *);
-    int  sizePli(Meta *, PlacementType);
 
     void operator= (Pli& from)
     {
@@ -219,12 +228,19 @@ class Pli : public Placement {
     void getRightEdge(QImage &, QList<int> &);
 };
 
-class PliBackgroundItem : public PlacementBackgroundItem
+class PliBackgroundItem : public BackgroundItem, public AbstractResize, public Placement
 {
 public:
   Pli *pli;
   PlacementType  parentRelativeType;
   bool           bom;
+  bool           positionChanged;
+  QPointF        position;
+  
+  // resize
+  Grabber       *grabber;
+  QPointF        point;
+  int            grabHeight;
 
   PliBackgroundItem(
     Pli           *_pli,
@@ -242,9 +258,25 @@ public:
   {
     QGraphicsItem::setFlag(flag,value);
   }
+  
+  virtual void placeGrabbers();
+  virtual QGraphicsItem *myParentItem()
+  {
+    return parentItem();
+  }
+  
 protected:
+  virtual void mousePressEvent(QGraphicsSceneMouseEvent *event);
+  virtual void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
   virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
   void contextMenuEvent(QGraphicsSceneContextMenuEvent *event);
+      
+  //-----------------------------------------
+    
+  virtual void resize(QPointF);
+  virtual void change();
+  virtual QRectF currentRect();
+
 private:
 };
 
@@ -307,7 +339,7 @@ public:
     PlacementType _parentRelativeType)
   {
     parentRelativeType = _parentRelativeType;
-    QString toolTip("Part Length");
+    QString toolTip("Part Length - popup menu");
     setText(_pli,_part,text,fontString,toolTip);
     QColor color(colorString);
     setDefaultTextColor(color);
@@ -329,7 +361,7 @@ public:
     PlacementType _parentRelativeType)
   {
     parentRelativeType = _parentRelativeType;
-    QString toolTip(tr("Number of times this part is used"));
+    QString toolTip(tr("Times used - popup menu"));
     setText(_pli,_part,text,fontString,toolTip);
     QColor color(colorString);
     setDefaultTextColor(color);
@@ -339,7 +371,7 @@ protected:
   void contextMenuEvent(QGraphicsSceneContextMenuEvent *event);
 };
 
-class PGraphicsPixmapItem : public QGraphicsPixmapItem, public MetaItem
+class PGraphicsPixmapItem : public ResizePixmapItem
 {
 public:
   PGraphicsPixmapItem(

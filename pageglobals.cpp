@@ -40,9 +40,10 @@ public:
   QString    topLevelFile;
   QList<MetaGui *> children;
 
-  GlobalPagePrivate(QString &_topLevelFile)
+  GlobalPagePrivate(QString &_topLevelFile, Meta &_meta)
   {
     topLevelFile = _topLevelFile;
+    meta = _meta;
 
     MetaItem mi; // examine all the globals and then return
 
@@ -51,9 +52,9 @@ public:
 };
 
 GlobalPageDialog::GlobalPageDialog(
-  QString &topLevelFile)
+  QString &topLevelFile, Meta &meta)
 {
-  data = new GlobalPagePrivate(topLevelFile);
+  data = new GlobalPagePrivate(topLevelFile,meta);
 
   setWindowTitle(tr("Page Globals Setup"));
 
@@ -133,9 +134,9 @@ GlobalPageDialog::GlobalPageDialog(
 }
 
 void GlobalPageDialog::getPageGlobals(
-  QString topLevelFile)
+  QString topLevelFile, Meta &meta)
 {
-  GlobalPageDialog *dialog = new GlobalPageDialog(topLevelFile);
+  GlobalPageDialog *dialog = new GlobalPageDialog(topLevelFile,meta);
   dialog->exec();
 }
 

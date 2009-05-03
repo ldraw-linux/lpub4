@@ -188,7 +188,7 @@ UnitsGui::UnitsGui(
 
   QString      string;
 
-  string = QString("%1") .arg(meta->valueUnit(0),
+  string = QString("%1") .arg(meta->value(0),
                               meta->_fieldWidth,
                               'f',
                               meta->_precision);
@@ -197,7 +197,7 @@ UnitsGui::UnitsGui(
           this,  SLOT(  value0Change(QString const &)));
   layout->addWidget(value0);
 
-  string = QString("%1") .arg(meta->valueUnit(1),
+  string = QString("%1") .arg(meta->value(1),
                               meta->_fieldWidth,
                               'f',
                               meta->_precision);
@@ -209,13 +209,15 @@ UnitsGui::UnitsGui(
 
 void UnitsGui::value0Change(QString const &string)
 {
-  meta->setValueUnit(string.toFloat(),0);
+  volatile float v = string.toFloat();
+  meta->setValue(0,v);
   modified = true;
 }
 
 void UnitsGui::value1Change(QString const &string)
 {
-  meta->setValueUnit(string.toFloat(),1);
+  volatile float v = string.toFloat();
+  meta->setValue(1,v);
   modified = true;
 }
 
@@ -297,13 +299,13 @@ FloatsGui::FloatsGui(
 
 void FloatsGui::value0Change(QString const &string)
 {
-  meta->setValue(string.toFloat(),0);
+  meta->setValue(0,string.toFloat());
   modified = true;
 }
 
 void FloatsGui::value1Change(QString const &string)
 {
-  meta->setValue(string.toFloat(),1);
+  meta->setValue(1,string.toFloat());
   modified = true;
 }
 
@@ -427,15 +429,15 @@ ConstrainGui::ConstrainGui(
   string = "";
 
   switch (constraint.type) {
-    case PliConstrainArea:
-    case PliConstrainSquare:
+    case ConstrainData::PliConstrainArea:
+    case ConstrainData::PliConstrainSquare:
     break;
-    case PliConstrainWidth:
-    case PliConstrainHeight:
+    case ConstrainData::PliConstrainWidth:
+    case ConstrainData::PliConstrainHeight:
       string = QString("%1") .arg(constraint.constraint,
                                   4,'f',2);
     break;
-    case PliConstrainColumns:
+    case ConstrainData::PliConstrainColumns:
       string = QString("%1") .arg(int(constraint.constraint));
     break;
   }
@@ -466,20 +468,20 @@ void ConstrainGui::typeChange(QString const &type)
   ConstrainData constraint = meta->valueUnit();
   QString string = "";
   if (type == "Area") {
-    constraint.type = PliConstrainArea;
+    constraint.type = ConstrainData::PliConstrainArea;
   } else if (type == "Square") {
-    constraint.type = PliConstrainSquare;
+    constraint.type = ConstrainData::PliConstrainSquare;
   } else if (type == "Width") {
     string = QString("%1") .arg(constraint.constraint,
                                 4,'f',2);
-    constraint.type = PliConstrainWidth;
+    constraint.type = ConstrainData::PliConstrainWidth;
   } else if (type == "Height") {
     string = QString("%1") .arg(constraint.constraint,
                                 4,'f',2);
-    constraint.type = PliConstrainHeight;
+    constraint.type = ConstrainData::PliConstrainHeight;
   } else {
     string = QString("%1") .arg(int(constraint.constraint));
-    constraint.type = PliConstrainColumns;
+    constraint.type = ConstrainData::PliConstrainColumns;
   }
   value->setText(string);
   meta->setValueUnit(constraint);
@@ -508,10 +510,10 @@ void ConstrainGui::enable()
 {
   ConstrainData constraint = meta->valueUnit();
   switch (constraint.type) {
-    case PliConstrainArea:
+    case ConstrainData::PliConstrainArea:
       value->setDisabled(true);
     break;
-    case PliConstrainSquare:
+    case ConstrainData::PliConstrainSquare:
       value->setDisabled(true);
     break;
     default:
@@ -553,7 +555,7 @@ NumberGui::NumberGui(
   
   fontExample = new QLabel("1234",parent);
   QFont font;
-  font.fromString(meta->font.valueUnit());
+  font.fromString(meta->font.valueFoo());
   fontExample->setFont(font);
   grid->addWidget(fontExample,0,1);
 
@@ -581,15 +583,13 @@ NumberGui::NumberGui(
   
   QString string;
 
-  string = QString("%1") .arg(meta->margin.valueUnit(0),
-                              5,'f',4);
+  string = QString("%1") .arg(meta->margin.value(0),5,'f',4);
   value0 = new QLineEdit(string,parent);
   connect(value0,SIGNAL(textEdited(   QString const &)),
           this,  SLOT(  value0Changed(QString const &)));
   grid->addWidget(value0,2,1);
   
-  string = QString("%1") .arg(meta->margin.valueUnit(1),
-                              5,'f',4);
+  string = QString("%1") .arg(meta->margin.value(1),5,'f',4);
   value1 = new QLineEdit(string,parent);
   connect(value1,SIGNAL(textEdited(   QString const &)),
           this,  SLOT(  value1Changed(QString const &)));
@@ -604,12 +604,12 @@ void NumberGui::browseFont(bool clicked)
 {
   clicked = clicked;
   QFont font;
-  font.fromString(meta->font.valueUnit());
+  font.fromString(meta->font.valueFoo());
   bool ok;
   font = QFontDialog::getFont(&ok,font);
 
   if (ok) {
-    meta->font.setValueUnit(font.toString());
+    meta->font.setValue(font.toString());
     fontExample->setFont(font);
     fontModified = true;
   }
@@ -630,13 +630,13 @@ void NumberGui::browseColor(bool clicked)
 
 void NumberGui::value0Changed(QString const &string)
 {
-  meta->margin.setValueUnit(string.toFloat(),0);
+  meta->margin.setValue(string.toFloat(),0);
   marginsModified = true;
 }
 
 void NumberGui::value1Changed(QString const &string)
 {
-  meta->margin.setValueUnit(string.toFloat(),1);
+  meta->margin.setValue(string.toFloat(),1);
   marginsModified = true;
 }
 
@@ -678,10 +678,10 @@ BackgroundGui::BackgroundGui(
   BackgroundData background = meta->value();
 
   switch (background.type) {
-    case BgImage:
+    case BackgroundData::BgImage:
       picture = background.string;
     break;
-    case BgColor:
+    case BackgroundData::BgColor:
       color = background.string;
     break;
     default:
@@ -754,13 +754,13 @@ void BackgroundGui::enable()
   tileRadio->setChecked( !background.stretch);
 
   switch (background.type) {
-    case BgImage:
+    case BackgroundData::BgImage:
       colorButton->setEnabled(false);
       pictureEdit->setEnabled(true);
       pictureButton->setEnabled(true);
       fill->setEnabled(true);
     break;
-    case BgColor:
+    case BackgroundData::BgColor:
       colorLabel->setPalette(QPalette(color));
       // colorLabel->setAutoFillBackground(true);
       colorButton->setEnabled(true);
@@ -782,13 +782,13 @@ void BackgroundGui::typeChange(QString const &type)
   BackgroundData background = meta->value();
 
   if (type == "None") {
-    background.type = BgTransparent;
+    background.type = BackgroundData::BgTransparent;
   } else if (type == "Picture") {
-    background.type = BgImage;
+    background.type = BackgroundData::BgImage;
   } else if (type == "Solid Color") {
-    background.type = BgColor;
+    background.type = BackgroundData::BgColor;
   } else {
-    background.type = BgSubmodelColor;
+    background.type = BackgroundData::BgSubmodelColor;
   }
   meta->setValue(background);
   enable();
@@ -869,7 +869,7 @@ BorderGui::BorderGui(
 {
   meta = _meta;
 
-  BorderData border = meta->valueUnit();
+  BorderData border = meta->value();
 
   QString        string;
   QComboBox     *combo;
@@ -956,14 +956,14 @@ void BorderGui::enable()
   BorderData border = meta->value();
 
   switch (border.type) {
-    case BdrNone:
+    case BorderData::BdrNone:
       thicknessLabel->setEnabled(false);
       thicknessEdit->setEnabled(false);
       colorButton->setEnabled(false);
       spin->setEnabled(false);
       spinLabel->setEnabled(false);
     break;
-    case BdrSquare:
+    case BorderData::BdrSquare:
       thicknessLabel->setEnabled(true);
       thicknessEdit->setEnabled(true);
       colorButton->setEnabled(true);
@@ -982,44 +982,44 @@ void BorderGui::enable()
 
 void BorderGui::typeChange(QString const &type)
 {
-  BorderData border = meta->valueUnit();
+  BorderData border = meta->value();
 
   if (type == "Borderless") {
-    border.type = BdrNone;
+    border.type = BorderData::BdrNone;
   } else if (type == "Square Corners") {
-    border.type = BdrSquare;
+    border.type = BorderData::BdrSquare;
   } else {
-    border.type = BdrRound;
+    border.type = BorderData::BdrRound;
   }
-  meta->setValueUnit(border);
+  meta->setValue(border);
   enable();
   modified = true;
 }
 void BorderGui::browseColor(bool)
 {
-  BorderData border = meta->valueUnit();
+  BorderData border = meta->value();
 
   QColor color = LDrawColor::color(border.color);
   QColor newColor = QColorDialog::getColor(color,this);
   if (color != newColor) {
     border.color = newColor.name();
-    meta->setValueUnit(border);
+    meta->setValue(border);
     colorLabel->setPalette(QPalette(newColor));
     modified = true;
   }
 }
 void BorderGui::thicknessChange(QString const &thickness)
 {
-  BorderData border = meta->valueUnit();
+  BorderData border = meta->value();
   border.thickness = thickness.toFloat();
-  meta->setValueUnit(border);
+  meta->setValue(border);
   modified = true;
 }
 void BorderGui::radiusChange(int value)
 {
-  BorderData border = meta->valueUnit();
+  BorderData border = meta->value();
   border.radius = value;
-  meta->setValueUnit(border);
+  meta->setValue(border);
   modified = true;
 }
 
@@ -1033,17 +1033,17 @@ void BorderGui::apply(QString &modelName)
 void BorderGui::marginXChange(
   QString const &string)
 {
-  BorderData border = meta->valueUnit();
+  BorderData border = meta->value();
   border.margin[0] = string.toFloat();
-  meta->setValueUnit(border);
+  meta->setValue(border);
   modified = true;
 }
 void BorderGui::marginYChange(
   QString const &string)
 {
-  BorderData border = meta->valueUnit();
+  BorderData border = meta->value();
   border.margin[1] = string.toFloat();
-  meta->setValueUnit(border);
+  meta->setValue(border);
   modified = true;
 }
 
@@ -1070,7 +1070,7 @@ SepGui::SepGui(
 
   QString string;
 
-  SepData sep = meta->valueUnit();
+  SepData sep = meta->value();
 
   string = QString("%1") .arg(sep.thickness,
                               5,'f',4);
@@ -1112,22 +1112,22 @@ SepGui::SepGui(
 void SepGui::thicknessChange(
   QString const &string)
 {
-  SepData sep = meta->valueUnit();
+  SepData sep = meta->value();
   sep.thickness = string.toFloat();
-  meta->setValueUnit(sep);
+  meta->setValue(sep);
   modified = true;
 }
 void SepGui::browseColor(
   bool clicked)
 {
   clicked = clicked;
-  SepData sep = meta->valueUnit();
+  SepData sep = meta->value();
 
   QColor color = LDrawColor::color(sep.color);
   QColor newColor = QColorDialog::getColor(color,this);
   if (color != newColor) {
     sep.color = newColor.name();
-    meta->setValueUnit(sep);
+    meta->setValue(sep);
     colorExample->setPalette(QPalette(newColor));
     modified = true;
   }
@@ -1135,17 +1135,17 @@ void SepGui::browseColor(
 void SepGui::marginXChange(
   QString const &string)
 {
-  SepData sep = meta->valueUnit();
+  SepData sep = meta->value();
   sep.margin[0] = string.toFloat();
-  meta->setValueUnit(sep);
+  meta->setValue(sep);
   modified = true;
 }
 void SepGui::marginYChange(
   QString const &string)
 {
-  SepData sep = meta->valueUnit();
+  SepData sep = meta->value();
   sep.margin[1] = string.toFloat();
-  meta->setValueUnit(sep);
+  meta->setValue(sep);
   modified = true;
 }
 void SepGui::apply(QString &modelName)
@@ -1202,7 +1202,7 @@ ResolutionGui::ResolutionGui(
 void ResolutionGui::unitsChange(QString const &units)
 {
   if (units == "Dots Per Inch") {
-    type = DPI;
+    //type = DPI;
   } else {
     type = DPCM;
   }

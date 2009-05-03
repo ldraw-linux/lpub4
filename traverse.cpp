@@ -243,6 +243,8 @@ int Gui::drawPage(
   bool        coverPage   = false;
   int         numLines = ldrawFile.size(current.modelName);
   
+  steps->isMirrored = isMirrored;
+  
   QList<InsertMeta> inserts;
   
   Where topOfStep = current;
@@ -326,6 +328,7 @@ int Gui::drawPage(
           callout->meta.submodelStack << tos;
 
           Meta saveMeta = callout->meta;
+          callout->meta.LPub.pli.constrain.resetToDefault();
 
           step->append(callout);
 
@@ -416,6 +419,32 @@ int Gui::drawPage(
       /* handle specific meta-commands */
 
       switch (rc) {
+
+        /* toss it all out the window, per James' original plan */
+        case ClearRc:
+          csiParts.empty();
+          pli.clear();
+          steps->freeSteps();
+        break;
+
+        /* Buffer exchange */
+        case BufferStoreRc:
+          {
+            QString buffer = steps->meta.bfx.value();
+            bfx[buffer].empty();
+            bfx[buffer] = csiParts;
+          }
+        break;
+
+        case BufferLoadRc:
+          csiParts = bfx[steps->meta.bfx.value()];
+        break;
+
+        case MLCadGroupRc:
+          csiParts << line;
+        break;
+        
+        
       
         case IncludeRc:
           include(steps->meta);
@@ -527,29 +556,6 @@ int Gui::drawPage(
         break;
 
 
-        /* toss it all out the window, per James' original plan */
-        case ClearRc:
-          csiParts.empty();
-          pli.clear();
-          steps->freeSteps();
-        break;
-
-        /* Buffer exchange */
-        case BufferStoreRc:
-          {
-            QString buffer = steps->meta.bfx.value();
-            bfx[buffer].empty();
-            bfx[buffer] = csiParts;
-          }
-        break;
-        case BufferLoadRc:
-          csiParts = bfx[steps->meta.bfx.value()];
-        break;
-
-        case MLCadGroupRc:
-          csiParts << line;
-        break;
-
         /* remove a group or all instances of a part type */
         case GroupRemoveRc:
         case RemoveGroupRc:
@@ -604,7 +610,7 @@ int Gui::drawPage(
         break;
         
         case InsertRc:
-          inserts.append(curMeta.LPub.insert);  // these are always placed before any parts in step
+          //inserts.append(curMeta.LPub.insert);  // these are always placed before any parts in step
         break;
 
         case CalloutBeginRc:
@@ -617,9 +623,11 @@ int Gui::drawPage(
         break;
 
         case CalloutDividerRc:
-          range->sepMeta = steps->meta.LPub.callout.sep;
-          range = NULL;
-          step = NULL;
+          if (range) {
+            range->sepMeta = steps->meta.LPub.callout.sep;
+            range = NULL;
+            step = NULL;
+          }
         break;
 
         case CalloutPointerRc:
@@ -632,7 +640,7 @@ int Gui::drawPage(
           if ( ! callout) {
             parseError("CALLOUT END without a CALLOUT BEGIN",current);
           } else {
-            callout->parent = step;
+            callout->parentStep = step;
             callout->parentRelativeType = step->relativeType;
             callout->pli.clear();
             callout->placement = callout->meta.LPub.callout.placement;
@@ -654,9 +662,11 @@ int Gui::drawPage(
         break;
 
         case StepGroupDividerRc:
-          range->sepMeta = steps->meta.LPub.multiStep.sep;
-          range = NULL;
-          step = NULL;
+          if (range) {
+            range->sepMeta = steps->meta.LPub.multiStep.sep;
+            range = NULL;
+            step = NULL;
+          }
         break;
 
         /* finished off a multiStep */
@@ -734,17 +744,10 @@ int Gui::drawPage(
                 pli.clear();
               }
 
-              step->csiPixmap.pixmap = new QPixmap;
-
-              if (step->csiPixmap.pixmap == NULL) {
-                // fatal
-                exit(-1);
-              }
-
               int rc = step->createCsi(
-                 addLine,
+                 isMirrored ? addLine : "1 color 0 0 0 1 0 0 0 1 0 0 0 1 foo.ldr",
                  csiParts,
-                 step->csiPixmap.pixmap,
+                &step->csiPixmap,
                  steps->meta);
 
               statusBar()->showMessage("Processing " + current.modelName);
@@ -780,9 +783,9 @@ int Gui::drawPage(
               steps->placement = steps->meta.LPub.assem.placement;
               showLine(topOfStep);
 
-              volatile int  numSteps = ldrawFile.numSteps(current.modelName);
-              volatile bool endOfSubmodel = stepNum == numSteps;
-              volatile int  instances = ldrawFile.instances(current.modelName,isMirrored);
+              int  numSteps = ldrawFile.numSteps(current.modelName);
+              bool endOfSubmodel = numSteps == 0 || stepNum == numSteps;
+              int  instances = ldrawFile.instances(current.modelName,isMirrored);
 
               addGraphicsPageItems(steps,coverPage,endOfSubmodel,instances,view,scene);
               stepPageNum += ! coverPage;
@@ -825,6 +828,7 @@ int Gui::drawPage(
       return InvalidLDrawLineRc;
     }
   }
+  steps->meta.rotStep.clear();
   return 0;
 }
 
@@ -835,7 +839,7 @@ int Gui::findPage(
   QString const  &addLine,
   Where           current,
   bool            isMirrored,
-  Meta           &meta)
+  Meta            meta)
 {
   bool stepGroup  = false;
   bool partIgnore = false;
@@ -852,20 +856,18 @@ int Gui::findPage(
   Where       saveCurrent = current;
   Where       stepGroupCurrent;
   int         saveStepNumber = 1;
-              
               saveStepPageNum = stepPageNum;
-
-  Meta        tmpMeta;
+              
   Meta        saveMeta = meta;
-  Meta        stepGroupMeta;
-  Pli         pli;
+  Meta        stepGroupMeta = meta;
 
   QHash<QString, QStringList> bfx;
   QHash<QString, QStringList> saveBfx;
 
   int numLines = ldrawFile.size(current.modelName);
-  
+
   Where topOfStep = current;
+  Pli         pli;
   
   ldrawFile.setRendered(current.modelName, isMirrored);
 
@@ -876,53 +878,53 @@ int Gui::findPage(
     // scan through the rest of the model counting pages
     // if we've already hit the display page, then do as little as possible
 
-    QString line = ldrawFile.readLine(current.modelName,current.lineNumber);
-
-    while (line[0] == ' ') {
-      line = line.mid(1);
-    }
-
-    if (strncmp(line.toAscii(),"0 GHOST ",8) == 0) {
-      line = line.mid(8);
-      while (line[0] == ' ') {
-        line = line.mid(1);
-      }
-    }
-    
+    QString line = ldrawFile.readLine(current.modelName,current.lineNumber).trimmed();
     QByteArray Line = line.toAscii();
+
+    if (line.startsWith("0 GHOST ")) {
+      line = line.mid(8).trimmed();
+    }
 
     switch (line.toAscii()[0]) {
       case '1':
-        if (pageNum < displayPageNum) {
-          csiParts << line;
-        }
         if ( ! partIgnore) {
-          QStringList token = line.split(" ");
+          QStringList token;
           
-          bool isMirrored = ldrawFile.mirrored(token);
+          split(line,token);
           
-          if (ldrawFile.contains(token[token.size()-1]) &&
-              ! ldrawFile.rendered(token[token.size()-1],isMirrored)) {
+          QString    type = token[token.size()-1];
+          
+          isMirrored = ldrawFile.mirrored(token);
+          bool contains   = ldrawFile.contains(type);
+          bool rendered   = ldrawFile.rendered(type,isMirrored);
+                    
+          if (contains) {
+            if ( ! rendered) {
+            
+              if (stepGroup) {
               
-            // can't be a callout
-            tmpMeta = meta;
-            SubmodelStack tos(current.modelName,current.lineNumber,stepNumber);
-            tmpMeta.submodelStack << tos;
-            Where current2(token[token.size()-1],0);
-            findPage(view,scene,pageNum,line,current2,isMirrored,tmpMeta);
-            saveStepPageNum = stepPageNum;
+                // can't be a callout
+                SubmodelStack tos(current.modelName,current.lineNumber,stepNumber);
+                stepGroupMeta.submodelStack << tos;
+                Where current2(type,0);
+
+                findPage(view,scene,pageNum,line,current2,isMirrored,stepGroupMeta);
+                saveStepPageNum = stepPageNum;
+                stepGroupMeta.submodelStack.pop_back();
+              } else {
+              
+                // can't be a callout
+                SubmodelStack tos(current.modelName,current.lineNumber,stepNumber);
+                meta.submodelStack << tos;
+                Where current2(type,0);
+
+                findPage(view,scene,pageNum,line,current2,isMirrored,meta);
+                saveStepPageNum = stepPageNum;
+                meta.submodelStack.pop_back();
+              }
+            }
           }
         }
-        if (partsAdded++ == 0) {
-          if (stepGroup) {
-            pli.margin    = meta.LPub.multiStep.pli.margin;
-            pli.placement = meta.LPub.multiStep.pli.placement;
-          } else {
-            pli.margin    = meta.LPub.pli.margin;
-            pli.placement = meta.LPub.pli.placement;
-          }
-        }
-      break;
       case '2':
       case '3':
       case '4':
@@ -932,8 +934,8 @@ int Gui::findPage(
         }
         if (partsAdded++ == 0) {
           if (stepGroup) {
-            pli.margin    = meta.LPub.multiStep.pli.margin;
-            pli.placement = meta.LPub.multiStep.pli.placement;
+            pli.margin    = stepGroupMeta.LPub.pli.margin;
+            pli.placement = stepGroupMeta.LPub.pli.placement;
           } else {
             pli.margin    = meta.LPub.pli.margin;
             pli.placement = meta.LPub.pli.placement;
@@ -941,9 +943,11 @@ int Gui::findPage(
         }
       break;
       case '0':
-        
-        rc = meta.parse(line,current);
-
+        if (stepGroup) {
+          rc = stepGroupMeta.parse(line,current);
+        } else {
+          rc = meta.parse(line,current);
+        }
         switch (rc) {
           case StepGroupBeginRc:
             stepGroup = true;
@@ -953,7 +957,6 @@ int Gui::findPage(
           case StepGroupEndRc:
             if (stepGroup) {
               stepGroup = false;
-
               if (pageNum < displayPageNum) {
                 saveCsiParts   = csiParts;
                 saveStepNumber = stepNumber;
@@ -962,9 +965,24 @@ int Gui::findPage(
               } else if (pageNum == displayPageNum) {
                 csiParts.clear();
                 stepPageNum = saveStepPageNum;
-                page.meta      = saveMeta;
-                (void) drawPage(view,scene,&page,saveStepNumber,
-                                addLine,stepGroupCurrent,saveCsiParts,pli,isMirrored,saveBfx);
+                if (pageNum == 1) {
+                  page.meta = meta;
+                } else {
+                  page.meta = saveMeta;
+                }
+                page.meta.pop();
+                
+                (void) drawPage(view,
+                                scene,
+                                &page,
+                                saveStepNumber,
+                                addLine,
+                                stepGroupCurrent,
+                                saveCsiParts,
+                                pli,
+                                isMirrored,
+                                saveBfx);
+                                
                 saveCurrent.modelName.clear();
                 saveCsiParts.clear();
               }
@@ -992,9 +1010,24 @@ int Gui::findPage(
                 if (pageNum == displayPageNum) {
                   csiParts.clear();
                   stepPageNum = saveStepPageNum;
-                  page.meta      = saveMeta;
-                  (void) drawPage(view,scene,&page,saveStepNumber,
-                                  addLine,saveCurrent,saveCsiParts,pli,isMirrored,saveBfx);
+                  if (pageNum == 1) {
+                    page.meta = meta;
+                  } else {
+                    page.meta = saveMeta;
+                  }
+                  page.meta.pop();
+                                    
+                  (void) drawPage(view,
+                                  scene,
+                                  &page,
+                                  saveStepNumber,
+                                  addLine,
+                                  saveCurrent,
+                                  saveCsiParts,
+                                  pli,
+                                  isMirrored,
+                                  saveBfx);
+
                   saveCurrent.modelName.clear();
                   saveCsiParts.clear();
                 } 
@@ -1003,6 +1036,7 @@ int Gui::findPage(
               topOfStep = current;
               partsAdded = 0;
               meta.pop();
+              stepGroupMeta.pop();
               coverPage = false;
               stepPage = false;
             } else if ( ! stepGroup) {
@@ -1012,11 +1046,10 @@ int Gui::findPage(
           break;  
 
           case CalloutBeginRc:
-            do {
-              line = ldrawFile.readLine(current.modelName,++current.lineNumber);
-              while (line[0] == ' ') {
-                line = line.mid(1);
-              }
+            ++current;
+            while (rc != CalloutEndRc && current.lineNumber < numLines) {
+              Meta tmpMeta;
+              line = ldrawFile.readLine(current.modelName,current.lineNumber++).trimmed();
               rc = OkRc;
               if (line[0] == '0') {
                 rc = tmpMeta.parse(line,current);
@@ -1024,7 +1057,8 @@ int Gui::findPage(
                 partsAdded++;
                 csiParts << line;
               }
-            } while (rc != CalloutEndRc && current.lineNumber < numLines);
+            }
+            --current;
           break;
           
           case InsertCoverPageRc:
@@ -1077,12 +1111,23 @@ int Gui::findPage(
           case RemoveNameRc:
             if (pageNum < displayPageNum) {
               QStringList newCSIParts;
-              if (rc == RemoveGroupRc) {
-                remove_group(csiParts,meta.LPub.remove.group.value(),newCSIParts);
-              } else if (rc == RemovePartRc) {
-                remove_parttype(csiParts, meta.LPub.remove.parttype.value(),newCSIParts);
+              QString     remove;
+              if (stepGroup) {
+                if (rc == RemoveGroupRc) {
+                  remove_group(csiParts,stepGroupMeta.LPub.remove.group.value(),newCSIParts);
+                } else if (rc == RemovePartRc) {
+                  remove_parttype(csiParts, stepGroupMeta.LPub.remove.parttype.value(),newCSIParts);
+                } else {
+                  remove_partname(csiParts, stepGroupMeta.LPub.remove.partname.value(),newCSIParts);
+                }
               } else {
-                remove_partname(csiParts, meta.LPub.remove.partname.value(),newCSIParts);
+                if (rc == RemoveGroupRc) {
+                  remove_group(csiParts,meta.LPub.remove.group.value(),newCSIParts);
+                } else if (rc == RemovePartRc) {
+                  remove_parttype(csiParts, meta.LPub.remove.parttype.value(),newCSIParts);
+                } else {
+                  remove_partname(csiParts, meta.LPub.remove.partname.value(),newCSIParts);
+                }
               }
               csiParts = newCSIParts;
               newCSIParts.empty();
@@ -1090,7 +1135,12 @@ int Gui::findPage(
           break;
           
           case IncludeRc:
-            include(meta);
+            if (stepGroup) {
+              include (stepGroupMeta);
+            } else {
+              include(meta);
+
+            }
           break;
           
           default:
@@ -1113,9 +1163,62 @@ int Gui::findPage(
   return 0;
 }
 
+void Gui::attitudeAdjustment()
+{
+  Meta meta;
+  bool callout = false;
+  int numFiles = ldrawFile.subFileOrder().size();
+  
+  for (int i = 0; i < numFiles; i++) {
+    QString fileName = ldrawFile.subFileOrder()[i];
+    int numLines     = ldrawFile.size(fileName);
+    
+    QStringList pending;
+    
+    for (Where current(fileName,0);
+      current.lineNumber < numLines;
+      current.lineNumber++) {
+
+      QString line = ldrawFile.readLine(current.modelName,current.lineNumber);
+      QStringList argv;
+      split(line,argv);
+      
+      if (argv.size() >= 4 &&
+          argv[0] == "0" &&
+         (argv[1] == "LPUB" || argv[1] == "!LPUB") &&
+          argv[2] == "CALLOUT") {
+        if (argv[3] == "BEGIN") {
+          callout = true;
+          pending.clear();
+        } else if (argv[3] == "END") {
+          callout = false;
+          for (int i = 0; i < pending.size(); i++) {
+            ldrawFile.insertLine(current.modelName,current.lineNumber, pending[i]);
+            ++numLines;
+            ++current;
+          }
+          pending.clear();
+        } else if (argv[3] == "ALLOC" || 
+                   argv[3] == "BACKGROUND" || 
+                   argv[3] == "BORDER" || 
+                   argv[3] == "MARGINS" || 
+                   argv[3] == "PLACEMENT") {
+          if (callout && argv.size() >= 5 && argv[4] != "GLOBAL") {
+            ldrawFile.deleteLine(current.modelName,current.lineNumber);
+            pending << line;
+            --numLines;
+            --current;
+          }
+        }
+      }
+    }
+  }
+}
+
 void Gui::countPages()
 {
   if (maxPages < 1) {
+    ldrawFile.writeToTmp();
     statusBarMsg("Counting");
     Where       current(ldrawFile.topLevelFile(),0);
     int savedDpn   = displayPageNum;
@@ -1145,13 +1248,15 @@ void Gui::drawPage(
   QApplication::setOverrideCursor(Qt::WaitCursor);
   
   ldrawFile.unrendered();
+  ldrawFile.countInstances();
+  ldrawFile.writeToTmp();
 
   Where       current(ldrawFile.topLevelFile(),0);
   maxPages = 1;
   stepPageNum = 1;
-  Meta meta;
-  page.meta = meta;
+  
   QString empty;
+  Meta    meta;
   findPage(view,scene,maxPages,empty,current,false,meta);
   maxPages--;  
 
@@ -1159,7 +1264,6 @@ void Gui::drawPage(
   setPageLineEdit->setText(string);
 
   QApplication::restoreOverrideCursor();
-
 }
 
 void Gui::skipHeader(Where &current)

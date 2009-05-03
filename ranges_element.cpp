@@ -69,7 +69,12 @@ const Where &AbstractStepsElement::bottomOfStep(
 
 const Where &AbstractStepsElement::topOfRange()
 {
-  return list[0]->topOfStep();
+  if (list.size() && list[0]) {
+    return list[0]->topOfStep();
+  } else {
+    static Where foo;
+    return foo;
+  }
 }
 
 const Where &AbstractStepsElement::bottomOfRange()

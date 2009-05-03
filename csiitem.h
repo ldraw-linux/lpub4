@@ -33,12 +33,11 @@
 #include <QRect>
 #include "meta.h"
 #include "metaitem.h"
+#include "resize.h"
 
 class Step;
-class CsiGrab;
 
-class CsiItem : public QGraphicsPixmapItem, public MetaItem
-{
+class CsiItem : public ResizePixmapItem {
 public:
   Meta          *meta;
   AssemMeta     *assem;
@@ -49,58 +48,22 @@ public:
   int            submodelLevel;
   FloatMeta      modelScale;
 
-  QPointF        position;
-  bool           positionChanged;
-  int            grabSize;
-  
-  qreal          origWidth;
-  qreal          origHeight;
-  qreal          oldScale;
-
-  CsiGrab       *grab[4];
-  QPointF        points[4];
-
-  enum SelectedPoint { TopLeft, TopRight, BottomRight, BottomLeft} selectedPoint;
-
   CsiItem(Step          *_step,
           Meta          *_meta,
           QPixmap       &pixmap,
           int            _submodelLevel,
           QGraphicsItem *parent,
           PlacementType  _parentRelativeType);
+          
+  virtual void change();
 
   void setFlag(GraphicsItemFlag flag, bool value);
-
-  void placeGrabs();
-  void whatPoint(CsiGrab *);
-  void resize(QPointF);
-  void changeModelScale();
 
 private:
   void contextMenuEvent(QGraphicsSceneContextMenuEvent *event);
   void mousePressEvent(QGraphicsSceneMouseEvent *event);
   void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
   void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
-  QVariant itemChange(GraphicsItemChange change, const QVariant &value);
 };
-
-class CsiGrab : public QGraphicsRectItem
-{
-public:
-  CsiItem *csiItem;
-  CsiGrab(
-    CsiItem *csiItem)
-    :
-    csiItem(csiItem)
-  {
-    setFlag(QGraphicsItem::ItemIsMovable,true);
-  }
-private:
-  void mousePressEvent(QGraphicsSceneMouseEvent *event);
-  void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
-  void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
-};
-
-
 #endif
 

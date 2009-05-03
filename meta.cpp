@@ -81,11 +81,10 @@ BranchMeta::~BranchMeta()
 Rc BranchMeta::parse(QStringList &argv, int index, Where &here)
 {
   Rc rc;
-  int     offset;
+  int offset;
+  int size = argv.size();    
 
-  if (index < argv.size()) {
-
-    QString foo = argv[index];
+  if (index < size) {
 
     /* Find out if the current argv explicitly matches any of the
      * keywords known to be valid at this point in the meta command */
@@ -99,16 +98,16 @@ Rc BranchMeta::parse(QStringList &argv, int index, Where &here)
       offset = 1;
       rc = OkRc;
 
-      if (argv.size() - index > 1) {
+      if (size - index > 1) {
         if (i.value()) {
           if (argv[index+offset] == "LOCAL") {
-            i.value()->pushed = 1;
+            i.value()->pushed = true;
             offset++;
           } else if (argv[index+offset] == "GLOBAL") {
-            global = true;
+            i.value()->global = true;
             offset++;
           }
-          if (index + offset >= argv.size()) {
+          if (index + offset >= size) {
             rc = FailureRc;
           }
         }
@@ -119,31 +118,27 @@ Rc BranchMeta::parse(QStringList &argv, int index, Where &here)
       if (rc == OkRc) {
         return i.value()->parse(argv,index+offset,here);
       }
-    } else {
+    } else if (size - index > 1) {
 
       /* Failed an explicit match.  Lets try to see if the value
        * matches any of the keywords through regular expressions */
+      bool local  = argv[index] == "LOCAL";
+      bool global = argv[index] == "GLOBAL"; 
 
       // LPUB CALLOUT Vertical
       // LPUB CALLOUT LOCAL Vertical
+      
+      offset = local || global;
 
-      if (argv[index] == "LOCAL") {
-        i.value()->pushed = 1;
-        offset = 1;
-      } else if (argv[index] == "GLOBAL") {
-        i.value()->global = true;
-        offset = 1;
-      } else {
-        offset = 0;
-      }
-
-      if (index + offset < argv.size()) {
+      if (index + offset < size) {
         for (i = list.begin(); i != list.end(); i++) {
           QRegExp rx(i.key());
           if (argv[index + offset].contains(rx)) {
 
             /* Now parse the rest of the argvs */
 
+            i.value()->pushed = local;
+            i.value()->global = global;
             return i.value()->parse(argv,index+offset,here);
           }
         }
@@ -152,12 +147,6 @@ Rc BranchMeta::parse(QStringList &argv, int index, Where &here)
   }
 
   // syntax error 
-
-  QStringList keys;
-  QString     key;
-  foreach (key, list.keys()) {
-    keys << key;
-  }
   return FailureRc;
 }
 
@@ -173,19 +162,6 @@ bool BranchMeta::preambleMatch(QStringList &argv, int index, QString &match)
     return false;
   } else {
     return i.value()->preambleMatch(argv,index,match);
-  }
-}
-
-/* 
- * Tell all the kidlets to convert
- */
-
-void BranchMeta::convert(float factor)
-{
-  QString key;
-  QStringList keys = list.keys();
-  foreach(key, keys) {
-    list[key]->convert(factor);
   }
 }
 
@@ -287,7 +263,8 @@ void FloatMeta::init(
 }
 Rc FloatMeta::parse(QStringList &argv, int index,Where &here)
 {
-  if (index == argv.size() - 1) {
+  int size = argv.size();
+  if (index == size - 1) {
     bool ok;
     float v = argv[index].toFloat(&ok);
     if (ok) {
@@ -322,7 +299,31 @@ void FloatMeta::doc(QTextStream &out, QString preamble)
 QString UnitMeta::format(bool local, bool global)
 {
   QString foo;
-  foo = QString("%1") .arg(valueUnit(),_fieldWidth,'f',_precision);
+  foo = QString("%1") .arg(valueInches(),_fieldWidth,'f',_precision);
+  return LeafMeta::format(local,global,foo);
+}
+
+float UnitMeta::valuePixels()
+{
+  float t = _value[pushed];
+  return t*resolution();
+}
+
+
+/* ------------------ */
+float UnitsMeta::valuePixels(int which)
+{
+  volatile float t = _value[pushed][which];
+  volatile float r = resolution();
+
+  return t*r;
+}
+
+QString UnitsMeta::format(bool local, bool global)
+{
+  QString foo;
+  foo = QString("%1 %2") .arg(valueInches(0),_fieldWidth,'f',_precision) 
+                         .arg(valueInches(1),_fieldWidth,'f',_precision);
   return LeafMeta::format(local,global,foo);
 }
 
@@ -445,39 +446,6 @@ void StringListMeta::doc(QTextStream &out, QString preamble)
 
 /* ------------------ */
 
-void FontListMeta::init(
-  BranchMeta *parent,
-  QString     name,
-  Rc          _rc, 
-  QString     _delim)
-{
-  AbstractMeta::init(parent,name);
-  rc    = _rc;
-  delim = _delim;
-}
-Rc FontListMeta::parse(QStringList &argv, int index,Where &here)
-{
-  _value[pushed].clear();
-  for (int i = index; i < argv.size(); i++) {
-    _value[pushed] << argv[i];
-  }
-  _here[pushed] = here;
-  return rc;
-}
-QString FontListMeta::format(bool local, bool global)
-{
-  QString foo;
-  for (int i = 0; i < _value[pushed].size() ; i++) {
-    foo += delim + _value[pushed][i] + delim + " ";
-  }
-  return LeafMeta::format(local,global,foo);
-}
-
-void FontListMeta::doc(QTextStream &out, QString preamble)
-{
-  out << preamble << " <\"string\"> <\"string\"> ....." << endl;
-}
-
 /* ------------------ */
 
 Rc BoolMeta::parse(QStringList &argv, int index,Where &here)
@@ -531,8 +499,8 @@ QString placementOptions[][3] =
   { "LEFT",        "BOTTOM", "OUTSIDE" },
   { "BOTTOM_LEFT", "",       "INSIDE" },
   { "BOTTOM",      "",       "INSIDE" },
-  { "BOTTOM_RIGHT",""        "INSIDE" },
-  { "BOTTOM",      "RIGHT",  "OUTSIDE" },
+  { "BOTTOM_RIGHT","",       "INSIDE" },
+  { "RIGHT",       "BOTTOM", "OUTSIDE" },
 
   { "BOTTOM_LEFT", "",       "OUTSIDE" },
   { "BOTTOM",      "LEFT",   "OUTSIDE" },
@@ -579,7 +547,7 @@ QString relativeNames[] =
   "PAGE","ASSEM","MULTI_STEP","STEP_NUMBER","PLI","CALLOUT","PAGE_NUMBER"
 };
 
-PlacementMeta::PlacementMeta()
+PlacementMeta::PlacementMeta() : LeafMeta()
 {
   _value[0].placement     = PlacementEnc(placementDecode[TopLeftInsideCorner][0]);
   _value[0].justification = PlacementEnc(placementDecode[TopLeftInsideCorner][1]);
@@ -608,6 +576,8 @@ Rc PlacementMeta::parse(QStringList &argv, int index,Where &here)
   float _offsets[2];
   Rc rc = FailureRc;
   QString foo;
+  int argc = argv.size();
+  QString relativeTos = "^(PAGE|ASSEM|MULTI_STEP|STEP_NUMBER|PLI|CALLOUT|PAGE_NUMBER)$";
 
   _placementR    = _value[pushed].rectPlacement;
   _relativeTo    = _value[pushed].relativeTo;
@@ -616,7 +586,7 @@ Rc PlacementMeta::parse(QStringList &argv, int index,Where &here)
 
   if (argv[index] == "OFFSET") {
     index++;
-    if (argv.size() - index == 2) {
+    if (argc - index == 2) {
       bool ok[2];
       argv[index  ].toFloat(&ok[0]);
       argv[index+1].toFloat(&ok[1]);
@@ -635,14 +605,16 @@ Rc PlacementMeta::parse(QStringList &argv, int index,Where &here)
   if (argv[index].contains(rx)) {
     placement = argv[index++];
 
-    if (index < argv.size()) {
+    if (index < argc) {
       rx.setPattern("^(LEFT|CENTER|RIGHT)$");
       if (argv[index].contains(rx)) {
         justification = argv[index++];
         rc = OkRc;
-
       } else {
-        rc = OkRc;
+        rx.setPattern(relativeTos);
+        if (argv[index].contains(rx)) {
+          rc = OkRc;
+        }
       }
     } 
   } else {
@@ -650,11 +622,16 @@ Rc PlacementMeta::parse(QStringList &argv, int index,Where &here)
     if (argv[index].contains(rx)) {
       placement = argv[index++];
 
-      if (index < argv.size()) {
+      if (index < argc) {
         rx.setPattern("^(TOP|CENTER|BOTTOM)$");
         if (argv[index].contains(rx)) {
           justification = argv[index++];
           rc = OkRc;
+        } else {
+          rx.setPattern(relativeTos);
+          if (argv[index].contains(rx)) {
+            rc = OkRc;
+          }
         }
       }
     } else {
@@ -662,21 +639,23 @@ Rc PlacementMeta::parse(QStringList &argv, int index,Where &here)
       if (argv[index].contains(rx)) {
         placement = argv[index++];
         rc = OkRc;
+      } else {
+        return rc;
       }
     }
   }
 
   if (rc == OkRc && index < argv.size()) {
-    rx.setPattern("^(PAGE|ASSEM|MULTI_STEP|STEP_NUMBER|PLI|CALLOUT|PAGE_NUMBER)$");
+    rx.setPattern(relativeTos);
     if (argv[index].contains(rx)) {
       relativeTo = argv[index++];
-      if (index < argv.size()) {
+      if (index < argc) {
         rx.setPattern("^(INSIDE|OUTSIDE)$");
         if (argv[index].contains(rx)) {
           preposition = argv[index++];
           rc = OkRc;
         } 
-        if (argv.size() - index == 2) {
+        if (argc - index == 2) {
           bool ok[2];
           argv[index  ].toFloat(&ok[0]);
           argv[index+1].toFloat(&ok[1]);
@@ -692,38 +671,81 @@ Rc PlacementMeta::parse(QStringList &argv, int index,Where &here)
     }
 
     int i;
-    for (i = 0; i < NumSpots; i++) {
+    
+    if (preposition == "INSIDE" && justification == "CENTER") {
+      justification = "";
+    }
+    
+    for (i = 0; i < NumSpots; i++) {            
       if (placementOptions[i][0] == placement &&
           placementOptions[i][1] == justification &&
           placementOptions[i][2] == preposition) {
         break;
       }
     }
-    if (i < NumSpots) {
-      _placementR = RectPlacement(i);
-    } else {
+    
+    if (i == NumSpots) {
       return FailureRc;
     }
+    _placementR = RectPlacement(i);
+
+    _relativeTo = PlacementType(tokenMap[relativeTo]);
     setValue(_placementR,_relativeTo);
     _value[pushed].offsets[0] = _offsets[0];
     _value[pushed].offsets[1] = _offsets[1];
     _here[pushed] = here;
-
-    return rc;
   }
   return rc;
 }
 
+QString placementNames[] =
+{
+  "TOP_LEFT", "TOP", "TOP_RIGHT", "RIGHT",
+  "BOTTOM_RIGHT", "BOTTOM", "BOTTOM_LEFT", "LEFT", "CENTER"
+};
+
+QString prepositionNames[] =
+{
+  "INSIDE", "OUTSIDE"
+};
+
 QString PlacementMeta::format(bool local, bool global)
 {
   QString foo;
-  int placementR = _value[pushed].rectPlacement;
+  
+  if (_value[pushed].preposition == Inside) {
+    switch (_value[pushed].placement) {
+      case Top:
+      case Bottom:
+      case Right:
+      case Left:
+        foo = placementNames[_value[pushed].placement] + " "
+            + relativeNames [_value[pushed].relativeTo] + " "
+            + prepositionNames[_value[pushed].preposition];
+      break;
+      default:
+        foo = placementNames[_value[pushed].placement] + " "
+            + relativeNames [_value[pushed].relativeTo] + " "
+            + prepositionNames[_value[pushed].preposition];
+    }
+  } else {
 
-  foo = placementOptions[placementR][0] + " " +
-        placementOptions[placementR][1] + " " +
-        relativeNames[_value[pushed].relativeTo] + " " +
-        placementOptions[placementR][2];
-
+    switch (_value[pushed].placement) {
+      case Top:
+      case Bottom:
+      case Right:
+      case Left:
+        foo = placementNames[_value[pushed].placement] + " "
+            + placementNames[_value[pushed].justification] + " "
+            + relativeNames [_value[pushed].relativeTo] + " "
+            + prepositionNames[_value[pushed].preposition];
+      break;
+      default:
+        foo = placementNames[_value[pushed].placement] + " "
+            + relativeNames [_value[pushed].relativeTo] + " "
+            + prepositionNames[_value[pushed].preposition];
+    }
+  }
   if (_value[pushed].offsets[0] || _value[pushed].offsets[1]) {
     QString bar = QString(" %1 %2") .arg(_value[pushed].offsets[0]) 
                                     .arg(_value[pushed].offsets[1]);
@@ -746,31 +768,31 @@ Rc BackgroundMeta::parse(QStringList &argv, int index,Where &here)
 
   if (argv.size() - index == 1) {
     if (argv[index] == "TRANS" || argv[index] == "TRANSPARENT") {
-      _value[pushed].type = BgTransparent;
+      _value[pushed].type = BackgroundData::BgTransparent;
       rc = OkRc;
     } else if (argv[index] == "SUBMODEL_BACKGROUND_COLOR") {
-      _value[pushed].type = BgSubmodelColor;
+      _value[pushed].type = BackgroundData::BgSubmodelColor;
       rc = OkRc;
     } else {
-      _value[pushed].type = BgImage;
+      _value[pushed].type = BackgroundData::BgImage;
       _value[pushed].string = argv[index];
       _value[pushed].stretch = false;
       rc = OkRc;
     }
   } else if (argv.size() - index == 2) {
     if (argv[index] == "COLOR") {
-      _value[pushed].type = BgColor;
+      _value[pushed].type = BackgroundData::BgColor;
       _value[pushed].string = argv[index+1];
       rc = OkRc;
     } else if (argv[index] == "PICTURE") {
-      _value[pushed].type = BgImage;
+      _value[pushed].type = BackgroundData::BgImage;
       _value[pushed].string = argv[index+1];
       _value[pushed].stretch = false;
       rc = OkRc;
     }
   } else if (argv.size() - index == 3) {
     if (argv[index] == "PICTURE" && argv[index+2] == "STRETCH") {
-      _value[pushed].type = BgImage;
+      _value[pushed].type = BackgroundData::BgImage;
       _value[pushed].string = argv[index+1];
       _value[pushed].stretch = true;
       rc = OkRc;
@@ -792,16 +814,16 @@ QString BackgroundMeta::format(bool local, bool global)
 {
   QString foo;
   switch (_value[pushed].type) {
-    case BgTransparent:
+    case BackgroundData::BgTransparent:
       foo = "TRANSPARENT";
     break;
-    case BgSubmodelColor:
+    case BackgroundData::BgSubmodelColor:
       foo = "SUBMODEL_BACKGROUND_COLOR";
     break;
-    case BgColor:
+    case BackgroundData::BgColor:
       foo = "COLOR \"" + _value[pushed].string + "\"";
     break;
-    case BgImage:
+    case BackgroundData::BgImage:
       foo = "PICTURE \"" + _value[pushed].string + "\"";
       if (_value[pushed].stretch) {
         foo += " STRETCH";
@@ -820,13 +842,13 @@ QString BackgroundMeta::text()
 {
   BackgroundData background = value();
   switch (background.type) {
-    case BgTransparent:
+    case BackgroundData::BgTransparent:
       return "Transparent";
     break;
-    case BgImage:
+    case BackgroundData::BgImage:
       return "Picture " + background.string;
     break;
-    case BgColor:
+    case BackgroundData::BgColor:
       return "Color " + background.string;
     break;
     default:
@@ -842,7 +864,7 @@ Rc BorderMeta::parse(QStringList &argv, int index,Where &here)
   Rc rc = FailureRc;
 
   if (argv[index] == "NONE" && argv.size() - index >= 1) {
-    _value[pushed].type = BdrNone;
+    _value[pushed].type = BorderData::BdrNone;
     index++;
     rc = OkRc;
   } else if (argv[index] == "SQUARE" && argv.size() - index >= 3) {
@@ -850,7 +872,7 @@ Rc BorderMeta::parse(QStringList &argv, int index,Where &here)
     QString foo = argv[index+2];
     argv[index+2].toFloat(&ok);
     if (ok) {
-      _value[pushed].type = BdrSquare;
+      _value[pushed].type = BorderData::BdrSquare;
       _value[pushed].color = argv[index+1];
       _value[pushed].thickness = argv[index+2].toFloat(&ok);
       index += 3;
@@ -861,7 +883,7 @@ Rc BorderMeta::parse(QStringList &argv, int index,Where &here)
     argv[index+2].toFloat(&ok[0]);
     argv[index+3].toInt(&ok[1]);
     if (ok[0] && ok[1]) {
-      _value[pushed].type = BdrRound;
+      _value[pushed].type = BorderData::BdrRound;
       _value[pushed].color = argv[index+1];
       _value[pushed].thickness = argv[index+2].toFloat(&ok[0]);
       _value[pushed].radius    = argv[index+3].toInt(&ok[0]);
@@ -895,15 +917,15 @@ QString BorderMeta::format(bool local, bool global)
 {
   QString foo;
   switch (_value[pushed].type) {
-    case BdrNone:
+    case BorderData::BdrNone:
       foo = "NONE";
     break;
-    case BdrSquare:
+    case BorderData::BdrSquare:
       foo = QString("SQUARE %1 %2") 
               .arg(_value[pushed].color) 
               .arg(_value[pushed].thickness);
     break;
-    case BdrRound:
+    case BorderData::BdrRound:
       foo = QString("ROUND %1 %2 %3") 
               .arg(_value[pushed].color) 
               .arg(_value[pushed].thickness) 
@@ -924,13 +946,13 @@ void BorderMeta::doc(QTextStream &out, QString preamble)
 
 QString BorderMeta::text()
 {
-  BorderData border = value();
+  BorderData border = valueInches();
   QString thickness;
   switch (border.type) {
-    case BgTransparent:
+    case BorderData::BdrNone:
       return "No Border";
     break;
-    case BdrSquare:
+    case BorderData::BdrSquare:
       thickness = QString("%1")
         .arg(border.thickness,4,'f',3);
       return "Square Corners, thickess " + thickness + " " + units2abbrev();
@@ -944,7 +966,7 @@ QString BorderMeta::text()
 
 /* ------------------ */ 
 
-PointerMeta::PointerMeta()
+PointerMeta::PointerMeta() : LeafMeta()
 {
   _value[0].placement = TopLeft;
   _value[0].loc       = 0;
@@ -984,7 +1006,7 @@ Rc PointerMeta::parse(QStringList &argv, int index,Where &here)
       _y    = argv[index+2].toFloat(&ok[1]);
       fail  = ! (ok[0] && ok[1]);
     }
-    rx.setPattern("^(TOP|BOTTOM|LEFT|RIGHT)$");
+    rx.setPattern("^(TOP|BOTTOM|LEFT|RIGHT|CENTER)$");
     if (argv[index].contains(rx) && n_tokens == 5) {
       _loc = 0;
       bool ok[4];
@@ -1020,17 +1042,11 @@ Rc PointerMeta::parse(QStringList &argv, int index,Where &here)
       
     QMessageBox::warning(NULL,
       QMessageBox::tr("LPub"),
-      QMessageBox::tr("Malformed callout pointer \"%1\"") .arg(argv.join(" ")));
+      QMessageBox::tr("Malformed callout arrow \"%1\"") .arg(argv.join(" ")));
 
     return FailureRc;
   }
 }
-
-QString placementNames[] =
-{
-  "TOP_LEFT", "TOP", "TOP_RIGHT", "RIGHT",
-  "BOTTOM_RIGHT", "BOTTOM", "BOTTOM_LEFT", "LEFT", "CENTER"
-};
 
 QString PointerMeta::format(bool local, bool global)
 {
@@ -1065,7 +1081,7 @@ void PointerMeta::doc(QTextStream &out, QString preamble)
 }
 
 /* ------------------ */ 
-FreeFormMeta::FreeFormMeta()
+FreeFormMeta::FreeFormMeta() : LeafMeta()
 {
   _value[0].mode = false;
 }
@@ -1112,7 +1128,8 @@ void FreeFormMeta::doc(QTextStream &out, QString preamble)
 
 ConstrainMeta::ConstrainMeta()
 {
-  _value[0].type = PliConstrainArea;
+  _value[0].type = ConstrainData::PliConstrainArea;
+  _default = true;
 }
 Rc ConstrainMeta::parse(QStringList &argv, int index,Where &here)
 {
@@ -1123,16 +1140,16 @@ Rc ConstrainMeta::parse(QStringList &argv, int index,Where &here)
     case 1:
       rx.setPattern("^(AREA|SQUARE)$");
       if (argv[index].contains(rx)) {
-        _value[pushed].type = PliConstrain(tokenMap[argv[index]]);
+        _value[pushed].type = ConstrainData::PliConstrain(tokenMap[argv[index]]);
         rc = OkRc;
       }
     break;
     case 2:
-      argv[index+1].toInt(&ok);
+      argv[index+1].toFloat(&ok);
       if (ok) {
         rx.setPattern("^(WIDTH|HEIGHT|COLS)$");
         if (argv[index].contains(rx)) {
-          _value[pushed].type = PliConstrain(tokenMap[argv[index]]);
+          _value[pushed].type = ConstrainData::PliConstrain(tokenMap[argv[index]]);
           _value[pushed].constraint = argv[index+1].toFloat(&ok);
           rc = OkRc;
         } 
@@ -1141,6 +1158,7 @@ Rc ConstrainMeta::parse(QStringList &argv, int index,Where &here)
   }
   if (rc == OkRc) {
     _here[pushed] = here;
+    _default = false;
   }      
   return rc;
 }
@@ -1148,16 +1166,16 @@ QString ConstrainMeta::format(bool local, bool global)
 {
   QString foo;
   switch (_value[pushed].type) {
-    case PliConstrainArea:
+    case ConstrainData::PliConstrainArea:
       foo = "AREA";
     break;
-    case PliConstrainSquare:
+    case ConstrainData::PliConstrainSquare:
       foo = "SQUARE";
     break;
-    case PliConstrainWidth:
+    case ConstrainData::PliConstrainWidth:
       foo = QString("WIDTH %1") .arg(_value[pushed].constraint);
     break;
-    case PliConstrainHeight:
+    case ConstrainData::PliConstrainHeight:
       foo = QString("HEIGHT %1") .arg(_value[pushed].constraint);
     break;
     default:
@@ -1173,7 +1191,7 @@ void ConstrainMeta::doc(QTextStream &out, QString preamble)
 
 /* ------------------ */ 
 
-AllocMeta::AllocMeta()
+AllocMeta::AllocMeta() : LeafMeta()
 {
   type[0] = Vertical;
 }
@@ -1208,7 +1226,7 @@ void AllocMeta::doc(QTextStream &out, QString preamble)
 }
 
 /* ------------------ */ 
-SepMeta::SepMeta()
+SepMeta::SepMeta() : LeafMeta()
 {
   _value[0].thickness = DEFAULT_THICKNESS;
   _value[0].color = "black";
@@ -1406,7 +1424,7 @@ Rc InsertMeta::parse(QStringList &argv, int index, Where &here)
     }
   }
   
-  InsertType  type =       InsertPicture;
+  InsertData::InsertType type = InsertData::InsertPicture;
   QString     picName;
   qreal       picScale =   1;
   QStringList text;
@@ -1419,7 +1437,7 @@ Rc InsertMeta::parse(QStringList &argv, int index, Where &here)
     
   if (rc == OkRc) {
            if (argv.size() - index >= 2 && argv[index] == "PICTURE") {
-      type = InsertPicture;
+      type = InsertData::InsertPicture;
       picName = argv[++index];
 
       ++index;
@@ -1430,14 +1448,14 @@ Rc InsertMeta::parse(QStringList &argv, int index, Where &here)
         }
       }
     } else if (argv.size() - index >= 2 && argv[index] == "TEXT") {
-      type = InsertText;
+      type = InsertData::InsertText;
       ++index;
       int j;
       for (j = 0; index < argv.size(); ) {
         text[j++] = argv[index++];
       }
     } else if (argv.size() - index >= 5 && argv[index] == "ARROW") {
-      type = InsertArrow;
+      type = InsertData::InsertArrow;
        
       arrow[0].setX(argv[++index].toFloat(&good));
       arrow[0].setY(argv[++index].toFloat(&ok));
@@ -1451,7 +1469,7 @@ Rc InsertMeta::parse(QStringList &argv, int index, Where &here)
       }
       ++index;
     } else if (argv[index] == "BOM"     && argv.size() - index == 1) {
-      type = InsertBom;
+      type = InsertData::InsertBom;
     }
   }
 
@@ -1485,11 +1503,6 @@ Rc InsertMeta::parse(QStringList &argv, int index, Where &here)
   
 }
 
-QString prepositionNames[] =
-{
-  "INSIDE", "OUTSIDE"
-};
-
 QString InsertMeta::format(bool local, bool global)
 {
   QString foo;
@@ -1518,26 +1531,26 @@ QString InsertMeta::format(bool local, bool global)
                                     .arg(_value[pushed].margins[1]);
   }
   switch (_value[pushed].type) {
-    case InsertPicture:
+    case InsertData::InsertPicture:
       foo += " PICTURE \"" + _value[pushed].picName + "\"";
       if (_value[pushed].picScale) {
         foo += QString(" SCALE %1") .arg(_value[pushed].picScale);
       }
     break;
-    case InsertText:
+    case InsertData::InsertText:
       foo += " TEXT";
       for (int i = 0; i < _value[pushed].text.size(); i++) {
         foo += " \"" + _value[pushed].text[i] + "\"";
       }
     break;
-    case InsertArrow:
+    case InsertData::InsertArrow:
       foo += " ARROW";
       foo += QString(" %1") .arg(_value[pushed].arrow[0].rx());
       foo += QString(" %1") .arg(_value[pushed].arrow[0].ry());
       foo += QString(" %1") .arg(_value[pushed].arrow[1].rx());      
       foo += QString(" %1") .arg(_value[pushed].arrow[1].ry());
     break;
-    case InsertBom:
+    case InsertData::InsertBom:
       foo += " BOM";
     break;
   }
@@ -1685,7 +1698,7 @@ void ArrowEndMeta::doc(QTextStream &out, QString preamble)
 
 /* ------------------ */ 
 
-CalloutCsiMeta::CalloutCsiMeta()
+CalloutCsiMeta::CalloutCsiMeta() : BranchMeta()
 {
 }
 
@@ -1698,7 +1711,7 @@ void CalloutCsiMeta::init(BranchMeta *parent, QString name)
 
 /* ------------------ */ 
 
-CalloutPliMeta::CalloutPliMeta()
+CalloutPliMeta::CalloutPliMeta() : BranchMeta()
 {
   placement.setValue(TopOutside,CsiType);
   perStep.setValue(true);
@@ -1723,7 +1736,7 @@ void PliBeginMeta::init(BranchMeta *parent, QString name)
 
 /* ------------------ */ 
 
-NumberMeta::NumberMeta()
+NumberMeta::NumberMeta() : BranchMeta()
 {
   color.setValue("black");
   // font - default
@@ -1739,9 +1752,9 @@ void NumberMeta::init(
   margin.init   (this, "MARGINS");
 }
 
-NumberPlacementMeta::NumberPlacementMeta()
+NumberPlacementMeta::NumberPlacementMeta() : NumberMeta()
 {
-  placement.setValue(RightTopOutside,PartsListType);
+  placement.setValue(TopLeftInsideCorner,PageType);
 
   color.setValue("black");
   // font - default
@@ -1770,7 +1783,7 @@ void RemoveMeta::init(BranchMeta *parent, QString name)
 
 /* ------------------ */
 
-PartMeta::PartMeta()
+PartMeta::PartMeta() : BranchMeta()
 {
 }
 
@@ -1859,6 +1872,9 @@ Rc RotStepMeta::parse(QStringList &argv, int index,Where &here)
     } 
   } else if (argv.size()-index == 1 && argv[index] == "END") {
     _value.type.clear();
+    _value.rots[0] = 0;
+    _value.rots[1] = 0;
+    _value.rots[2] = 0;
     _here[0] = here;
     _here[1] = here;
     return RotStepRc;
@@ -1922,14 +1938,14 @@ void BuffExchgMeta::doc(QTextStream &out, QString preamble)
  * The Top Level LPub Metas
  *---------------------------------------------------------------*/
 
-PageMeta::PageMeta()
+PageMeta::PageMeta() : BranchMeta()
 {
-  size.setValuesInches(8.5,11.0);
+  size.setValuesInches(8.5f,11.0f);
   size.setRange(1,1000);
   size.setFormats(6,4,"9.9999");
 
   BorderData borderData;
-  borderData.type = BdrNone;
+  borderData.type = BorderData::BdrNone;
   borderData.color = "Black";
   borderData.thickness = 0;
   borderData.radius = 0;
@@ -1937,15 +1953,15 @@ PageMeta::PageMeta()
   borderData.margin[1] = DEFAULT_MARGIN;
   border.setValueInches(borderData);
 
-  background.setValue(BgSubmodelColor);
+  background.setValue(BackgroundData::BgSubmodelColor);
   dpn.setValue(true);
   togglePnPlacement.setValue(false);
   number.placement.setValue(BottomRightInsideCorner,PageType);
   number.color.setValue("black");
-  number.font.setValueUnit("Arial,20,-1,75,0,0,0,0,0");
+  number.font.setValuePoints("Arial,20,-1,75,0,0,0,0,0");
   instanceCount.placement.setValue(BottomRightInsideCorner,PageType);
   instanceCount.color.setValue("black");
-  instanceCount.font.setValueUnit("Arial,48,-1,75,0,0,0,0,0");
+  instanceCount.font.setValuePoints("Arial,48,-1,75,0,0,0,0,0");
 
   subModelColor.setValue("0xffffff");
   subModelColor.setValue("0xffffcc");
@@ -1968,7 +1984,7 @@ void PageMeta::init(BranchMeta *parent, QString name)
 }
 
 /* ------------------ */ 
-AssemMeta::AssemMeta()
+AssemMeta::AssemMeta() : BranchMeta()
 {
   placement.setValue(CenterCenter,PageType);
   modelScale.setRange(-10000.0,10000.0);
@@ -1989,23 +2005,19 @@ void AssemMeta::init(BranchMeta *parent, QString name)
 
 /* ------------------ */ 
 
-PliMeta::PliMeta()
+PliMeta::PliMeta() : BranchMeta()
 {
   placement.setValue(RightTopOutside,StepNumberType);
-  ConstrainData constraint;
-  constraint.type = PliConstrainArea;
-  constraint.constraint = 0;
-  constrain.setValueUnit(constraint);
   BorderData borderData;
-  borderData.type = BdrRound;
+  borderData.type = BorderData::BdrRound;
   borderData.color = "Black";
   borderData.thickness = DEFAULT_THICKNESS;
-  borderData.radius = 20;
+  borderData.radius = 15;
   borderData.margin[0] = DEFAULT_MARGIN;
   borderData.margin[1] = DEFAULT_MARGIN;
   border.setValueInches(borderData);
-  background.setValue(BgColor,"0xffffff");
-  margin.setValueUnits(0.0,0.0);
+  background.setValue(BackgroundData::BgColor,"0xffffff");
+  margin.setValuesInches(0.0f,0.0f);
   // instance - default
   // annotate - default
   modelScale.setRange(-10000.0,10000.0);
@@ -2022,10 +2034,11 @@ PliMeta::PliMeta()
   subModelColor.setValue("0xffffcc");
   subModelColor.setValue("0xffcccc");
   subModelColor.setValue("0xccccff");
-  part.margin.setValuesInches(0.05,0.03);
-  instance.margin.setValueUnits(0.0,0.0);
-  annotate.margin.setValueUnits(0.0,0.0);
-  pack.setValue(false);
+  part.margin.setValuesInches(0.05f,0.03f);
+  instance.margin.setValuesInches(0.0f,0.0f);
+  annotate.margin.setValuesInches(0.0f,0.0f);
+  margin.setValuesInches(DEFAULT_MARGIN,DEFAULT_MARGIN);
+  pack.setValue(true);
   sort.setValue(true);
 }
 
@@ -2061,23 +2074,19 @@ void BomBeginMeta::init(BranchMeta *parent, QString name)
 
 /* ------------------ */ 
 
-BomMeta::BomMeta()
+BomMeta::BomMeta() : PliMeta()
 {
   placement.setValue(TopLeftInsideCorner,PageType);
-  ConstrainData constraint;
-  constraint.type = PliConstrainArea;
-  constraint.constraint = 0;
-  constrain.setValueUnit(constraint);
   BorderData borderData;
-  borderData.type = BdrRound;
+  borderData.type = BorderData::BdrRound;
   borderData.color = "Black";
   borderData.thickness = DEFAULT_THICKNESS;
-  borderData.radius = 20;
+  borderData.radius = 15;
   borderData.margin[0] = DEFAULT_MARGIN;
   borderData.margin[1] = DEFAULT_MARGIN;
   border.setValueInches(borderData);
-  background.setValue(BgColor,"0xffffff");
-  margin.setValueUnits(0.0,0.0);
+  background.setValue(BackgroundData::BgColor,"0xffffff");
+  margin.setValuesInches(0.0f,0.0f);
   // instance - default
   // annotate - default
   modelScale.setRange(-10000.0,10000.0);
@@ -2094,9 +2103,9 @@ BomMeta::BomMeta()
   subModelColor.setValue("0xffffcc");
   subModelColor.setValue("0xffcccc");
   subModelColor.setValue("0xccccff");
-  part.margin.setValuesInches(0.05,0.03);
-  instance.margin.setValuesInches(0.0,0.0);
-  annotate.margin.setValuesInches(0.0,0.0);
+  part.margin.setValuesInches(0.05f,0.03f);
+  instance.margin.setValuesInches(0.0f,0.0f);
+  annotate.margin.setValuesInches(0.0f,0.0f);
   pack.setValue(false);
   sort.setValue(true);
 }
@@ -2124,17 +2133,17 @@ void BomMeta::init(BranchMeta *parent, QString name)
 }
 
 /* ------------------ */ 
-CalloutMeta::CalloutMeta()
+CalloutMeta::CalloutMeta() : BranchMeta()
 {
   stepNum.color.setValue("black");
   // stepNum.font - default
   stepNum.placement.setValue(LeftTopOutside,PartsListType);
   sep.setValueInches("Black",DEFAULT_THICKNESS,DEFAULT_MARGINS);
   BorderData borderData;
-  borderData.type = BdrSquare;
+  borderData.type = BorderData::BdrSquare;
   borderData.color = "Black";
   borderData.thickness = DEFAULT_THICKNESS;
-  borderData.radius = 20;
+  borderData.radius = 15;
   borderData.margin[0] = DEFAULT_MARGIN;
   borderData.margin[1] = DEFAULT_MARGIN;
   border.setValueInches(borderData);
@@ -2142,7 +2151,7 @@ CalloutMeta::CalloutMeta()
   instance.color.setValue("black");
   // instance - default
   instance.placement.setValue(RightBottomOutside, CalloutType);
-  background.setValue(BgSubmodelColor);
+  background.setValue(BackgroundData::BgSubmodelColor);
   subModelColor.setValue("0xffffff");
   subModelColor.setValue("0xffffcc");
   subModelColor.setValue("0xffcccc");
@@ -2181,13 +2190,13 @@ void CalloutMeta::init(BranchMeta *parent, QString name)
 
 /* ------------------ */ 
 
-MultiStepMeta::MultiStepMeta()
+MultiStepMeta::MultiStepMeta() : BranchMeta()
 {
   stepNum.placement.setValue(LeftTopOutside,PartsListType);
   stepNum.color.setValue("black");
   // stepNum.font - default
   placement.setValue(CenterCenter,PageType);
-  sep.setValueUnit("black",DEFAULT_THICKNESS,DEFAULT_MARGINS);
+  sep.setValue("black",DEFAULT_THICKNESS,DEFAULT_MARGINS);
   // subModelFont - default
   subModelFontColor.setValue("black");
   // freeform
@@ -2227,18 +2236,19 @@ void ResolutionMeta::init(
 
 Rc ResolutionMeta::parse(QStringList &argv, int index, Where &here)
 {
-  int tokens = argv.size() - index;
+  volatile int tokens = argv.size();
+  tokens -= index;
   if (tokens == 0) {
     return FailureRc;
   }
   if (tokens == 2 && argv[index+1] == "DPI") {
     _here[0] = here;
-    resolution = argv[index].toFloat();
-    resolutionType  = DPI;
-  } else if (tokens == 2 && argv[index] == "DPCM") {
+    setResolution(argv[index].toFloat());
+    setResolutionType(DPI);
+  } else if (tokens == 2 && argv[index+1] == "DPCM") {
     _here[0] = here;
-    resolution = argv[index].toFloat();
-    resolutionType = DPCM;
+    setResolution(argv[index].toFloat());
+    setResolutionType(DPCM);
   } else {
     return FailureRc;
   }
@@ -2248,14 +2258,7 @@ Rc ResolutionMeta::parse(QStringList &argv, int index, Where &here)
 QString ResolutionMeta::format(bool local, bool global)
 {
   QString res;
-  switch (resolutionType) {
-    case DPI:
-      res = QString("%1 DPI") .arg(resolution,0,'f',0);
-    break;
-    case DPCM:
-      res = QString("%1 DPCM") .arg(resolution,0,'f',0);
-    break;
-  }
+  res = QString("%1 DPI") .arg(resolution(),0,'f',0);
   return LeafMeta::format(local,global,res);
 } 
 
@@ -2264,7 +2267,7 @@ void ResolutionMeta::doc(QTextStream &out, QString preamble)
   out << preamble << "<integer> (DPI|DPCM)" << endl;
 }
 
-LPubMeta::LPubMeta()
+LPubMeta::LPubMeta() : BranchMeta()
 {
   stepNumber.placement.setValue(TopLeftInsideCorner,PageType);
   stepNumber.color.setValue("black");
@@ -2324,12 +2327,28 @@ void LSynthMeta::init(BranchMeta *parent, QString name)
 
 /* ------------------ */ 
 
-Meta::Meta()
+Meta::Meta() : BranchMeta()
 {
   QString empty;
-  preamble = "0 ";
   init(NULL,empty);
-  
+}
+
+Meta::~Meta()
+{
+}
+
+void Meta::init(BranchMeta * /* unused */, QString /* unused */)
+{
+  preamble = "0 ";
+
+  LPub   .init(this,"!LPUB");
+  step   .init(this,"STEP",    StepRc);
+  clear  .init(this,"CLEAR",   ClearRc);
+  rotStep.init(this,"ROTSTEP");
+  bfx    .init(this,"BUFEXCHG");
+  MLCad  .init(this,"MLCAD");
+  LSynth .init(this,"SYNTH");
+
   if (tokenMap.size() == 0) {
     tokenMap["TOP_LEFT"]     = TopLeft;
     tokenMap["TOP"]          = Top;
@@ -2343,7 +2362,7 @@ Meta::Meta()
 
     tokenMap["INSIDE"]       = Inside;
     tokenMap["OUTSIDE"]      = Outside;
- 
+
     tokenMap["PAGE"]         = PageType;
     tokenMap["ASSEM"]        = CsiType;
     tokenMap["MULTI_STEP"]   = StepGroupType;
@@ -2352,82 +2371,14 @@ Meta::Meta()
     tokenMap["PLI"]          = PartsListType;
     tokenMap["PAGE_NUMBER"]  = PageNumberType;
 
-    tokenMap["AREA"]         = PliConstrainArea;
-    tokenMap["SQUARE"]       = PliConstrainSquare;
-    tokenMap["WIDTH"]        = PliConstrainWidth;
-    tokenMap["HEIGHT"]       = PliConstrainHeight;
-    tokenMap["COLS"]         = PliConstrainColumns;
+    tokenMap["AREA"]         = ConstrainData::PliConstrainArea;
+    tokenMap["SQUARE"]       = ConstrainData::PliConstrainSquare;
+    tokenMap["WIDTH"]        = ConstrainData::PliConstrainWidth;
+    tokenMap["HEIGHT"]       = ConstrainData::PliConstrainHeight;
+    tokenMap["COLS"]         = ConstrainData::PliConstrainColumns;
 
     tokenMap["VERTICAL"]     = Vertical;
     tokenMap["HORIZONTAL"]   = Horizontal;
-  }
-}
-
-Meta::~Meta()
-{
-}
-
-void Meta::init(BranchMeta *parent, QString name)
-{
-  parent = parent;
-  name = name;
-  LPub   .init(this,"!LPUB");
-  step   .init(this,"STEP",    StepRc);
-  clear  .init(this,"CLEAR",   ClearRc);
-  rotStep.init(this,"ROTSTEP");
-  bfx    .init(this,"BUFEXCHG");
-  MLCad  .init(this,"MLCAD");
-  LSynth .init(this,"SYNTH");
-}
-
-void Meta::mkargv(
-  QString     &line,
-  QStringList &argv,
-  Where        here)
-{
-  QString chopped  = line;
-
-  /* Parse the input line into argv[] */
-  
-  int soq = chopped.indexOf("\"");
-  if (soq == -1) {
-    argv << chopped.split(" ",QString::SkipEmptyParts);
-  } else {
-    while (chopped.size()) {
-      soq = chopped.indexOf("\"");
-      if (soq == -1) {
-        argv << chopped.split(" ",QString::SkipEmptyParts);
-        chopped.clear();
-      } else {
-        // we found a double quote
-        QString left = chopped.left(soq);
-
-        left = left.trimmed();
-  
-        argv << left.split(" ",QString::SkipEmptyParts);
-
-        chopped = chopped.mid(soq+1);
-  
-        soq = chopped.indexOf("\"");
-  
-        if (soq == -1) {
-          if (here.modelName != "undefined") {
-            gui->parseError("Failed to find matching \".",here);
-          }
-          QMessageBox::warning(NULL,QMessageBox::tr("LPub"),
-            QMessageBox::tr("Failed to find matching qoute in %1") .arg(chopped));
-          argv.clear();
-          return;
-        }
-        argv << chopped.left(soq);
-  
-        chopped = chopped.mid(soq+1);
-  
-        if (chopped == "\"") {
-          chopped.clear();
-        }
-      }
-    }
   }
 }
 
@@ -2436,6 +2387,8 @@ Rc Meta::parse(
   Where    &here)
 {
   QStringList argv;
+  
+  QByteArray Line = line.toAscii();
 
   QRegExp bgt("^\\s*0\\s+(MLCAD)\\s+(BTG)\\s+(.*)$");
 
@@ -2445,30 +2398,27 @@ Rc Meta::parse(
 
     /* Parse the input line into argv[] */
 
-    mkargv(line,argv,here);
+    split(line,argv);
 
     if (argv.size() > 0) {
       argv.removeFirst();
     }
-    if (argv.size() > 0 && argv[0] == "WRITE") {
-      argv.removeFirst();
-    }
-  	if (argv.size()) {
-	    if (argv[0] == "LPUB") {
+    if (argv.size()) {
+      if (argv[0] == "LPUB") {
         argv[0] = "!LPUB";
       }
         
-	    if (argv[0] == "PLIST") {
-	      return  LPub.pli.parse(argv,1,here);
-	    }
-	  }
+      if (argv[0] == "PLIST") {
+        return  LPub.pli.parse(argv,1,here);
+      }
+    }
   }
 
   if (argv.size() > 0 && list.contains(argv[0])) {
 
     /* parse it up */
 
-    Rc rc = BranchMeta::parse(argv,0,here);
+    Rc rc = this->BranchMeta::parse(argv,0,here);
 
     if (rc == FailureRc) {
       QMessageBox::warning(NULL,QMessageBox::tr("LPub"),
@@ -2488,13 +2438,9 @@ bool Meta::preambleMatch(
 
   /* Parse the input line into argv[] */
 
-  mkargv(line,argv,Where());
+  split(line,argv);
 
   if (argv.size() > 0) {
-    argv.removeFirst();
-  }
-
-  if (argv.size() && argv[0] == "WRITE") {
     argv.removeFirst();
   }
 

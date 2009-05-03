@@ -32,6 +32,7 @@
 #include "meta.h"
 #include "ranges_element.h"
 
+class Step;
 class QGraphicsItem;
 class AbstractRangeElement;
 
@@ -53,11 +54,10 @@ class Range : public AbstractStepsElement {
 
     void append(AbstractRangeElement *gi);
 
+    virtual void sizeMargins(int cols[], int colMargins[][2], int margins[]);
     virtual void sizeitVert();
-    virtual void placeitVert(int max);
-
     virtual void sizeitHoriz();
-    virtual void placeitHoriz(int max);
+    virtual void placeit(int max, int x, int y);
 
     virtual void sizeitFreeform(
                    int  xx,
@@ -71,14 +71,7 @@ class Range : public AbstractStepsElement {
                    int  max,
                    int  justification);
 
-    virtual void addGraphicsItemsVert(
-                   int  xx,
-                   int  yy,
-                   Meta *meta,
-                   PlacementType,
-                   QGraphicsItem *parent);
-
-    virtual void addGraphicsItemsHoriz(
+    virtual void addGraphicsItems(
                    int  xx,
                    int  yy,
                    Meta *meta,

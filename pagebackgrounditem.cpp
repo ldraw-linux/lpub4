@@ -96,7 +96,7 @@ void PageBackgroundItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
   }
 
   if (selectedAction == calloutAction) {
-    convertToCallout(&page->meta, page->bottom.modelName);
+    convertToCallout(&page->meta, page->bottom.modelName, page->isMirrored);
 
   } else if (selectedAction == ignoreAction) {
     convertToIgnore(&page->meta);

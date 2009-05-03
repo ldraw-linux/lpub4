@@ -41,6 +41,8 @@
 
 class QPixmap;
 class QGraphicsScene;
+class Step;
+class Steps;
 
 //---------------------------------------------------------------------------
 //
@@ -90,14 +92,36 @@ enum dim {
 
 class Placement {
   public:
-    int           size[2];       // How big am I?
-    int           loc[2];        // Where do I live within my group
-    int           tbl[2];        // Where am I in my grid?
+    int           size[2];         // How big am I?
+    int           loc[2];          // Where do I live within my group
+    int           tbl[2];          // Where am I in my grid?
+    int           boundingSize[2]; // Me and my neighbors
+    int           boundingLoc[2];  // Where do I live within my group
+    
+    void setSize(int _size[2])
+    {
+      size[XX] = boundingSize[XX] = _size[XX];
+      size[YY] = boundingSize[YY] = _size[YY];
+    }
+    
+    void setSize(int x, int y)
+    {
+      size[XX] = boundingSize[XX] = x;
+      size[YY] = boundingSize[YY] = y;
+    }
+    
+    void setBoundingSize()
+    {
+      boundingSize[XX] = size[XX];
+      boundingSize[YY] = size[YY];
+    }
+      
     PlacementType relativeType;  // What am I?
     PlacementMeta placement;     // Where am I placed?
     MarginsMeta   margin;        // How much room do I need?
-    int           relativeToWidth;
-    int           relativeToHeight;
+    Placement    *relativeToParent;
+    qreal         relativeToLoc[2];
+    qreal         relativeToSize[2];
 
     QList<Placement *> relativeToList; // things placed relative to me
 
@@ -109,8 +133,37 @@ class Placement {
       loc[1]  = 0;
       tbl[0]  = 0;
       tbl[1]  = 0;
-      relativeToWidth = 1;
-      relativeToHeight = 1;
+      relativeToLoc[0] = 0;
+      relativeToLoc[1] = 0;
+      relativeToSize[0] = 1;
+      relativeToSize[1] = 1;
+      relativeToParent = NULL;
+      boundingSize[0] = 0;
+      boundingSize[1] = 0;
+      boundingLoc[0] = 0;
+      boundingLoc[1] = 0;
+    }
+    
+    void assign(Placement *from)
+    {
+      size[0] = from->size[0];
+      size[1] = from->size[1];
+      loc[0] = from->loc[0];
+      loc[1] = from->loc[1];
+      tbl[0] = from->tbl[0];
+      tbl[1] = from->tbl[1];
+      relativeType = from->relativeType;
+      placement = from->placement;
+      margin = from->margin;
+      relativeToParent = from->relativeToParent;
+      relativeToLoc[0] = from->relativeToLoc[0];
+      relativeToLoc[1] = from->relativeToLoc[1];
+      relativeToSize[0] = from->relativeToSize[0];
+      relativeToSize[1] = from->relativeToSize[1];
+      boundingSize[0] = from->boundingSize[0];
+      boundingSize[1] = from->boundingSize[1];
+      boundingLoc[0] = from->boundingLoc[0];
+      boundingLoc[1] = from->boundingLoc[1];
     }
 
     virtual ~Placement()
@@ -121,17 +174,25 @@ class Placement {
     void appendRelativeTo(Placement *element);
 
     int  relativeTo(
-      Placement *step);
+      Step      *step);
 
-    int relativeToMs(
-      Placement *callout);
+    int relativeToSg(
+      Steps    *steps);
 
     void placeRelative(
+      Placement *placement);
+
+    void placeRelativeBounding(
       Placement *placement);
 
     void placeRelative(
       Placement *placement,
       int        margin[]);
+      
+    void placeRelative(
+      Placement *them,
+      int   them_size[2],
+      int   lmargin[2]);
 
     void justifyX(
       int origin,
@@ -140,59 +201,12 @@ class Placement {
     void justifyY(
       int origin,
       int height);
-};
-
-class IpiGrab;
-
-class InsertPixmapItem : public QGraphicsPixmapItem, public MetaItem, public Placement
-{
-  public:
-    QPointF    position;
-    bool       positionChanged;
-    int        grabSize;
-    qreal      origWidth;
-    qreal      origHeight;
-    qreal      oldScale;
-    IpiGrab   *grab[4];
-    QPointF    points[4];
-
-    enum SelectedPoint { TopLeft, TopRight, BottomRight, BottomLeft} selectedPoint;
-
-    InsertMeta insertMeta;
-
-    InsertPixmapItem();
-    
-    InsertPixmapItem(
-      QPixmap    &pixmap,
-      InsertMeta &insertMeta,
-      QGraphicsItem *parent = 0);
-    void placeGrabs();
-    void whatPoint(IpiGrab *);
-    void resize(QPointF);
-    void changePicScale();
-    
-  protected:
-    virtual void mousePressEvent(QGraphicsSceneMouseEvent *event);
-    virtual void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
-    virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
-    QVariant itemChange(GraphicsItemChange change, const QVariant &value);
-};
-
-class IpiGrab : public QGraphicsRectItem
-{
-public:
-  InsertPixmapItem *ipiItem;
-  IpiGrab(
-    InsertPixmapItem *ipiItem)
-    :
-    ipiItem(ipiItem)
-  {
-    setFlag(QGraphicsItem::ItemIsMovable,true);
-  }
-private:
-  void mousePressEvent(QGraphicsSceneMouseEvent *event);
-  void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
-  void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
+      
+    void calcOffsets(
+      PlacementData &placementData,
+      float offsets[2],
+      qreal topLeft[2],
+      qreal size[2]);
 };
 
 class PlacementPixmap : public Placement {
@@ -203,40 +217,6 @@ class PlacementPixmap : public Placement {
     {
     }
 };
-
-#if 0
-
-class PlacementPixmapItem : public QGraphicsPixmapItem, public Placement, public MetaItem
-{
-  public:
-    QPointF       position;
-    bool          positionChanged;
-
-    PlacementPixmapItem();
-    
-    PlacementPixmapItem(
-      QPixmap       &pixmap,
-      PlacementMeta &_placement,
-      QGraphicsItem *parent = 0)
-      
-      : QGraphicsPixmapItem(pixmap,parent)
-    {
-      placement = _placement;
-      
-      PlacementData placementData = placement.value();
-
-      size[0] = pixmap.width();
-      size[1] = pixmap.height();
-      setFlag(QGraphicsItem::ItemIsSelectable,true);
-      setFlag(QGraphicsItem::ItemIsMovable,true);
-    }
-  protected:
-    virtual void mousePressEvent(QGraphicsSceneMouseEvent *event);
-    virtual void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
-    virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
-};
-
-#endif
 
 class PlacementNum : public Placement {
   public:

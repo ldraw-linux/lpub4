@@ -40,6 +40,8 @@
 #include <QGraphicsLineItem>
 #include <QGraphicsItemGroup>
 
+class Step;
+class AbstractRangeElement;
 class Pointer;
 class CalloutPointerItem;
 class CalloutBackgroundItem;
@@ -49,14 +51,14 @@ class QGraphicsView;
  * the ability to be in a list here
  */
 
-class AbstractRangeElement;
 class Callout : public Steps {
   public:
-    AbstractRangeElement  *parent;
+    Step                  *parentStep;
     PlacementType          parentRelativeType;
     QGraphicsView         *view;
     int                    instances;
     PlacementNum           instanceCount;
+    bool                   shared;
 
     QList<Pointer *>            pointerList; /* Pointers and arrows */
     QList<CalloutPointerItem *> graphicsPointerList;
@@ -80,7 +82,6 @@ class Callout : public Steps {
     {
       bottomCallout = bottomOfCallout;
     }
-    
 
     Callout(
       Meta                 &_meta,
@@ -94,31 +95,18 @@ class Callout : public Steps {
 
     void appendPointer(const Where &here, CalloutMeta &attrib);
 
+    virtual void sizeIt();
+            void sizeitFreeform(int xx, int yy);
+
     void addGraphicsItems(
-      int   offsetX, int offsetY, 
-      QRect &csiRect,
-      QGraphicsItem *parent);
+      int   offsetX, int offsetY, QRect &csiRect,QGraphicsItem *parent);
+
+    virtual void addGraphicsItems( 
+      AllocEnc, int x, int y, QGraphicsItem *parent);
 
     void addGraphicsPointerItem(
-      int calloutOffsetX,
-      int calloutOffsetY,
-      int csiOffsetX,
-      int csiOffsetY,
-      int csiOffset[2],
-      int csiSize[2],
-      Pointer *pointer,
-      QGraphicsItem *parent);
+      Pointer *pointer,QGraphicsItem *parent);
 
-    virtual void sizeIt();
-    virtual void sizeitVert();
-    virtual void addGraphicsItemsVert( 
-                   int x, int y, QGraphicsItem *parent);
-
-    virtual void sizeitHoriz();
-    virtual void addGraphicsItemsHoriz(
-                   int x, int y, QGraphicsItem *parent);
-
-            void sizeitFreeform(int xx, int yy);
     virtual void drawTips(QPoint &delta);
     virtual void updatePointers(QPoint &delta);
 };

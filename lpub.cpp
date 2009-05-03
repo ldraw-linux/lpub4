@@ -135,7 +135,7 @@ void Gui::fitWidth(
 {
   view->scale(1.0,1.0);
 
-  QRectF rect(0,0,page.meta.LPub.page.size.value(0),page.meta.LPub.page.size.value(1));
+  QRectF rect(0,0,page.meta.LPub.page.size.valuePixels(0),page.meta.LPub.page.size.valuePixels(1));
 
   QRectF unity = view->matrix().mapRect(QRectF(0,0,1,1));
   view->scale(1/unity.width(), 1 / unity.height());
@@ -160,7 +160,7 @@ void Gui::fitVisible(
 {
   view->scale(1.0,1.0);
 
-  QRectF rect(0,0,page.meta.LPub.page.size.value(0),page.meta.LPub.page.size.value(1));
+  QRectF rect(0,0,page.meta.LPub.page.size.valuePixels(0),page.meta.LPub.page.size.valuePixels(1));
 
   QRectF unity = view->matrix().mapRect(QRectF(0,0,1,1));
   view->scale(1/unity.width(), 1 / unity.height());
@@ -283,37 +283,37 @@ void Gui::clearCSICache()
 
 void Gui::pageSetup()
 {
-  GlobalPageDialog::getPageGlobals(ldrawFile.topLevelFile());
+  GlobalPageDialog::getPageGlobals(ldrawFile.topLevelFile(),page.meta);
 }
 
 void Gui::assemSetup()
 {
-  GlobalAssemDialog::getAssemGlobals(ldrawFile.topLevelFile());
+  GlobalAssemDialog::getAssemGlobals(ldrawFile.topLevelFile(),page.meta);
 }
 
 void Gui::pliSetup()
 {
-  GlobalPliDialog::getPliGlobals(ldrawFile.topLevelFile());
+  GlobalPliDialog::getPliGlobals(ldrawFile.topLevelFile(),page.meta);
 }
 
 void Gui::calloutSetup()
 {
-  GlobalCalloutDialog::getCalloutGlobals(ldrawFile.topLevelFile());
+  GlobalCalloutDialog::getCalloutGlobals(ldrawFile.topLevelFile(),page.meta);
 }
 
 void Gui::multiStepSetup()
 {
-  GlobalMultiStepDialog::getMultiStepGlobals(ldrawFile.topLevelFile());
+  GlobalMultiStepDialog::getMultiStepGlobals(ldrawFile.topLevelFile(),page.meta);
 }
 
 void Gui::projectSetup()
 {
-  GlobalProjectDialog::getProjectGlobals(ldrawFile.topLevelFile());
+  GlobalProjectDialog::getProjectGlobals(ldrawFile.topLevelFile(),page.meta);
 }
 
 void Gui::preferences()
 {
-  if (Preferences::getPreferences(curFile != "")) {
+  if (Preferences::getPreferences()) {
     Meta meta;
     
     page.meta = meta;
@@ -339,8 +339,6 @@ Gui::Gui()
     Preferences::lpubPreferences();
     Preferences::renderPreferences();
     Preferences::pliPreferences();
-    Preferences::unitsPreferences();
-    defaultResolutionType(Preferences::preferCentimeters);
 
     displayPageNum = 1;
 

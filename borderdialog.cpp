@@ -37,7 +37,7 @@ BorderDialog::BorderDialog(
 {
   setWindowTitle(_name);
 
-  meta.setValueUnit(goods);
+  meta.setValue(goods);
   QVBoxLayout *layout = new QVBoxLayout(this);
   setLayout(layout);
 
@@ -67,7 +67,7 @@ bool BorderDialog::getBorder(
 
   bool ok = dialog->exec() == QDialog::Accepted;
   if (ok) {
-    goods = dialog->meta.valueUnit();
+    goods = dialog->meta.value();
   }
   return ok;
 }

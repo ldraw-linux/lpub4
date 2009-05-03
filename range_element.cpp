@@ -29,6 +29,7 @@
 #include "range_element.h"
 #include "ranges.h"
 #include "callout.h"
+#include "lpub.h"
 
 Steps *AbstractRangeElement::grandparent()
 {
@@ -117,4 +118,11 @@ QString AbstractRangeElement::csiName()
 QStringList AbstractRangeElement::submodelStack()
 {
   return parent->submodelStack();
+}
+
+bool AbstractRangeElement::onlyChild()
+{
+  QByteArray ModelName = top.modelName.toAscii();
+  volatile int numSteps = gui->numSteps(top.modelName);
+  return numSteps < 2;
 }

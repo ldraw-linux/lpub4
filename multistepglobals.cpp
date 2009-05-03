@@ -33,9 +33,10 @@ public:
   QString    topLevelFile;
   QList<MetaGui *> children;
 
-  GlobalMultiStepPrivate(QString &_topLevelFile)
+  GlobalMultiStepPrivate(QString &_topLevelFile, Meta &_meta)
   {
     topLevelFile = _topLevelFile;
+    meta = _meta;
 
     MetaItem mi; // examine all the globals and then return
 
@@ -52,9 +53,10 @@ public:
  */
 
 GlobalMultiStepDialog::GlobalMultiStepDialog(
-  QString &topLevelFile)
+  QString &topLevelFile,
+  Meta &meta)
 {
-  data = new GlobalMultiStepPrivate(topLevelFile);
+  data = new GlobalMultiStepPrivate(topLevelFile,meta);
 
   setWindowTitle(tr("Step Group Globals Setup"));
 
@@ -113,9 +115,9 @@ GlobalMultiStepDialog::GlobalMultiStepDialog(
 }
 
 void GlobalMultiStepDialog::getMultiStepGlobals(
-  QString topLevelFile)
+  QString topLevelFile, Meta &meta)
 {
-  GlobalMultiStepDialog *dialog = new GlobalMultiStepDialog(topLevelFile);
+  GlobalMultiStepDialog *dialog = new GlobalMultiStepDialog(topLevelFile, meta);
   dialog->exec();
 }
 

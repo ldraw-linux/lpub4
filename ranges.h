@@ -32,6 +32,7 @@
 #include "pli.h"
 #include "meta.h"
 #include "placement.h"
+#include "resize.h"
 
 /*
  * This is a base class for multi-step and
@@ -44,10 +45,11 @@ class Where;
 class Steps : public Placement {
   public:
     Meta           meta;
-    QList<AbstractStepsElement *> list;  // of range and/or PLI
+    QList<AbstractStepsElement *> list;  // of range
     QGraphicsView *view;
     Pli            pli;
     Where          bottom;
+    bool           isMirrored;
 
     Steps();
     Steps(Meta &_meta,QGraphicsView *_view);
@@ -66,15 +68,10 @@ class Steps : public Placement {
     /* size ranges and place each range */
 
     void sizeIt();
-    void addGraphicsItems(int ox, int oy, QGraphicsItem *parent);
-
-    void sizeitVert();
-    virtual void addGraphicsItemsVert(int ox, int oy, QGraphicsItem *parent);
-
-    void sizeitHoriz();
-    virtual void addGraphicsItemsHoriz(int ox, int oy, QGraphicsItem *parent);
-
+    void sizeit(AllocEnc allocEnc, int x, int y);
     void sizeitFreeform(int xx, int yy);
+    void addGraphicsItems(int ox, int oy, QGraphicsItem *parent);
+    virtual void addGraphicsItems(AllocEnc, int ox, int oy, QGraphicsItem *parent);
 
     Boundary boundary(AbstractStepsElement *);
 

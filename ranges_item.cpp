@@ -45,10 +45,11 @@ MultiStepRangesBackgroundItem::MultiStepRangesBackgroundItem(
   setPen(Qt::NoPen);
   setBrush(Qt::NoBrush);
   setParentItem(parent);
-  QString toolTip("Step Group");
+  QString toolTip("Step Group - popup menu");
   setToolTip(toolTip);
   setFlag(QGraphicsItem::ItemIsSelectable,true);
   setFlag(QGraphicsItem::ItemIsMovable,true);
+  setZValue(-2);
 }
 
 void MultiStepRangesBackgroundItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
@@ -73,11 +74,11 @@ void MultiStepRangesBackgroundItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *
     // back annotate the movement of the PLI into the LDraw file.
     newPosition = pos() - position;
     PlacementData placementData = meta->LPub.multiStep.placement.value();
-    placementData.offsets[0] += newPosition.x()/page->relativeToWidth;
-    placementData.offsets[1] += newPosition.y()/page->relativeToHeight;
+    placementData.offsets[0] += newPosition.x()/page->relativeToSize[0];
+    placementData.offsets[1] += newPosition.y()/page->relativeToSize[1];
     meta->LPub.multiStep.placement.setValue(placementData);
 
-    changePlacementOffset(page->topOfSteps(),&meta->LPub.multiStep.placement,false);
+    changePlacementOffset(page->topOfSteps(),&meta->LPub.multiStep.placement,StepGroupType,true,false);
   }
 }
 
@@ -106,11 +107,11 @@ MultiStepRangeBackgroundItem::MultiStepRangeBackgroundItem(
 
   int tx = _offset_x+_range->loc[XX];
   int ty = _offset_y+_range->loc[YY];
-  setRect(tx,ty, _range->size[XX], _range->size[YY]);
+  setRect(tx,ty, _steps->size[XX], _steps->size[YY]);
 
   setPen(QPen(Qt::NoPen));
   setBrush(QBrush(Qt::NoBrush));
-  setToolTip("Step Group");
+  setToolTip("Step Group - popup menu");
   setParentItem(parent);
 }
 
@@ -165,7 +166,7 @@ void MultiStepRangeBackgroundItem::contextMenuEvent(
                     page->topOfSteps(),
                     page->bottomOfSteps(),
                     &meta->LPub.multiStep.placement,
-                    1,false);
+                    true,1,false);
   } else if (selectedAction == perStepAction) {
     changeBool(page->topOfSteps(),
                page->bottomOfSteps(),
@@ -200,7 +201,7 @@ DividerItem::DividerItem(
     allocEnc = steps->meta.LPub.multiStep.alloc.value();
   }
 
-  SepData sepData = range->sepMeta.value();
+  SepData sepData = range->sepMeta.valuePixels();
 
   /* Size the rectangle around the divider */
 
@@ -220,13 +221,13 @@ DividerItem::DividerItem(
 
   setPen(QPen(Qt::NoPen));
   setBrush(QBrush(Qt::NoBrush));
-  setToolTip("Divider");
+  setToolTip("Divider - popup menu");
   lineItem = new DividerLine(this);
 
   BorderData borderData;
 
   if (steps->relativeType == CalloutType) {
-    borderData = _meta->LPub.callout.border.value();
+    borderData = _meta->LPub.callout.border.valuePixels();
   } else {
     borderData.margin[0] = 0;
     borderData.margin[1] = 0;
@@ -243,8 +244,7 @@ DividerItem::DividerItem(
                         left,
                         offsetY
                        +steps->size[YY]
-                       -2*borderData.thickness
-                       -2*borderData.margin[YY]);
+                       -2*borderData.thickness);
     } else {
       int top = offsetY + sepData.margin[YY] + sepData.thickness/2;
   
@@ -252,7 +252,6 @@ DividerItem::DividerItem(
                         top,
                         offsetX
                        +steps->size[XX]
-                       -2*sepData.thickness
                        -2*sepData.margin[XX],
                         top);
     }

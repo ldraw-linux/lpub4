@@ -43,9 +43,10 @@ public:
   QList<MetaGui *> children;
   MetaGui   *modelScale;
 
-  GlobalAssemPrivate(QString &_topLevelFile)
+  GlobalAssemPrivate(QString &_topLevelFile, Meta &_meta)
   {
     topLevelFile = _topLevelFile;
+    meta = _meta;
 
     MetaItem mi; // examine all the globals and then return
 
@@ -54,9 +55,9 @@ public:
 };
 
 GlobalAssemDialog::GlobalAssemDialog(
-  QString &topLevelFile)
+  QString &topLevelFile, Meta &meta)
 {
-  data = new GlobalAssemPrivate(topLevelFile);
+  data = new GlobalAssemPrivate(topLevelFile,meta);
 
   QGridLayout *grid;
   QGridLayout *boxGrid;
@@ -115,9 +116,9 @@ GlobalAssemDialog::GlobalAssemDialog(
 }
 
 void GlobalAssemDialog::getAssemGlobals(
-  QString topLevelFile)
+  QString topLevelFile, Meta &meta)
 {
-  GlobalAssemDialog *dlg = new GlobalAssemDialog(topLevelFile);
+  GlobalAssemDialog *dlg = new GlobalAssemDialog(topLevelFile, meta);
 
   dlg->exec();
 }

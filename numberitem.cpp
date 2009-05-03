@@ -62,7 +62,7 @@ void NumberItem::setAttributes(
   name         = _name;
 
   QFont qfont;
-  qfont.fromString(_number.font.value());
+  qfont.fromString(_number.font.valueFoo());
   setFont(qfont);
 
   QString foo;
@@ -151,7 +151,7 @@ void NumberPlacementItem::setAttributes(
   name         =  _name;
 
   QFont qfont;
-  qfont.fromString(_number.font.value());
+  qfont.fromString(_number.font.valueFoo());
   setFont(qfont);
 
   QString foo;
@@ -190,7 +190,7 @@ PageNumberItem::PageNumberItem(
   QGraphicsItem *_parent)
 {
   page = _page;
-  QString toolTip("Page Number");
+  QString toolTip("Page Number - use popu menu");
   setAttributes(PageNumberType,
                 SingleStepType,
                 _number,
@@ -261,12 +261,12 @@ void PageNumberItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 
       PlacementData placementData = placement.value();
 
-      placementData.offsets[0] += newPosition.x()/relativeToWidth;
-      placementData.offsets[1] += newPosition.y()/relativeToHeight;
+      placementData.offsets[0] += newPosition.x()/relativeToSize[0];
+      placementData.offsets[1] += newPosition.y()/relativeToSize[1];
 
       placement.setValue(placementData);
 
-      changePlacementOffset(page->topOfSteps(),&placement);
+      changePlacementOffset(page->topOfSteps(),&placement,StepNumberType);
     }
   }
 }
@@ -281,7 +281,7 @@ StepNumberItem::StepNumberItem(
   QString        name)
 {
   step = _step;
-  QString toolTip("Step Number");
+  QString toolTip("Step Number - popup menu");
   setAttributes(StepNumberType,
                 parentRelativeType,
                 _number,
@@ -338,7 +338,9 @@ void StepNumberItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
                     top,
                     bottom,
                    &placement,
-                    1,local);
+                    true,
+                    1,
+                    local);
 
   } else if (selectedAction == fontAction) {
 
@@ -350,7 +352,7 @@ void StepNumberItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 
   } else if (selectedAction == marginAction) {
 
-    changeMargins("Change Step Number Margins",top,bottom,&margin,1,local);
+    changeMargins("Change Step Number Margins",top,bottom,&margin,true,1,local);
   } 
 }
 
@@ -370,12 +372,12 @@ void StepNumberItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 
       PlacementData placementData = placement.value();
 
-      placementData.offsets[0] += newPosition.x()/relativeToWidth;
-      placementData.offsets[1] += newPosition.y()/relativeToHeight;
+      placementData.offsets[0] += newPosition.x()/relativeToSize[0];
+      placementData.offsets[1] += newPosition.y()/relativeToSize[1];
 
       placement.setValue(placementData);
 
-      changePlacementOffset(step->topOfStep(),&placement);
+      changePlacementOffset(step->topOfStep(),&placement,StepNumberType);
     }
   }
 }

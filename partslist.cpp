@@ -87,12 +87,9 @@ bool PartsList::isKnownPart(QString &part)
           return false;
         }
         QTextStream in(&file);
-        QString line = in.readLine(0);
-        while (line[0] == ' ') {
-          line.remove(0,1);
-        }
+        QString line = in.readLine(0).trimmed();
         if (line[0] == '0') {
-          while (line[0] == ' ' || line[0] == '~' || line[0] == '_') {
+          while (line[0] == '0' || line[0] == ' ' || line[0] == '~' || line[0] == '_') {
             line.remove(0,1);
           }
           list[part.toLower()] = line;  

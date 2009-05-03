@@ -59,6 +59,7 @@ HEADERS += backgrounddialog.h \
            ranges_item.h \
            render.h \
            reserve.h \
+           resize.h \
            resolution.h \
            scaledialog.h \
            step.h \
@@ -110,10 +111,11 @@ SOURCES += assemglobals.cpp \
            ranges_element.cpp \
            ranges_item.cpp \
            render.cpp \
+           resize.cpp \
            resolution.cpp \
            rotate.cpp \
            scaledialog.cpp \
            step.cpp \
            traverse.cpp \
            undoredo.cpp
-RESOURCES += lpub.qrc
+RESOURCES += LPub.qrc

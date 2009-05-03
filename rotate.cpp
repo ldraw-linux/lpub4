@@ -183,24 +183,28 @@ int Render::rotateParts(
     }
   }
   
-  if (addLine.size()) {
-    QStringList tokens;
+  QStringList tokens;
 	
-    split(addLine,tokens);
+  split(addLine,tokens);
+      
+  QByteArray AddLine = addLine.toAscii();
+
+  
+  if (addLine.size() && tokens.size() == 15 && tokens[0] == "1") {
 	
-	double alm[3][3];
-	bool   mirror = false;
+	  double alm[3][3];
+	  bool   mirror = false;
 	
-	for (int token = 5; token < 14; token++) {
-	  double value = tokens[token].toFloat();
-	  if (value < 0) {
-	    mirror = true;
+	  for (int token = 5; token < 14; token++) {
+	    double value = tokens[token].toFloat();
+	    if (value < 0) {
+	      mirror = true;
+	    }
+	    alm[(token-5) / 3][(token-5) % 3] = value;
 	  }
-	  alm[(token-5) / 3][(token-5) % 3] = value;
-	}
-	if (mirror) {
+	  if (mirror) {
       matrixMult(rm,alm);
-	}
+	  }
   }
   
   // rotate all the parts
@@ -327,6 +331,14 @@ int Render::rotateParts(
   }
 
   QTextStream out(&file);
+  
+  QString rotsComment = QString("0 // ROTSTEP %1 %2 %3 %4")
+                                .arg(rotStepData.type)
+                                .arg(rotStepData.rots[0])
+                                .arg(rotStepData.rots[1])
+                                .arg(rotStepData.rots[2]);
+                                
+  out << rotsComment << endl;
 
   for (int i = 0; i < parts.size(); i++) {
     QString line = parts[i];

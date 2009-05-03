@@ -31,6 +31,8 @@
 
 #include <QDialog>
 
+class Meta;
+
 /*****************************************************************
  *
  * Global to page
@@ -45,9 +47,9 @@ private:
   GlobalPagePrivate *data;
 
 public:
-  GlobalPageDialog(QString &topLevelModel);
+  GlobalPageDialog(QString &topLevelModel, Meta &meta);
   ~GlobalPageDialog() {};
-  static void getPageGlobals(QString topLevelFile);
+  static void getPageGlobals(QString topLevelFile, Meta &meta);
 
 public slots:
   void accept();
@@ -68,9 +70,9 @@ private:
   GlobalAssemPrivate *data;
 
 public:
-  GlobalAssemDialog(QString &topLevelFile);
+  GlobalAssemDialog(QString &topLevelFile, Meta &meta);
   ~GlobalAssemDialog() {}
-  static void getAssemGlobals(QString topLevelFile);
+  static void getAssemGlobals(QString topLevelFile, Meta &meta);
 
 public slots:
   void accept();
@@ -91,9 +93,9 @@ private:
   GlobalPliPrivate *data;
 
 public:
-  GlobalPliDialog(QString &topLevelFile);
+  GlobalPliDialog(QString &topLevelFile, Meta &meta);
   ~GlobalPliDialog() {}
-  static void getPliGlobals(QString topLevelFile);
+  static void getPliGlobals(QString topLevelFile, Meta &meta);
 
 public slots:
   void accept();
@@ -114,9 +116,9 @@ private:
   GlobalCalloutPrivate *data;
 
 public:
-  GlobalCalloutDialog(QString &topLevelFile);
+  GlobalCalloutDialog(QString &topLevelFile, Meta &meta);
   ~GlobalCalloutDialog() {}
-  static void getCalloutGlobals(QString topLevelFile);
+  static void getCalloutGlobals(QString topLevelFile, Meta &meta);
 
 public slots:
   void accept();
@@ -137,9 +139,9 @@ private:
   GlobalMultiStepPrivate *data;
 
 public:
-  GlobalMultiStepDialog(QString &topLevelFile);
+  GlobalMultiStepDialog(QString &topLevelFile, Meta &meta);
   ~GlobalMultiStepDialog() {}
-  static void getMultiStepGlobals(QString topLevelFile);
+  static void getMultiStepGlobals(QString topLevelFile, Meta &meta);
 
 public slots:
   void accept();
@@ -162,9 +164,9 @@ private:
 
 public:
 
-  GlobalProjectDialog(const QString &topLevelFile);
+  GlobalProjectDialog(const QString &topLevelFile, Meta &meta);
   ~GlobalProjectDialog() {};  
-  static void getProjectGlobals(const QString topLevelFile);
+  static void getProjectGlobals(const QString topLevelFile, Meta &meta);
   
 public slots:
   void accept();

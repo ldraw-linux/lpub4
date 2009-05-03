@@ -35,6 +35,9 @@
 #include "range_element.h"
 #include "pli.h"
 #include "meta.h"
+#include "csiitem.h"
+#include "callout.h"
+
 class Meta;
 class Callout;
 class Range;
@@ -47,7 +50,9 @@ class Step : public AbstractRangeElement
     QList<Callout *>  list;
     QList<InsertMeta> inserts;
     Pli               pli;
-    PlacementPixmap   csiPixmap;
+    CsiItem          *csiItem;
+    Placement         csiPlacement;
+    QPixmap           csiPixmap;
     PlacementNum      stepNumber;
     int               submodelLevel;
     bool              pliPerStep;
@@ -65,9 +70,10 @@ class Step : public AbstractRangeElement
     virtual ~Step();
 
     void append(
-      Callout *re)
+      Callout *callout)
     {
-      list.append(re);
+      list.append(callout);
+      callout->parentStep = this;
     }
     
     Step  *nextStep();
@@ -83,27 +89,25 @@ class Step : public AbstractRangeElement
       inserts = _inserts;
     }
     
-    int  sizeitVert(int  rows[],
-                    int  cols[],
-                    int  rowsMargin[][2],
-                    int  colsMargin[][2]);
+    int  sizeit(int  rows[],
+                int  cols[],
+                int  rowsMargin[][2],
+                int  colsMargin[][2],
+                int  x,
+                int  y);
+                
+    bool collide(int square[][NumPlaces],
+                 int tbl[],
+                 int x,
+                 int y);
 
-    void vertMargin(int &top, int &bot);
+    void maxMargin(MarginsMeta &marvin, int tbl[2], int r[][2], int c[][2]);
+    void maxMargin(int &top, int &bot, int y = YY);
 
-    void placeitVert(int rows[],
-                     int rowsMargin[][2],
-                     int y);
-
-    int  sizeitHoriz(int  rows[],
-                     int  cols[],
-                     int  rowsMargin[][2],
-                     int  colsMargin[][2]);
-
-    void horizMargin(int &top, int &bot);
-
-    void placeitHoriz(int rows[],
-                      int rowsMargin[][2],
-                      int x);
+    void placeit(int rows[],
+                     int margin[],
+                     int y,
+                     bool shared = false);
 
     void placeInside();
 

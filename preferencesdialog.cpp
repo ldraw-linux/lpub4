@@ -72,12 +72,6 @@ PreferencesDialog::PreferencesDialog(QWidget     *_parent)
   ui.Inches->setChecked( ! centimeters );
 }
 
-void PreferencesDialog::disableUnits()
-{
-  ui.Centimeters->setDisabled(true);
-  ui.Inches->setDisabled(true);
-}
-
 void PreferencesDialog::on_browseLDraw_clicked()
 {
   Preferences::ldrawPreferences(true);
