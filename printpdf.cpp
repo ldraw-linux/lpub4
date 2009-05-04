@@ -23,11 +23,11 @@
 
 #include "lpub.h"
 
-struct PageSizes {
-  QPrinter::PageSize pageSize;
+struct paperSizes {
+  QPrinter::PaperSize paperSize;
   float              width;
   float              height;
-} pageSizes[] = { 
+} paperSizes[] = {
   { QPrinter::A0,         841, 1189 },
   { QPrinter::A1,         594,  841 },
   { QPrinter::A2,         420,  594 },
@@ -59,62 +59,79 @@ struct PageSizes {
   { QPrinter::Tabloid,    279,  432 },
 };
 
-void Gui::bestPageSizeOrientation(
+int Gui::bestPaperSizeOrientation(
   float widthMm,
   float heightMm,
-  QPrinter::PageSize &pageSize,
+  QPrinter::PaperSize &paperSize,
   QPrinter::Orientation &orient)
 {
-  int   numPageSizes = sizeof(pageSizes)/sizeof(pageSizes[0]);
+  int   numPaperSizes = sizeof(paperSizes)/sizeof(paperSizes[0]);
   float diffWidth = 1000;
   float diffHeight = 1000;
+  int     bestSize = 0;
   
-  for (int i = 0; i < numPageSizes; i++) {
+  for (int i = 0; i < numPaperSizes; i++) {
  
-    float widthDiff = pageSizes[i].width - widthMm;
-	float heightDiff = pageSizes[i].height - heightMm;
+    float widthDiff = paperSizes[i].width - widthMm;
+    float heightDiff = paperSizes[i].height - heightMm;
 
     if (widthDiff >= 0  && heightDiff >= 0) {
-      if (widthDiff <= diffWidth && heightDiff <= diffHeight) {
-		pageSize = pageSizes[i].pageSize;
-		orient = QPrinter::Portrait;
-		diffWidth = widthDiff;
-		diffHeight = heightDiff;
-	  }
-	}
+     if (widthDiff <= diffWidth && heightDiff <= diffHeight) {
+       bestSize = i;
+       paperSize = paperSizes[i].paperSize;
+       orient = QPrinter::Portrait;
+       diffWidth = widthDiff;
+       diffHeight = heightDiff;
+     }
+   }
  
-  widthDiff = pageSizes[i].height - widthMm;
-	heightDiff  = pageSizes[i].width - heightMm;
+   widthDiff = paperSizes[i].height - widthMm;
+   heightDiff  = paperSizes[i].width - heightMm;
 	
-  if (widthDiff >= 0  && heightDiff >= 0) {
-	  if (widthDiff <= diffWidth && heightDiff <= diffHeight) {
-	  	pageSize = pageSizes[i].pageSize;
-		  orient = QPrinter::Landscape;
-		  diffWidth = widthDiff;
-		  diffHeight = heightDiff;
+   if (widthDiff >= 0  && heightDiff >= 0) {
+     if (widthDiff <= diffWidth && heightDiff <= diffHeight) {
+       bestSize = i;
+       paperSize = paperSizes[i].paperSize;
+       orient = QPrinter::Landscape;
+       diffWidth = widthDiff;
+       diffHeight = heightDiff;
 	    }
 	  }
   }
+  return bestSize;
 }
 
 void Gui::printToFile()
 {
-  QPrinter printer(QPrinter::HighResolution);
-  float pageWidth = page.meta.LPub.page.size.valuePixels(0);
-  float pageHeight = page.meta.LPub.page.size.valuePixels(1);
+  float pageWidth = page.meta.LPub.page.size.value(0);
+  float pageHeight = page.meta.LPub.page.size.value(1);
   if (page.meta.LPub.resolution.type() == DPI) {
     // convert to MM
   	pageWidth = int(inches2centimeters(pageWidth)*10);
 	  pageHeight = int(inches2centimeters(pageHeight)*10);
   }
-  QPrinter::PageSize pageSize = QPrinter::PageSize();
+
+  QPrinter::PaperSize paperSize = QPrinter::PaperSize();
   QPrinter::Orientation orientation = QPrinter::Orientation();
-  bestPageSizeOrientation(pageWidth,pageHeight,pageSize,orientation);
-	
-  printer.setOrientation(orientation);
-  printer.setPageSize(pageSize);
- 
-  printer.setFullPage(true);
+  int bestSize;
+  bestSize = bestPaperSizeOrientation(pageWidth,pageHeight,paperSize,orientation);
+
+  // Convert closest page size to pixels for bounding rect
+
+  if (orientation == QPrinter::Portrait) {
+    pageWidth = paperSizes[bestSize].width/10.0;  // in centimeters
+    pageHeight = paperSizes[bestSize].height/10.0; // in centimeters
+  } else {
+    pageWidth = paperSizes[bestSize].height/10.0;  // in centimeters
+    pageHeight = paperSizes[bestSize].width/10.0; // in centimeters
+  }
+
+  if (resolutionType() == DPI) {
+    pageWidth = centimeters2inches(pageWidth);
+    pageHeight = centimeters2inches(pageHeight);
+  }
+  pageWidth *= resolution();
+  pageHeight *= resolution()*1.5;
 
   QFileInfo fileInfo(curFile);
   QString   baseName = fileInfo.baseName();
@@ -133,28 +150,33 @@ void Gui::printToFile()
   } else if (suffix != ".pdf" && suffix != ".PDF") {
     fileName = fileInfo.path() + "/" + fileInfo.completeBaseName() + ".pdf";
   }
-  
+
+  QPrinter printer(QPrinter::ScreenResolution);
   printer.setOutputFileName(fileName);
+  printer.setOrientation(orientation);
+  printer.setPaperSize(paperSize);
+  printer.setPageMargins(0,0,0,0,QPrinter::Inch);
+  printer.setFullPage(true);
 
   QPainter painter;
   painter.begin(&printer);
 
   int savePageNumber = displayPageNum;
-  
+
   QGraphicsScene scene;
   LGraphicsView  view(&scene);
-  QRectF boundingRect(0.0,0.0,page.meta.LPub.page.size.valuePixels(0),page.meta.LPub.page.size.valuePixels(1));
-  QRect  bounding(0,0,page.meta.LPub.page.size.valuePixels(0),page.meta.LPub.page.size.valuePixels(1));
-  view.setMinimumSize(page.meta.LPub.page.size.valuePixels(0),page.meta.LPub.page.size.valuePixels(1));
-  view.setMaximumSize(page.meta.LPub.page.size.valuePixels(0),page.meta.LPub.page.size.valuePixels(1));
+  QRectF boundingRect(0.0,0.0,pageWidth,pageHeight);
+  QRect  bounding(0,0,pageWidth,pageHeight);
+  view.setMinimumSize(pageWidth,pageHeight);
+  view.setMaximumSize(pageWidth,pageHeight);
   view.setGeometry(bounding);
   view.setSceneRect(boundingRect);
   view.setRenderHints(QPainter::Antialiasing | 
 					  QPainter::TextAntialiasing |
 					  QPainter::SmoothPixmapTransform);
 
-  view.scale(3.0,3.0);
-  view.centerOn(boundingRect.center());
+  //view.scale(300.0,300.0);
+  //view.centerOn(boundingRect.center());
   clearPage(&view,&scene);
   
   for (displayPageNum = 1; displayPageNum <= maxPages; displayPageNum++) {

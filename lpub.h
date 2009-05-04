@@ -628,10 +628,10 @@ public:
       list.append(centralWidget()->width()/4);
     }
 
-  void bestPageSizeOrientation(
+  int bestPaperSizeOrientation(
     float widthMm,
     float heightMm,
-    QPrinter::PageSize &pageSize,
+    QPrinter::PaperSize &paperSize,
     QPrinter::Orientation &orientation);
 	
 private:
