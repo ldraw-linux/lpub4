@@ -141,6 +141,7 @@ public:
      global   = rhs.global;
      preamble = rhs.preamble;
   }
+#ifdef OPEREQ
   AbstractMeta &operator=(const AbstractMeta &rhs)
   {
     if (this != &rhs) {
@@ -150,6 +151,7 @@ public:
     }
     return *this;
   }
+#endif
   virtual           ~AbstractMeta() { preamble.clear(); }
   
   /* Initialize thyself */
@@ -191,6 +193,7 @@ public:
     _here[0] = rhs._here[0];
     _here[1] = rhs._here[1];
   }
+#ifdef OPEREQ
   LeafMeta &operator=(const LeafMeta &rhs)
   {
     if (this != &rhs) {
@@ -202,6 +205,7 @@ public:
     }
     return *this;
   }
+#endif
   const Where &here()
   {
     return _here[pushed];
@@ -283,14 +287,19 @@ public:
   virtual Rc parse(QStringList &argv, int index, Where &here);
   virtual QString format(bool,bool) { QString foo; return foo; }
   virtual void    doc(QTextStream &out, QString preamble);
+#ifdef OPEREQ
   RcMeta operator=(const RcMeta &rhs)
   {
     if (this != &rhs) {
       rc = rhs.rc;
+      global = rhs.global;
       preamble = rhs.preamble;
+      _here[0] = rhs._here[0];
+      _here[1] = rhs._here[1];
     }
     return *this;
   }
+#endif
 };
 
 /*
@@ -336,20 +345,25 @@ public:
   virtual Rc parse(QStringList &argv, int index, Where &here);
           QString format(bool,bool);
   virtual void    doc(QTextStream &out, QString preamble);
+#ifdef OPEREQ
   IntMeta &operator=(const IntMeta &rhs)
   {
     if (this != &rhs) {
+      global         = rhs.global;
       pushed      = rhs.pushed;
+      preamble  = rhs.preamble;
+      _here[0] = rhs._here[0];
+      _here[1] = rhs._here[1];
       _value[0]   = rhs._value[0];
       _value[1]   = rhs._value[1];
       _min        = rhs._min;
       _max        = rhs._max;
       base        = rhs.base;
       rc          = rhs.rc;
-      preamble    = rhs.preamble;
     }
     return *this;
   }
+#endif
 };
 /*
  * This is a leaf object for floating point number */
@@ -379,12 +393,15 @@ public:
     _fieldWidth = rhs._fieldWidth;
     _precision  = rhs._precision;
   }
+#ifdef OPEREQ
   FloatMeta &operator=(const FloatMeta &rhs)
   {
     if (this != &rhs) {
       pushed      = rhs.pushed;
       global      = rhs.global;
       preamble    = rhs.preamble;
+      _here[0] = rhs._here[0];
+      _here[1] = rhs._here[1];
       rc          = rhs.rc;
       _value[0]   = rhs._value[0];
       _value[1]   = rhs._value[1];
@@ -396,7 +413,8 @@ public:
     }
     return *this;
   }
-virtual ~FloatMeta() {}
+#endif
+  virtual ~FloatMeta() {}
   QString   _inputMask;
   virtual float value()
   {
@@ -490,12 +508,15 @@ public:
     _precision  = precision;
     _inputMask  = inputMask;
   }
+#ifdef OPEREQ
   FloatPairMeta &operator=(const FloatPairMeta &rhs)
   {
     if (this != &rhs) {
       pushed       = rhs.pushed;
       global       = rhs.global;
       preamble     = rhs.preamble;
+      _here[0] = rhs._here[0];
+      _here[1] = rhs._here[1];
       rc           = rhs.rc;
       _value[0][0] = rhs._value[0][0];
       _value[0][1] = rhs._value[0][1];
@@ -509,6 +530,7 @@ public:
     }
     return *this;
   }
+#endif
   virtual ~FloatPairMeta() {};
   virtual void    init(BranchMeta *parent, 
                     const QString name,
@@ -678,12 +700,15 @@ public:
       pushed = 0;
     }
   }
+#ifdef OPEREQ
   StringMeta &operator=(const StringMeta &rhs)
   {
     if (this != &rhs) {
       pushed    = rhs.pushed;
       global    = rhs.global;
       preamble  = rhs.preamble;
+      _here[0] = rhs._here[0];
+      _here[1] = rhs._here[1];
       rc        = rhs.rc;
       _value[0] = rhs._value[0];
       _value[1] = rhs._value[1];
@@ -691,6 +716,7 @@ public:
     }
     return *this;
   }
+#endif
 
   virtual void doc(QTextStream &out, QString preamble);
 };
@@ -732,12 +758,15 @@ public:
                     QString _delim = "\"");
   virtual Rc parse(QStringList &argv, int index, Where &here);
   QString format(bool,bool);
+#ifdef OPEREQ
   StringListMeta &operator=(const StringListMeta &rhs)
   {
     if (this != &rhs) {
       pushed      = rhs.pushed;
       global      = rhs.global;
       preamble = rhs.preamble;
+      _here[0] = rhs._here[0];
+      _here[1] = rhs._here[1];
       rc          = rhs.rc;
       _value[0]   = rhs._value[0];
       _value[1]   = rhs._value[1];
@@ -745,7 +774,7 @@ public:
     }
     return *this;
   }
-
+#endif
   void    pop() 
   { 
     if (pushed) {
@@ -846,12 +875,15 @@ public:
   FontListMeta() : StringListMeta() {}
   FontListMeta(const FontListMeta &rhs) : StringListMeta(rhs) {}
   virtual ~FontListMeta() {}
+#ifdef OPEREQ
   FontListMeta &operator=(const FontListMeta &rhs)
   {
     if (this != &rhs) {
       pushed      = rhs.pushed;
       global      = rhs.global;
       preamble = rhs.preamble;
+      _here[0] = rhs._here[0];
+      _here[1] = rhs._here[1];
       rc          = rhs.rc;
       _value[0]   = rhs._value[0];
       _value[1]   = rhs._value[1];
@@ -859,6 +891,7 @@ public:
     }
     return *this;
   }
+#endif
 };
 
 /* This leaf is to catch booleans (TRUE or FALSE) */
@@ -887,17 +920,21 @@ public:
   Rc parse(QStringList &argv, int index, Where &here);
   QString format(bool,bool);
   virtual void doc(QTextStream &out, QString preamble);
+#ifdef OPEREQ
   BoolMeta &operator=(const BoolMeta &rhs)
   {
     if (this != &rhs) {
       pushed      = rhs.pushed;
       global      = rhs.global;
       preamble    = rhs.preamble;
+      _here[0] = rhs._here[0];
+      _here[1] = rhs._here[1];
       _value[0]   = rhs._value[0];
       _value[1]   = rhs._value[1];
     }
     return *this;
   }
+#endif
 };
 
 /* This class is used to parse placement information */
@@ -932,17 +969,21 @@ public:
   QString format(bool,bool);
   QString formatOffset(bool,bool);
   virtual void doc(QTextStream &out, QString preamble);
+#ifdef OPEREQ
   PlacementMeta &operator=(const PlacementMeta &rhs)
   {
     if (this != &rhs) {
       pushed      = rhs.pushed;
       global      = rhs.global;
       preamble    = rhs.preamble;
+      _here[0] = rhs._here[0];
+      _here[1] = rhs._here[1];
       _value[0]   = rhs._value[0];
       _value[1]   = rhs._value[1];
     }
     return *this;
   }
+#endif
 };
 
 /* This class is used to parse background data */
@@ -992,17 +1033,21 @@ public:
   }
   virtual void doc(QTextStream &out, QString preamble);
   virtual QString text();
+#ifdef OPEREQ
   BackgroundMeta &operator=(const BackgroundMeta &rhs)
   {
     if (this != &rhs) {
       pushed      = rhs.pushed;
       global      = rhs.global;
       preamble    = rhs.preamble;
+      _here[0] = rhs._here[0];
+      _here[1] = rhs._here[1];
       _value[0]   = rhs._value[0];
       _value[1]   = rhs._value[1];
     }
     return *this;
   }
+#endif
 };
 
 /* This leaf class is used to parse border metas */
@@ -1072,17 +1117,21 @@ public:
   }
   virtual void doc(QTextStream &out, QString preamble);
   virtual QString text();
+#ifdef OPEREQ
   BorderMeta &operator=(const BorderMeta &rhs)
   {
     if (this != &rhs) {
       pushed      = rhs.pushed;
       global      = rhs.global;
       preamble    = rhs.preamble;
+      _here[0] = rhs._here[0];
+      _here[1] = rhs._here[1];
       _value[0]   = rhs._value[0];
       _value[1]   = rhs._value[1];
     }
     return *this;
   }
+#endif
 };
 
 /*
@@ -1142,17 +1191,21 @@ public:
   Rc parse(QStringList &argv, int index, Where &here);
   QString format(bool,bool);
   virtual void doc(QTextStream &out, QString preamble);
+#ifdef OPEREQ
   PointerMeta &operator=(const PointerMeta &rhs)
   {
     if (this != &rhs) {
       pushed      = rhs.pushed;
       global      = rhs.global;
       preamble    = rhs.preamble;
+      _here[0] = rhs._here[0];
+      _here[1] = rhs._here[1];
       _value[0]   = rhs._value[0];
       _value[1]   = rhs._value[1];
     }
     return *this;
   }
+#endif
 };
 
 /*
@@ -1177,17 +1230,21 @@ public:
   Rc parse(QStringList &argv, int index, Where &here);
   QString format(bool,bool);
   virtual void doc(QTextStream &out, QString preamble);
+#ifdef OPEREQ
   FreeFormMeta &operator=(const FreeFormMeta &rhs)
   {
     if (this != &rhs) {
       pushed      = rhs.pushed;
       global      = rhs.global;
       preamble    = rhs.preamble;
+      _here[0] = rhs._here[0];
+      _here[1] = rhs._here[1];
       _value[0]   = rhs._value[0];
       _value[1]   = rhs._value[1];
     }
     return *this;
   }
+#endif
 };
 
 /*
@@ -1217,17 +1274,21 @@ public:
   Rc parse(QStringList &argv, int index, Where &here);
   QString format(bool,bool);
   virtual void doc(QTextStream &out, QString preamble);
+#ifdef OPEREQ
   AllocMeta &operator=(const AllocMeta &rhs)
   {
     if (this != &rhs) {
       pushed    = rhs.pushed;
       global    = rhs.global;
       preamble  = rhs.preamble;
+      _here[0] = rhs._here[0];
+      _here[1] = rhs._here[1];
       type[0]   = rhs.type[0];
       type[1]   = rhs.type[1];
     }
     return *this;
   }
+#endif
 };
 
 /*
@@ -1275,16 +1336,21 @@ public:
   Rc parse(QStringList &argv, int index, Where &here);
   QString format(bool,bool);
   virtual void doc(QTextStream &out, QString preamble);
+#ifdef OPEREQ
   InsertMeta &operator=(const InsertMeta &rhs)
   {
     if (this != &rhs) {
-      pushed      = rhs.pushed;
+      global       = rhs.global;
+      pushed    = rhs.pushed;
+      preamble = rhs.preamble;
+      _here[0] = rhs._here[0];
+      _here[1] = rhs._here[1];
       _value[0]   = rhs._value[0];
       _value[1]   = rhs._value[1];
-      preamble = rhs.preamble;
     }
     return *this;
   }
+#endif
 };
 
 class AlignmentMeta : public LeafMeta
@@ -1304,17 +1370,21 @@ public:
   Rc parse(QStringList &argv, int index, Where &here);
   QString format(bool,bool);
   virtual void doc(QTextStream &out, QString preamble);
+#ifdef OPEREQ
   AlignmentMeta &operator=(const AlignmentMeta &rhs)
   {
     if (this != &rhs) {
       pushed      = rhs.pushed;
       global      = rhs.global;
       preamble    = rhs.preamble;
+      _here[0] = rhs._here[0];
+      _here[1] = rhs._here[1];
       _value[0]   = rhs._value[0];
       _value[1]   = rhs._value[1];
     }
     return *this;
   }
+#endif
 };
 
 class TextMeta : public BranchMeta
@@ -1333,16 +1403,20 @@ public:
     preamble = rhs.preamble;
   }
   virtual ~TextMeta() {}
+#ifdef OPEREQ
   TextMeta &operator=(const TextMeta &rhs)
   {
     if (this != &rhs) {
+      global = rhs.global;
+      pushed = rhs.pushed;
+      preamble = rhs.preamble;
       font = rhs.font;
       color = rhs.color;
       alignment = rhs.alignment;
-      preamble = rhs.preamble;
     }
     return *this;
   }
+#endif
   virtual void init(BranchMeta *parent, QString name);
 };
 
@@ -1369,12 +1443,15 @@ public:
   Rc parse(QStringList &argv, int index, Where &here);
   QString format(bool,bool);
   virtual void doc(QTextStream &out, QString preamble);
+#ifdef OPEREQ
   ArrowHeadMeta &operator=(const ArrowHeadMeta &rhs)
   {
     if (this != &rhs) {
       pushed = rhs.pushed;
       global = rhs.global;
       preamble = rhs.preamble;
+      _here[0] = rhs._here[0];
+      _here[1] = rhs._here[1];
       for (int i = 0; i < 4; i++) {
         _value[0][i] = rhs._value[0][i];
         _value[1][i] = rhs._value[1][i];
@@ -1382,6 +1459,7 @@ public:
     }
     return *this;
   }
+#endif
 };
 
 class ArrowEndMeta : public LeafMeta
@@ -1401,17 +1479,21 @@ public:
   Rc parse(QStringList &argv, int index, Where &here);
   QString format(bool,bool);
   virtual void doc(QTextStream &out, QString preamble);
+#ifdef OPEREQ
   ArrowEndMeta &operator=(const ArrowEndMeta &rhs)
   {
     if (this != &rhs) {
       pushed = rhs.pushed;
       global = rhs.global;
       preamble = rhs.preamble;
+      _here[0] = rhs._here[0];
+      _here[1] = rhs._here[1];
       _value[0] = rhs._value[0];
       _value[1] = rhs._value[1];
     }
     return *this;
   }
+#endif
 };
 
 /*
@@ -1498,17 +1580,21 @@ public:
     }
   }
   virtual void doc(QTextStream &out, QString preamble);
+#ifdef OPEREQ
   SepMeta &operator=(const SepMeta &rhs)
   {
     if (this != &rhs) {
       pushed = rhs.pushed;
       global = rhs.global;
       preamble = rhs.preamble;
+      _here[0] = rhs._here[0];
+      _here[1] = rhs._here[1];
       _value[0] = rhs._value[0];
       _value[1] = rhs._value[1];
     }
     return *this;
   }
+#endif
 };
 
 class CalloutCsiMeta : public BranchMeta
@@ -1522,6 +1608,7 @@ public:
   }
 
   virtual ~CalloutCsiMeta() {}
+#ifdef OPEREQ
   CalloutCsiMeta &operator=(const CalloutCsiMeta &rhs)
   {
     if (this != &rhs) {
@@ -1531,6 +1618,7 @@ public:
     }
     return *this;
   }
+#endif
   virtual void init(BranchMeta *parent, QString name);
   //virtual void doc(QTextStream &out, QString preamble);
 };
@@ -1549,6 +1637,7 @@ public:
   }
 
   virtual ~CalloutPliMeta() {}
+#ifdef OPEREQ
   CalloutPliMeta &operator=(const CalloutPliMeta &rhs)
   {
     if (this != &rhs) {
@@ -1559,6 +1648,7 @@ public:
     }
     return *this;
   }
+#endif
   virtual void init(BranchMeta *parent, QString name);
 };
 
@@ -1581,6 +1671,7 @@ public:
   }
 
   virtual ~NumberMeta() {}
+#ifdef OPEREQ
   NumberMeta &operator=(const NumberMeta &rhs)
   {
     if (this != &rhs) {
@@ -1592,6 +1683,7 @@ public:
     }
     return *this;
   }
+#endif
 
   virtual void init(BranchMeta *parent, 
                     QString name);
@@ -1607,6 +1699,7 @@ public:
   }
 
   virtual ~NumberPlacementMeta() {}
+#ifdef OPEREQ
   NumberPlacementMeta &operator=(const NumberPlacementMeta &rhs)
   {
     if (this != &rhs) {
@@ -1615,6 +1708,7 @@ public:
     }
     return *this;
   }
+#endif
   virtual void init(BranchMeta *parent, 
                     QString name);
 };
@@ -1678,15 +1772,19 @@ public:
   {
     _value = rhs._value;
   }
+#ifdef OPEREQ
   SubMeta operator=(const SubMeta &rhs) {
     if (this != &rhs) {
       pushed = rhs.pushed;
       global = rhs.global;
       preamble = rhs.preamble;
+      _here[0] = rhs._here[0];
+      _here[1] = rhs._here[1];
       _value = rhs._value;
     }
     return *this;
   }
+#endif
 
   virtual ~SubMeta() {}
   Rc parse(QStringList &argv, int index, Where &here);
@@ -1754,18 +1852,23 @@ public:
   Rc parse(QStringList &argv, int index, Where &here);
   QString format(bool,bool);
   virtual void doc(QTextStream &out, QString preamble);
+#ifdef OPEREQ
   ConstrainMeta &operator=(const ConstrainMeta &rhs)
   {
     if (this != &rhs) {
+      global = rhs.global;
       pushed    = rhs.pushed;
+      preamble = rhs.preamble;
+      _here[0] = rhs._here[0];
+      _here[1] = rhs._here[1];
       _value[0] = rhs._value[0];
       _value[1] = rhs._value[1];
       _default  = rhs._default;
       _result   = rhs._result;
-      preamble = rhs.preamble;
     }
     return *this;
   }
+#endif
 
 };
 
@@ -1803,6 +1906,7 @@ public:
   }
 
   virtual ~PartBeginMeta() {}
+#ifdef OPEREQ
   PartBeginMeta &operator=(const PartBeginMeta &rhs)
   {
     if (this != &rhs) {
@@ -1813,7 +1917,7 @@ public:
     }
     return *this;
   }
-
+#endif
   virtual void init(BranchMeta *parent, QString name);
 };
 
@@ -1834,6 +1938,7 @@ public:
   }
 
   virtual ~PartIgnMeta() {}
+#ifdef OPEREQ
   PartIgnMeta &operator=(const PartIgnMeta &rhs)
   {
     if (this != &rhs) {
@@ -1844,6 +1949,7 @@ public:
     }
     return *this;
   }
+#endif
   virtual void init(BranchMeta *parent, QString name);
 };
 
@@ -1890,6 +1996,7 @@ public:
   }
 
   virtual ~RotStepMeta() {}
+#ifdef OPEREQ
   RotStepMeta &operator=(const RotStepMeta &rhs)
   {
     if (this != &rhs) {
@@ -1900,6 +2007,7 @@ public:
     }
     return *this;
   }
+#endif
   Rc parse(QStringList &argv, int index, Where &here);
   QString format(bool,bool);
   virtual void doc(QTextStream &out, QString preamble);
@@ -1924,6 +2032,7 @@ public:
   }
 
   virtual ~BuffExchgMeta() { }
+#ifdef OPEREQ
   BuffExchgMeta &operator=(const BuffExchgMeta &rhs)
   {
     if (this != &rhs) {
@@ -1936,6 +2045,7 @@ public:
     }
     return *this;
   }
+#endif
   Rc parse(QStringList &argv, int index, Where &here);
   QString format(bool,bool);
   void    pop() { pushed = 0; }
@@ -1967,6 +2077,7 @@ public:
   }
 
   virtual ~PageMeta() {}
+#ifdef OPEREQ
   PageMeta &operator=(const PageMeta &rhs)
   {
     if (this != &rhs) {
@@ -1983,6 +2094,7 @@ public:
     }
     return *this;
   }
+#endif
   virtual void init(BranchMeta *parent, QString name);
 };
 
@@ -2004,6 +2116,7 @@ public:
   }
 
   virtual ~AssemMeta() {}
+#ifdef OPEREQ
   AssemMeta &operator=(const AssemMeta &rhs)
   {
     if (this != &rhs) {
@@ -2016,6 +2129,7 @@ public:
     }
     return *this;
   }
+#endif
   virtual void init(BranchMeta *parent, QString name);
 };
 
@@ -2051,6 +2165,7 @@ public:
   {
   }
   virtual ~PliMeta() {}
+#ifdef OPEREQ
   PliMeta &operator=(const PliMeta &rhs)
   {
     if (this != &rhs) {
@@ -2077,6 +2192,7 @@ public:
     }
     return *this;
   }
+#endif
   virtual void init(BranchMeta *parent, QString name);
 };
 
@@ -2091,6 +2207,7 @@ public:
   }
 
   virtual ~BomMeta() {}
+#ifdef OPEREQ
   BomMeta &operator=(const BomMeta &rhs)
   {
     if (this != &rhs) {
@@ -2117,6 +2234,7 @@ public:
     }
     return *this;
   }
+#endif
   virtual void init(BranchMeta *parent, QString name);
 };
 
@@ -2155,6 +2273,7 @@ public:
   }
 
   virtual ~CalloutMeta() {}
+#ifdef OPEREQ
   CalloutMeta &operator=(const CalloutMeta &rhs)
   {
     if (this != &rhs) {
@@ -2179,6 +2298,7 @@ public:
     }
     return *this;
   }
+#endif
   virtual void init(BranchMeta *parent, QString name);
 };
 
@@ -2208,6 +2328,7 @@ public:
   }
 
   virtual ~MultiStepMeta() {}
+#ifdef OPEREQ
   MultiStepMeta &operator=(const MultiStepMeta &rhs)
   {
     if (this != &rhs) {
@@ -2226,6 +2347,7 @@ public:
     }
     return *this;
   }
+#endif
   virtual void init(BranchMeta *parent, QString name);
 };
 
@@ -2269,6 +2391,7 @@ public:
   {
   }
   virtual ~ResolutionMeta() {}
+#ifdef OPEREQ
   ResolutionMeta &operator=(const ResolutionMeta &rhs)
   {
     if (this != &rhs) {
@@ -2278,6 +2401,7 @@ public:
     }
     return *this;
   }
+#endif
   virtual void init(BranchMeta *parent, 
                     QString name);
   virtual Rc parse(QStringList &argv, int index, Where &here);
@@ -2302,6 +2426,7 @@ public:
   InsertMeta     insert;
   StringMeta     include;
   LPubMeta();
+#ifdef OPEREQ
   LPubMeta &operator=(const LPubMeta &rhs)
   {
     if (this != &rhs) {
@@ -2322,6 +2447,7 @@ public:
     }
     return *this;
   }
+#endif
   virtual ~LPubMeta() {};
   virtual void init(BranchMeta *parent, QString name);
   LPubMeta(const LPubMeta &rhs) : BranchMeta(rhs)
@@ -2419,6 +2545,7 @@ public:
   virtual void  init(BranchMeta *parent, QString name);
   virtual void  pop();
   void  doc();
+#ifdef OPEREQ
   Meta &operator=(const Meta &rhs)
   {
     if (this != &rhs) {
@@ -2433,6 +2560,7 @@ public:
     }
     return *this;
   }
+#endif
 
   Meta (const Meta &rhs) : BranchMeta(rhs)
   {

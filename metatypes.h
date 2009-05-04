@@ -124,6 +124,7 @@ public:
     offsets[0] = 0;
     offsets[1] = 0;
   }
+#ifdef OPEREQ
   PlacementData &operator=(const PlacementData &rhs)
   {
     if (this != &rhs) {
@@ -135,6 +136,7 @@ public:
     }
     return *this;
   }
+#endif
 };
 
 class PointerData
@@ -145,6 +147,7 @@ public:
   float x;    // fraction of CSI size
   float y;
   float base; // in units
+#ifdef OPEREQ
   PointerData &operator=(const PointerData &rhs)
   {
     if (this != &rhs) {
@@ -156,6 +159,7 @@ public:
     }
     return *this;
   }
+#endif
 };
 
 class RotStepData
@@ -170,6 +174,7 @@ public:
     rots[1] = 0;
     rots[2] = 0;
   }
+#ifdef OPEREQ
   RotStepData &operator=(const RotStepData &rhs)
   {
     if (this != &rhs) {
@@ -180,6 +185,7 @@ public:
     } 
     return *this;  
   }
+#endif
 };
 
 class BuffExchgData
@@ -187,6 +193,7 @@ class BuffExchgData
 public:
   QString buffer;
   QString type;
+#ifdef OPEREQ
   BuffExchgData &operator=(const BuffExchgData &rhs)
   {
     if (this != &rhs) {
@@ -195,6 +202,7 @@ public:
     } 
     return *this;  
   }
+#endif
 };
 
 class InsertData : public PlacementData
@@ -221,6 +229,7 @@ public:
     arrow[0] = QPointF(0,0);
     arrow[1] = QPointF(0,0);
   }
+#ifdef OPEREQ
   InsertData &operator=(const InsertData &rhs)
   {
     if (this != &rhs) {
@@ -237,6 +246,7 @@ public:
     } 
     return *this;  
   }
+#endif
 };
 
 class BackgroundData
@@ -250,6 +260,7 @@ public:
   } type;
   QString    string;
   bool       stretch;
+#ifdef OPEREQ
   BackgroundData &operator=(const BackgroundData &rhs)
   {
     if (this != &rhs) {
@@ -259,13 +270,14 @@ public:
     }
     return *this;
   }
+#endif
 };
 
 class BorderData
 {
 public:
   enum Border {
-    BdrNone,
+    BdrNone = 0,
     BdrSquare,
     BdrRound
   } type;
@@ -280,10 +292,14 @@ public:
     margin[0] = 0;
     margin[1] = 0;
     radius = 15;
+    type = BdrNone;
+    color = "Black";
   }
+#ifdef OPEREQ
   BorderData &operator=(const BorderData &rhs)
   {
     if (this != &rhs) {
+      type = type;
       color     = rhs.color;
       thickness = rhs.thickness;
       radius    = rhs.radius;
@@ -292,6 +308,7 @@ public:
     } 
     return *this;  
   }
+#endif
 };
 
 class SubData
@@ -300,6 +317,7 @@ public:
   QString color;
   QString part;
   int     type;
+#ifdef OPEREQ
   SubData &operator=(const SubData &rhs)
   {
     if (this != &rhs) {
@@ -309,6 +327,7 @@ public:
     }
     return *this;
   }
+#endif
 };
 
 class FreeFormData
@@ -317,6 +336,7 @@ public:
   bool         mode;
   PlacementEnc base;
   PlacementEnc justification;
+#ifdef OPEREQ
   FreeFormData &operator=(const FreeFormData &rhs)
   {
     if (this != &rhs) {
@@ -326,6 +346,7 @@ public:
     }
     return *this;
   }
+#endif
 };
 
 class ConstrainData
@@ -339,6 +360,7 @@ public:
     PliConstrainColumns
   } type;
   float        constraint;
+#ifdef OPEREQ
   ConstrainData &operator=(const ConstrainData &rhs)
   {
     if (this != &rhs) {
@@ -347,6 +369,7 @@ public:
     }
     return *this;
   }
+#endif
 };
 
 class SepData
@@ -361,6 +384,7 @@ public:
     margin[0] = 0;
     margin[1] = 0;
   }
+#ifdef OPEREQ
   SepData &operator=(const SepData &rhs)
   {
     if (this != &rhs) {
@@ -371,6 +395,7 @@ public:
     }
     return *this;
   }
+#endif
 };
 
   
