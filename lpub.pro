@@ -33,7 +33,7 @@ HEADERS += backgrounddialog.h \
            globals.h \
            highlighter.h \
            ldrawfiles.h \
-           lpub.h \
+           LPub.h \
            lpub_preferences.h \
            meta.h \
            metagui.h \
@@ -82,7 +82,7 @@ SOURCES += assemglobals.cpp \
            formatpage.cpp \
            highlighter.cpp \
            ldrawfiles.cpp \
-           lpub.cpp \
+           LPub.cpp \
            lpub_preferences.cpp \
            main.cpp \
            meta.cpp \
