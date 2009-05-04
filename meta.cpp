@@ -2009,7 +2009,7 @@ PliMeta::PliMeta() : BranchMeta()
 {
   placement.setValue(RightTopOutside,StepNumberType);
   BorderData borderData;
-  borderData.type = BorderData::BdrRound;
+  borderData.type = BorderData::BdrSquare;
   borderData.color = "Black";
   borderData.thickness = DEFAULT_THICKNESS;
   borderData.radius = 15;
@@ -2078,7 +2078,7 @@ BomMeta::BomMeta() : PliMeta()
 {
   placement.setValue(TopLeftInsideCorner,PageType);
   BorderData borderData;
-  borderData.type = BorderData::BdrRound;
+  borderData.type = BorderData::BdrSquare;
   borderData.color = "Black";
   borderData.thickness = DEFAULT_THICKNESS;
   borderData.radius = 15;
