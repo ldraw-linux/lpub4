@@ -55,6 +55,18 @@ class Where
       modelName     = "undefined";
       lineNumber    = 0;
     }
+    Where(const Where &rhs)
+    {
+      modelName = rhs.modelName;
+      lineNumber  = rhs.lineNumber;
+    }
+    Where operator=(const Where &rhs) {
+      if (this != &rhs) {
+        modelName = rhs.modelName;
+        lineNumber = rhs.lineNumber;
+      }
+      return *this;
+    }
     Where(
       QString _modelName,
       int     _lineNumber)
