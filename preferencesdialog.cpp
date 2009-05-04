@@ -105,7 +105,7 @@ void PreferencesDialog::on_browseLDView_clicked()
   dialog.setFileMode(QFileDialog::ExistingFile);
 
 #ifdef __APPLE__
-  dialog.setFilter("Program (*.app,*.App)");
+  //dialog.setFilter("Program (*.app,*.App)");
 #else
   dialog.setFilter("Program (*.exe)");
 #endif
@@ -135,7 +135,7 @@ void PreferencesDialog::on_browseLDGLite_clicked()
   dialog.setFileMode(QFileDialog::ExistingFile);
 
 #ifdef __APPLE__
-  dialog.setFilter("Program (*.app,*.App)");
+  //dialog.setFilter("Program (*.app,*.App)");
 #else
   dialog.setFilter("Program (*.exe)");
 #endif
