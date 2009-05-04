@@ -37,14 +37,14 @@
 
 void BackgroundItem::setBackground(
   QPixmap                 *pixmap,
-  PlacementType            _parentRelativeType,
-  Meta                    *_meta,
-  BackgroundMeta          &_background,
-  BorderMeta              &_border,
-  MarginsMeta             &_margin,
-  StringListMeta          &_subModel,
-  int                      _submodelLevel,
-  QString                 &toolTip)
+  PlacementType         _parentRelativeType,
+  Meta                         *_meta,
+  BackgroundMeta    &_background,
+  BorderMeta             &_border,
+  MarginsMeta           &_margin,
+  StringListMeta         &_subModel,
+  int                                 _submodelLevel,
+  QString                     &toolTip)
 {
   meta          =  _meta;
   background    =  _background;
