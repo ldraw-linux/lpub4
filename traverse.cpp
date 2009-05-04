@@ -228,6 +228,7 @@ int Gui::drawPage(
   Pli            &pli,
   bool            isMirrored,
   QHash<QString, QStringList> &bfx,
+  bool            printing,
   bool            calledOut)
 {
   bool        global = true;
@@ -349,6 +350,7 @@ int Gui::drawPage(
                  callout->pli,
                  ldrawFile.mirrored(tokens),
                  calloutBfx,
+                 printing,
                  true);
 
           callout->meta = saveMeta;
@@ -691,7 +693,7 @@ int Gui::drawPage(
             
             bool endOfSubmodel = stepNum == ldrawFile.numSteps(current.modelName);
             int  instances = ldrawFile.instances(current.modelName,isMirrored);
-            addGraphicsPageItems(steps, coverPage, endOfSubmodel,instances, view, scene);
+            addGraphicsPageItems(steps, coverPage, endOfSubmodel,instances, view, scene,printing);
             return HitEndOfPage;
           }
         break;
@@ -787,7 +789,7 @@ int Gui::drawPage(
               bool endOfSubmodel = numSteps == 0 || stepNum == numSteps;
               int  instances = ldrawFile.instances(current.modelName,isMirrored);
 
-              addGraphicsPageItems(steps,coverPage,endOfSubmodel,instances,view,scene);
+              addGraphicsPageItems(steps,coverPage,endOfSubmodel,instances,view,scene,printing);
               stepPageNum += ! coverPage;
               return HitEndOfPage;
             }
@@ -839,7 +841,8 @@ int Gui::findPage(
   QString const  &addLine,
   Where           current,
   bool            isMirrored,
-  Meta            meta)
+  Meta            meta,
+  bool            printing)
 {
   bool stepGroup  = false;
   bool partIgnore = false;
@@ -908,7 +911,7 @@ int Gui::findPage(
                 stepGroupMeta.submodelStack << tos;
                 Where current2(type,0);
 
-                findPage(view,scene,pageNum,line,current2,isMirrored,stepGroupMeta);
+                findPage(view,scene,pageNum,line,current2,isMirrored,stepGroupMeta,printing);
                 saveStepPageNum = stepPageNum;
                 stepGroupMeta.submodelStack.pop_back();
               } else {
@@ -918,7 +921,7 @@ int Gui::findPage(
                 meta.submodelStack << tos;
                 Where current2(type,0);
 
-                findPage(view,scene,pageNum,line,current2,isMirrored,meta);
+                findPage(view,scene,pageNum,line,current2,isMirrored,meta,printing);
                 saveStepPageNum = stepPageNum;
                 meta.submodelStack.pop_back();
               }
@@ -981,7 +984,8 @@ int Gui::findPage(
                                 saveCsiParts,
                                 pli,
                                 isMirrored,
-                                saveBfx);
+                                saveBfx,
+                                printing);
                                 
                 saveCurrent.modelName.clear();
                 saveCsiParts.clear();
@@ -1026,7 +1030,8 @@ int Gui::findPage(
                                   saveCsiParts,
                                   pli,
                                   isMirrored,
-                                  saveBfx);
+                                  saveBfx,
+                                  printing);
 
                   saveCurrent.modelName.clear();
                   saveCsiParts.clear();
@@ -1153,7 +1158,7 @@ int Gui::findPage(
   if (partsAdded) {
     if (pageNum == displayPageNum) {
       page.meta = saveMeta;
-      (void) drawPage(view, scene, &page,saveStepNumber,addLine,saveCurrent,saveCsiParts,pli,isMirrored,bfx);
+      (void) drawPage(view, scene, &page,saveStepNumber,addLine,saveCurrent,saveCsiParts,pli,isMirrored,bfx,printing);
     }
     ++pageNum;
     ++stepPageNum;
@@ -1227,7 +1232,7 @@ void Gui::countPages()
     Meta meta;
     QString empty;
     stepPageNum = 1;
-    findPage(KpageView,KpageScene,maxPages,empty,current,false,meta);
+    findPage(KpageView,KpageScene,maxPages,empty,current,false,meta,false);
     maxPages--;
     if (displayPageNum > maxPages) {
       displayPageNum = maxPages;
@@ -1242,7 +1247,8 @@ void Gui::countPages()
 
 void Gui::drawPage(
   LGraphicsView  *view,
-  QGraphicsScene *scene)
+  QGraphicsScene *scene,
+  bool            printing)
 {
 
   QApplication::setOverrideCursor(Qt::WaitCursor);
@@ -1257,7 +1263,7 @@ void Gui::drawPage(
   
   QString empty;
   Meta    meta;
-  findPage(view,scene,maxPages,empty,current,false,meta);
+  findPage(view,scene,maxPages,empty,current,false,meta,printing);
   maxPages--;  
 
   QString string = QString("%1 of %2") .arg(displayPageNum) .arg(maxPages);

@@ -169,7 +169,8 @@ int Gui::addGraphicsPageItems(
   bool            endOfSubmodel,
   int             instances,
   LGraphicsView  *view,
-  QGraphicsScene *scene)
+  QGraphicsScene *scene,
+  bool            printing)
 {
   Page *page = dynamic_cast<Page *>(steps);
 
@@ -179,8 +180,8 @@ int Gui::addGraphicsPageItems(
 
   Placement plPage;
   plPage.relativeType = PageType;
-  volatile int pW = page->meta.LPub.page.size.valuePixels(0);
-  volatile int pH = page->meta.LPub.page.size.valuePixels(1);
+  int pW = page->meta.LPub.page.size.valuePixels(0);
+  int pH = page->meta.LPub.page.size.valuePixels(1);
   plPage.setSize(pW,pH);
   plPage.margin   = page->meta.LPub.page.margin;
   plPage.loc[XX] = 0;
@@ -476,14 +477,17 @@ int Gui::addGraphicsPageItems(
   scene->addItem(pageBg);
   
   view->setSceneRect(pageBg->sceneBoundingRect());
-  
-  view->horizontalScrollBar()->setRange(0,page->meta.LPub.page.size.valuePixels(0));
-  view->verticalScrollBar()->setRange(0,page->meta.LPub.page.size.valuePixels(1));
 
-  if (fitMode == FitWidth) {
-    fitWidth(view);
-  } else if (fitMode == FitVisible) {
-    fitVisible(view);
+  if ( ! printing) {
+  
+    view->horizontalScrollBar()->setRange(0,page->meta.LPub.page.size.valuePixels(0));
+    view->verticalScrollBar()->setRange(0,page->meta.LPub.page.size.valuePixels(1));
+
+    if (fitMode == FitWidth) {
+      fitWidth(view);
+    } else if (fitMode == FitVisible) {
+      fitVisible(view);
+    }
   }
   page->relativeType = SingleStepType;
   statusBarMsg("");

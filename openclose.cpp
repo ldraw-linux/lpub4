@@ -291,6 +291,6 @@ void Gui::fileChanged(const QString &path)
   if (ret == QMessageBox::Apply) {
     QString fileName = path;
     openFile(fileName);
-    drawPage(KpageView,KpageScene);
+    drawPage(KpageView,KpageScene,false);
   }
 }

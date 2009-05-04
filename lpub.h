@@ -413,7 +413,8 @@ public:
    * changing under foot */
   void drawPage(                   // this is the workhorse for preparing a
     LGraphicsView *view,           // page for viewing.  It depends heavily
-    QGraphicsScene *scene);        // on the next two functions
+    QGraphicsScene *scene,         // on the next two functions
+    bool            printing);
   
   int  numSteps(const QString &modelName)
   {
@@ -543,7 +544,8 @@ private:
     QString const &addLine,
     Where          current,
     bool           mirrored,
-    Meta           meta);
+    Meta           meta,
+    bool           printing);
 
   int drawPage(                    // process the page of interest and any callouts
     LGraphicsView  *view,
@@ -556,6 +558,7 @@ private:
     Pli           &pli,
     bool           isMirrored,
     QHash<QString, QStringList> &bfx,
+    bool           printing,
     bool           calledOut = false);
   
   void attitudeAdjustment(); // reformat the LDraw file to fix LPub backward compatibility issues 
@@ -568,7 +571,8 @@ private:
     bool            endOfSubmodel,
     int             instances,
     LGraphicsView  *view,
-    QGraphicsScene *scene);
+    QGraphicsScene *scene,
+    bool            printing);
 
 private slots:
     void open();

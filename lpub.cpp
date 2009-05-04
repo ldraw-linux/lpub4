@@ -54,7 +54,7 @@ void Gui::displayPage()
 {
   if (macroNesting == 0) {
     clearPage(KpageView,KpageScene);
-    drawPage(KpageView,KpageScene);
+    drawPage(KpageView,KpageScene,false);
   }
 }
 

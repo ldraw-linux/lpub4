@@ -131,7 +131,7 @@ void Gui::printToFile()
     pageHeight = centimeters2inches(pageHeight);
   }
   pageWidth *= resolution();
-  pageHeight *= resolution()*1.5;
+  pageHeight *= resolution();
 
   QFileInfo fileInfo(curFile);
   QString   baseName = fileInfo.baseName();
@@ -167,6 +167,7 @@ void Gui::printToFile()
   LGraphicsView  view(&scene);
   QRectF boundingRect(0.0,0.0,pageWidth,pageHeight);
   QRect  bounding(0,0,pageWidth,pageHeight);
+  QRect  bigBounding(0,0,pageWidth*2,pageHeight*2);
   view.setMinimumSize(pageWidth,pageHeight);
   view.setMaximumSize(pageWidth,pageHeight);
   view.setGeometry(bounding);
@@ -175,15 +176,15 @@ void Gui::printToFile()
 					  QPainter::TextAntialiasing |
 					  QPainter::SmoothPixmapTransform);
 
-  //view.scale(300.0,300.0);
-  //view.centerOn(boundingRect.center());
+  //view.scale(3.0,3.0);
+  view.centerOn(boundingRect.center());
   clearPage(&view,&scene);
   
   for (displayPageNum = 1; displayPageNum <= maxPages; displayPageNum++) {
 
     qApp->processEvents();
 	
-    drawPage(&view,&scene);
+    drawPage(&view,&scene,true);
     view.render(&painter);
     clearPage(&view,&scene);
 
@@ -193,5 +194,5 @@ void Gui::printToFile()
   }
   painter.end();
   displayPageNum = savePageNumber;
-  drawPage(KpageView,KpageScene);
+  drawPage(KpageView,KpageScene,false);
 }
