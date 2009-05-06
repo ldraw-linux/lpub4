@@ -176,7 +176,7 @@ void Gui::printToFile()
 					  QPainter::TextAntialiasing |
 					  QPainter::SmoothPixmapTransform);
 
-  //view.scale(3.0,3.0);
+  view.scale(1.0,1.0);
   view.centerOn(boundingRect.center());
   clearPage(&view,&scene);
   
