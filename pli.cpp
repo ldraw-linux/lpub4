@@ -386,12 +386,16 @@ int Pli::placePli(
 
   cols = 0;
 
+  width = 0;
+  height = 0;
+
   QString key;
 
   for (int i = 0; i < keys.size(); i++) {
     parts[keys[i]]->placed = false;
     if (parts[keys[i]]->height > yConstraint) {
-      return -2;
+      yConstraint = parts[keys[i]]->height;
+      // return -2;
     }
   }
 
