@@ -209,14 +209,14 @@ UnitsGui::UnitsGui(
 
 void UnitsGui::value0Change(QString const &string)
 {
-  volatile float v = string.toFloat();
+  float v = string.toFloat();
   meta->setValue(0,v);
   modified = true;
 }
 
 void UnitsGui::value1Change(QString const &string)
 {
-  volatile float v = string.toFloat();
+  float v = string.toFloat();
   meta->setValue(1,v);
   modified = true;
 }
