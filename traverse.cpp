@@ -612,7 +612,7 @@ int Gui::drawPage(
         break;
         
         case InsertRc:
-          //inserts.append(curMeta.LPub.insert);  // these are always placed before any parts in step
+          inserts.append(curMeta.LPub.insert);  // these are always placed before any parts in step
         break;
 
         case CalloutBeginRc:
@@ -731,7 +731,10 @@ int Gui::drawPage(
             }
 
             if (step) {
-              step->setInserts(inserts);
+              Page *page = dynamic_cast<Page *>(steps);
+              if (page) {
+                page->inserts = inserts;
+              }
               if (pliPerStep) {
                 PlacementType relativeType;
                 if (multiStep) {
@@ -854,6 +857,11 @@ int Gui::findPage(
   
   skipHeader(current);
 
+  if (pageNum == 1) {
+    topOfPages.clear();
+    topOfPages.append(current);
+  }
+
   QStringList csiParts;
   QStringList saveCsiParts;
   Where       saveCurrent = current;
@@ -882,7 +890,6 @@ int Gui::findPage(
     // if we've already hit the display page, then do as little as possible
 
     QString line = ldrawFile.readLine(current.modelName,current.lineNumber).trimmed();
-    QByteArray Line = line.toAscii();
 
     if (line.startsWith("0 GHOST ")) {
       line = line.mid(8).trimmed();
@@ -891,6 +898,12 @@ int Gui::findPage(
     switch (line.toAscii()[0]) {
       case '1':
         if ( ! partIgnore) {
+
+          if (firstStepPageNum == -1) {
+            firstStepPageNum = pageNum;
+          }
+          lastStepPageNum = pageNum;
+
           QStringList token;
           
           split(line,token);
@@ -991,6 +1004,7 @@ int Gui::findPage(
                 saveCsiParts.clear();
               }
               ++pageNum;
+              topOfPages.append(current);
               saveStepPageNum = ++stepPageNum;
             }
           break;
@@ -1037,6 +1051,7 @@ int Gui::findPage(
                   saveCsiParts.clear();
                 } 
                 ++pageNum;
+                topOfPages.append(current);
               }
               topOfStep = current;
               partsAdded = 0;
@@ -1161,10 +1176,10 @@ int Gui::findPage(
       (void) drawPage(view, scene, &page,saveStepNumber,addLine,saveCurrent,saveCsiParts,pli,isMirrored,bfx,printing);
     }
     ++pageNum;
+    topOfPages.append(current);
     ++stepPageNum;
   }
-  saveCurrent.modelName.clear();
-  saveCsiParts.clear();
+  topOfPages.append(current);
   return 0;
 }
 
@@ -1228,6 +1243,8 @@ void Gui::countPages()
     Where       current(ldrawFile.topLevelFile(),0);
     int savedDpn   = displayPageNum;
     displayPageNum = 1 << 31;
+    firstStepPageNum = -1;
+    lastStepPageNum = -1;
     maxPages       = 1;
     Meta meta;
     QString empty;
@@ -1263,8 +1280,10 @@ void Gui::drawPage(
   
   QString empty;
   Meta    meta;
+  firstStepPageNum = -1;
+  lastStepPageNum = -1;
   findPage(view,scene,maxPages,empty,current,false,meta,printing);
-  maxPages--;  
+  maxPages--;
 
   QString string = QString("%1 of %2") .arg(displayPageNum) .arg(maxPages);
   setPageLineEdit->setText(string);
