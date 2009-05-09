@@ -186,10 +186,7 @@ int Render::rotateParts(
   QStringList tokens;
 	
   split(addLine,tokens);
-      
-  QByteArray AddLine = addLine.toAscii();
 
-  
   if (addLine.size() && tokens.size() == 15 && tokens[0] == "1") {
 	
 	  double alm[3][3];

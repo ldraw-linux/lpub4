@@ -32,7 +32,6 @@
 #include <QProcess>
 #include <QFile>
 #include <QTextStream>
-#include <QByteArray>
 #include "render.h"
 #include "resolution.h"
 #include "meta.h"
