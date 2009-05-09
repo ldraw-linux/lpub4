@@ -437,7 +437,7 @@ int Step::sizeit(
 
   // size up each callout
   
-  volatile int numCallouts = list.size();
+  int numCallouts = list.size();
 
   for (int i = 0; i < numCallouts; i++) {
     list[i]->sizeIt();
@@ -529,8 +529,8 @@ int Step::sizeit(
   square[pli.tbl[XX]][pli.tbl[YY]] = PartsListType;
   square[stepNumber.tbl[XX]][stepNumber.tbl[YY]] = StepNumberType;
   
-  volatile int pixmapSize[2] = { csiPixmap.width(), csiPixmap.height() };
-  volatile int max = pixmapSize[y];
+  int pixmapSize[2] = { csiPixmap.width(), csiPixmap.height() };
+  int max = pixmapSize[y];
 
   for (int i = 0; i < numCallouts; i++) {
     Callout *callout = list[i];
@@ -572,7 +572,7 @@ int Step::sizeit(
     }
     
     square[callout->tbl[XX]][callout->tbl[YY]] = i + 1;
-    volatile int size = callout->submodelStack().size();
+    int size = callout->submodelStack().size();
     if (sharable && size > 1) {
       if (callout->tbl[x] < TblCsi && callout->tbl[y] == TblCsi) {
         if (calloutSize[x] < callout->size[x]) {
@@ -647,7 +647,7 @@ int Step::sizeit(
         case Bottom:
           if (pliPlacement.relativeTo == CsiType) {
             if ( ! collide(square,pli.tbl,y, x)) {
-              volatile int height = (max - pixmapSize[y])/2;
+              int height = (max - pixmapSize[y])/2;
               if (height > 0) {
                 if (height >= pli.size[y]) {  // entire thing fits
                   rows[pli.tbl[y]] = 0;
@@ -854,10 +854,10 @@ void Step::placeit(
 
     if (shared && callout->shared) {
       if (callout->size[y] > origins[TblCsi]) {
-        volatile int locY = callout->size[y] - origins[TblCsi] - margins[TblCsi];
+        int locY = callout->size[y] - origins[TblCsi] - margins[TblCsi];
         callout->loc[y] = locY;
       } else {
-        volatile int locY = origins[TblCsi] - callout->size[y] - margins[TblCsi];
+        int locY = origins[TblCsi] - callout->size[y] - margins[TblCsi];
         callout->loc[y] = locY;
       }
     } else {
