@@ -53,7 +53,8 @@ enum ScanMask {
 
 class StepGroup;
 
-class MetaItem {
+class MetaItem
+{
 public:
   void setGlobalMeta(QString &topLevelFile, LeafMeta *leaf);
 
@@ -243,8 +244,30 @@ public:
   void deleteMeta( const Where &here);
   void beginMacro( QString name);
   void endMacro();
-  
+
+  /*--------------------------------------------------------------------------------
+    *
+    * General purpose things like arbitrary pages, pictures, arrows, text
+    *
+    *-----------------------------------------------------------------------------*/
+
+  bool okToInsertCoverPage();
+  bool okToAppendCoverPage();
+  void insertCoverPage();
+  void appendCoverPage();
+
+  bool okToInsertNumberedPage();
+  bool okToAppendNumberedPage();
+  void insertNumberedPage();
+  void appendNumberedPage();
+
+  void insertPage(QString &meta);
+  void appendPage(QString &meta);
+
+  void insertPicture();
+
   Where firstLine(QString);
+  void firstLine(Where &);
   Where sortedGlobalWhere(QString modelName,QString metaString);
   Where sortedGlobalWhere(Meta &tmpMeta,QString modelName,QString metaString);
 

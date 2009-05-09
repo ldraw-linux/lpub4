@@ -255,8 +255,15 @@ void InsertPixmapItem::change()
       
       qreal topLeft[2] = { sceneBoundingRect().left(),  sceneBoundingRect().top() };
       qreal size[2]    = { sceneBoundingRect().width(), sceneBoundingRect().height() };
-      
-      calcOffsets(insertData,insertData.offsets,topLeft,size);
+
+      PlacementData pld;
+
+      pld.placement    = TopLeft;
+      pld.justification    = Center;
+      pld.relativeTo      = PageType;
+      pld.preposition   = Inside;
+
+      calcOffsets(pld,insertData.offsets,topLeft,size);
 
       insertData.picScale *= oldScale;
       insertMeta.setValue(insertData);

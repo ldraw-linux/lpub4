@@ -313,8 +313,8 @@ float UnitMeta::valuePixels()
 /* ------------------ */
 float UnitsMeta::valuePixels(int which)
 {
-  volatile float t = _value[pushed][which];
-  volatile float r = resolution();
+  float t = _value[pushed][which];
+  float r = resolution();
 
   return t*r;
 }
@@ -1315,221 +1315,93 @@ void SepMeta::doc(QTextStream &out, QString preamble)
  
 Rc InsertMeta::parse(QStringList &argv, int index, Where &here)
 {
-  PlacementEnc   _placement, _justification;
-  PlacementType  _relativeTo;
-  PrepositionEnc _preposition;
-  float _offsets[2];
-  float _margins[2];
-  Rc rc = FailureRc;
-  
-  if (argv.size() - index == 1 && argv[index] == "PAGE") {
-    return InsertPageRc;
-  }
-  if (argv.size() - index == 1 && argv[index] == "COVER_PAGE") {
-    return InsertCoverPageRc;
+  InsertData insertData;
+  Rc rc = OkRc;
+
+  if (argv.size() - index == 1) {
+    if (argv[index] == "PAGE") {
+      return InsertPageRc;
+    }
+    if (argv[index] == "COVER_PAGE") {
+      return InsertCoverPageRc;
+    }
   }
 
-  _placement     = TopLeft;
-  _justification = Center;
-  _relativeTo    = PageType;
-  _preposition   = Inside;
-  _offsets[0]    = 0;
-  _offsets[1]    = 0;
-  _margins[0]    = 0;
-  _margins[1]    = 0;
+  if (argv.size() - index > 1 && argv[index] == "PICTURE") {
+    insertData.type = InsertData::InsertPicture;
+    insertData.picName = argv[++index];
+    ++index;
 
-  QRegExp rx("^(TOP|BOTTOM)$");
-  if (argv[index].contains(rx)) {
-    _placement = PlacementEnc(tokenMap[argv[index++]]);
-    if (index < argv.size()) {
-      rx.setPattern("^(LEFT|CENTER|RIGHT)$");
-      if (argv[index].contains(rx)) {
-        _justification = PlacementEnc(tokenMap[argv[index++]]);
-        rc = OkRc;
+    if (argv.size() - index >= 2 && argv[index] == "SCALE") {
+      bool good;
+      insertData.picScale = argv[++index].toFloat(&good);
+      ++index;
+
+      if (! good) {
+        rc = FailureRc;
       }
-    } 
-  } else {
-    rx.setPattern("^(LEFT|RIGHT)$");
-    if (argv[index].contains(rx)) {
-      _placement = PlacementEnc(tokenMap[argv[index++]]);
-      if (index < argv.size()) {
-        rx.setPattern("^(TOP|CENTER|BOTTOM)$");
-        if (argv[index].contains(rx)) {
-          _justification = PlacementEnc(tokenMap[argv[index++]]);
-          rc = OkRc;
-        }
+    }
+
+  } else if (argv.size() - index > 2 && argv[index] == "TEXT") {
+    insertData.type = InsertData::InsertText;
+    insertData.textFont = argv[++index];
+    insertData.text         = argv[++index];
+    ++index;
+
+  } else if (argv.size() - index >= 8 && argv[index] == "ARROW") {
+    insertData.type = InsertData::InsertArrow;
+    bool good, ok;
+    insertData.arrowHead.setX(argv[++index].toFloat(&good));
+    insertData.arrowHead.setY(argv[++index].toFloat(&ok));
+    good &= ok;
+    insertData.arrowTail.setX(argv[++index].toFloat(&ok));
+    good &= ok;
+    insertData.arrowTail.setY(argv[++index].toFloat(&ok));
+    good &= ok;
+    insertData.haftingDepth = argv[++index].toFloat(&ok);
+    good &= ok;
+    insertData.haftingTip.setX(argv[++index].toFloat(&ok));
+    good &= ok;
+    insertData.haftingTip.setY(argv[++index].toFloat(&ok));
+    good &= ok;
+    if ( ! good) {
+      rc = FailureRc;
+    }
+    ++index;
+
+  } else if (argv[index] == "BOM") {
+    ++index;
+  }
+
+  if (rc == OkRc) {
+    if (argv.size() - index == 3 && argv[index] == "OFFSET") {
+      bool ok[2];
+      insertData.offsets[0] = argv[++index  ].toFloat(&ok[0]);
+      insertData.offsets[1] = argv[++index].toFloat(&ok[1]);
+      if ( ! ok[0] || ! ok[1]) {
+        rc = FailureRc;
       }
     } else {
-      rx.setPattern("^(TOP_LEFT|TOP_RIGHT|BOTTOM_LEFT|BOTTOM_RIGHT|CENTER)$");
-      if (argv[index].contains(rx)) {
-        _placement = PlacementEnc(tokenMap[argv[index++]]);
-        _justification = Center;
-        rc = OkRc;
-      }
-    }
-  }
-
-  if (rc == OkRc && index < argv.size()) {
-    rx.setPattern("^(PAGE|ASSEM|MULTI_STEP|STEP_NUMBER|PLI|CALLOUT)$");
-    if (argv[index].contains(rx)) {
-      _relativeTo = PlacementType(tokenMap[argv[index++]]);
-      if (_relativeTo == PageType) {
-        _preposition = Inside;
-      } else {
-        _preposition = Outside;
-      }
-      if (index < argv.size()) {
-        rx.setPattern("^(INSIDE|OUTSIDE)$");
-        if (argv[index].contains(rx)) {
-          _preposition = PrepositionEnc(tokenMap[argv[index++]]);
-          rc = OkRc;
-        } 
-      } else {
-        rc = OkRc;
-      }
-    }
-  }
-  
-  if (rc == OkRc) {
-    if (argv[index] == "OFFSET") {
-      index++;
-      if (argv.size() - index > 2) {
-        bool ok[2];
-        argv[index  ].toFloat(&ok[0]);
-        argv[index+1].toFloat(&ok[1]);
-        if (ok[0] && ok[1]) {
-          _offsets[0] = argv[index++].toFloat(&ok[0]);
-          _offsets[1] = argv[index++].toFloat(&ok[1]);
-        }
-      } else {
-        rc = FailureRc;
-      }
-    }
-  }
-  
-  if (rc == OkRc) {
-    if (argv[index] == "MARGIN") {
-      index++;
-      if (argv.size() - index > 2) {
-        bool ok[2];
-        argv[index  ].toFloat(&ok[0]);
-        argv[index+1].toFloat(&ok[1]);
-        if (ok[0] && ok[1]) {
-          _margins[0] = argv[index++].toFloat(&ok[0]);
-          _margins[1] = argv[index++].toFloat(&ok[1]);
-        }
-      } else {
-        rc = FailureRc;
-      }
-    }
-  }
-  
-  InsertData::InsertType type = InsertData::InsertPicture;
-  QString     picName;
-  qreal       picScale =   1;
-  QStringList text;
-  QPointF     arrow[2];
-  
-  arrow[0] = QPointF(0,0);
-  arrow[1] = QPointF(0,0);
-  
-  bool good, ok;
-    
-  if (rc == OkRc) {
-           if (argv.size() - index >= 2 && argv[index] == "PICTURE") {
-      type = InsertData::InsertPicture;
-      picName = argv[++index];
-
-      ++index;
-      if (argv.size() - index >= 2 && argv[index] == "SCALE") {
-        picScale = argv[++index].toFloat(&good);
-        if (! good) {
-          rc = FailureRc;
-        }
-      }
-    } else if (argv.size() - index >= 2 && argv[index] == "TEXT") {
-      type = InsertData::InsertText;
-      ++index;
-      int j;
-      for (j = 0; index < argv.size(); ) {
-        text[j++] = argv[index++];
-      }
-    } else if (argv.size() - index >= 5 && argv[index] == "ARROW") {
-      type = InsertData::InsertArrow;
-       
-      arrow[0].setX(argv[++index].toFloat(&good));
-      arrow[0].setY(argv[++index].toFloat(&ok));
-      good &= ok;
-      arrow[1].setX(argv[++index].toFloat(&ok));
-      good &= ok;
-      arrow[1].setY(argv[++index].toFloat(&ok));
-      good &= ok;
-      if ( ! good) {
-        rc = FailureRc;
-      }
-      ++index;
-    } else if (argv[index] == "BOM"     && argv.size() - index == 1) {
-      type = InsertData::InsertBom;
+      rc = FailureRc;
     }
   }
 
   if (rc == OkRc) {
-    _value[pushed].placement     = _placement;
-    _value[pushed].justification = _justification;
-    _value[pushed].relativeTo    = _relativeTo;
-    _value[pushed].preposition   = _preposition;
-    _value[pushed].offsets[0]    = _offsets[0];
-    _value[pushed].offsets[1]    = _offsets[1];
-    _value[pushed].margins[0]    = _margins[0];
-    _value[pushed].margins[1]    = _margins[1];
-    _value[pushed].type          = type;
-    _value[pushed].picName       = picName;
-    _value[pushed].picScale      = picScale;
-    _value[pushed].text          = text;
-    _value[pushed].arrow[0]      = arrow[0];
-    _value[pushed].arrow[1]      = arrow[1];
-
+    _value[pushed] = insertData;
     _here[pushed] = here;
-  }
-  
-  if (rc == OkRc) {
     return InsertRc;
+
   } else {
     QMessageBox::warning(NULL,
       QMessageBox::tr("LPub"),
       QMessageBox::tr("Malformed Insert metacommand \"%1\"") .arg(argv.join(" ")));
     return FailureRc;
   } 
-  
 }
 
 QString InsertMeta::format(bool local, bool global)
 {
   QString foo;
-
-  switch (_value[pushed].placement) {
-    case Top:
-    case Bottom:
-    case Right:
-    case Left:
-      foo = placementNames[_value[pushed].placement] + " "
-          + placementNames[_value[pushed].justification] + " "
-          + relativeNames [_value[pushed].relativeTo] + " "
-          + prepositionNames[_value[pushed].preposition];
-    break;
-    default:
-      foo = placementNames[_value[pushed].placement] + " "
-          + relativeNames [_value[pushed].relativeTo] + " "
-          + prepositionNames[_value[pushed].preposition];
-  }
-  if (_value[pushed].offsets[0] || _value[pushed].offsets[1]) {
-    foo += QString(" OFFSET %1 %2") .arg(_value[pushed].offsets[0]) 
-                                   .arg(_value[pushed].offsets[1]);
-  }
-  if (_value[pushed].margins[0] || _value[pushed].margins[1]) {
-    foo += QString(" MARGIN %1 %2") .arg(_value[pushed].margins[0]) 
-                                    .arg(_value[pushed].margins[1]);
-  }
   switch (_value[pushed].type) {
     case InsertData::InsertPicture:
       foo += " PICTURE \"" + _value[pushed].picName + "\"";
@@ -1545,16 +1417,24 @@ QString InsertMeta::format(bool local, bool global)
     break;
     case InsertData::InsertArrow:
       foo += " ARROW";
-      foo += QString(" %1") .arg(_value[pushed].arrow[0].rx());
-      foo += QString(" %1") .arg(_value[pushed].arrow[0].ry());
-      foo += QString(" %1") .arg(_value[pushed].arrow[1].rx());      
-      foo += QString(" %1") .arg(_value[pushed].arrow[1].ry());
+      foo += QString(" %1") .arg(_value[pushed].arrowHead.rx());
+      foo += QString(" %1") .arg(_value[pushed].arrowHead.ry());
+      foo += QString(" %1") .arg(_value[pushed].arrowTail.rx());
+      foo += QString(" %1") .arg(_value[pushed].arrowTail.ry());
+      foo += QString(" %1") .arg(_value[pushed].haftingDepth);
+      foo += QString(" %1") .arg(_value[pushed].haftingTip.rx());
+      foo += QString(" %1") .arg(_value[pushed].haftingTip.ry());
     break;
     case InsertData::InsertBom:
       foo += " BOM";
     break;
   }
-    
+
+  if (_value[pushed].offsets[0] || _value[pushed].offsets[1]) {
+    foo += QString(" OFFSET %1 %2") .arg(_value[pushed].offsets[0])
+                                   .arg(_value[pushed].offsets[1]);
+  }
+
   return LeafMeta::format(local,global,foo);
 }
 
@@ -2236,7 +2116,7 @@ void ResolutionMeta::init(
 
 Rc ResolutionMeta::parse(QStringList &argv, int index, Where &here)
 {
-  volatile int tokens = argv.size();
+  int tokens = argv.size();
   tokens -= index;
   if (tokens == 0) {
     return FailureRc;
@@ -2388,8 +2268,6 @@ Rc Meta::parse(
 {
   QStringList argv;
   
-  QByteArray Line = line.toAscii();
-
   QRegExp bgt("^\\s*0\\s+(MLCAD)\\s+(BTG)\\s+(.*)$");
 
   if (line.contains(bgt)) {

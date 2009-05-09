@@ -434,9 +434,9 @@ void Gui::closeEvent(QCloseEvent *event)
 void Gui::about()
 {
    QMessageBox::about(this, tr("About LPub"),
-            tr("<b>LPub 4.0.0.1</b> is a WYSIWYG tool for creating\n"
+            tr("<b>LPub 4.0.0.2</b> is a WYSIWYG tool for creating\n"
                "LEGO(c) style building instructions\n"
-               "Copyright 2000-2008 Kevin Clague\n"
+               "Copyright 2000-2009 Kevin Clague\n"
                "kevin.clague@gmail.com"));
 }
 
@@ -450,16 +450,37 @@ void Gui::createActions()
     saveAct = new QAction(QIcon(":/images/save.png"), tr("&Save"), this);
     saveAct->setShortcut(tr("Ctrl+S"));
     saveAct->setStatusTip(tr("Save the document to disk"));
+    saveAct->setEnabled(false);
     connect(saveAct, SIGNAL(triggered()), this, SLOT(save()));
 
     saveAsAct = new QAction(tr("Save &As..."), this);
     saveAsAct->setStatusTip(tr("Save the document under a new name"));
+    saveAsAct->setEnabled(false);
     connect(saveAsAct, SIGNAL(triggered()), this, SLOT(saveAs()));
 
     printToFileAct = new QAction(QIcon(":/images/pdf_logo.png"), tr("Print to &File"), this);
     printToFileAct->setShortcut(tr("Ctrl+F"));
     printToFileAct->setStatusTip(tr("Print your document to a file"));
+    printToFileAct->setEnabled(false);
     connect(printToFileAct, SIGNAL(triggered()), this, SLOT(printToFile()));
+
+    exportPngAct = new QAction(tr("Export As &PNG Images"), this);
+    exportPngAct->setShortcut(tr("Ctrl+Shift+P"));
+    exportPngAct->setStatusTip(tr("Export your document as a sequence of PNG images"));
+    exportPngAct->setEnabled(false);
+    connect(exportPngAct, SIGNAL(triggered()), this, SLOT(exportAsPng()));
+
+    exportJpgAct = new QAction(tr("Export As &JPEG Images"), this);
+    exportJpgAct->setShortcut(tr("Ctrl+J"));
+    exportJpgAct->setStatusTip(tr("Export your document as a sequence of JPEG images"));
+    exportJpgAct->setEnabled(false);
+    connect(exportJpgAct, SIGNAL(triggered()), this, SLOT(exportAsJpg()));
+
+    exportBmpAct = new QAction(tr("Export As &Bitmap Images"), this);
+    exportBmpAct->setShortcut(tr("Ctrl+B"));
+    exportBmpAct->setStatusTip(tr("Export your document as a sequence of bitmap images"));
+    exportBmpAct->setEnabled(false);
+    connect(exportBmpAct, SIGNAL(triggered()), this, SLOT(exportAsBmp()));
 
     exitAct = new QAction(tr("E&xit"), this);
     exitAct->setShortcut(tr("Ctrl+Q"));
@@ -599,6 +620,12 @@ void Gui::createActions()
 
 void Gui::enableActions()
 {
+    saveAct->setEnabled(true);
+    saveAsAct->setEnabled(true);
+    printToFileAct->setEnabled(true);
+    exportPngAct->setEnabled(true);
+    exportJpgAct->setEnabled(true);
+    exportBmpAct->setEnabled(true);
     pageSetupAct->setEnabled(true);
     assemSetupAct->setEnabled(true);
     pliSetupAct->setEnabled(true);
@@ -613,6 +640,15 @@ void Gui::createMenus()
     fileMenu->addAction(openAct);
     fileMenu->addAction(saveAct);
     fileMenu->addAction(saveAsAct);
+
+    QMenu *exportMenu = fileMenu->addMenu("Export As...");
+    exportMenu->addAction(exportPngAct);
+    exportMenu->addAction(exportJpgAct);
+
+#ifndef __APPLE__
+    exportMenu->addAction(exportBmpAct);
+#endif
+
     fileMenu->addAction(printToFileAct);
     separatorAct = fileMenu->addSeparator();
     for (int i = 0; i < MaxRecentFiles; i++) {

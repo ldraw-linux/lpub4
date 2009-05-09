@@ -393,6 +393,9 @@ public:
   int             displayPageNum;  // what page are we displaying
   int             stepPageNum;     // the number displayed on the page
   int             saveStepPageNum;
+  int             firstStepPageNum;
+  int             lastStepPageNum;
+  QList<Where> topOfPages;
   
   FitMode fitMode;         // how to fit the scene into the view
   bool    ldrawFileContains(const QString &fileName) 
@@ -598,6 +601,10 @@ private slots:
     void zoomOut(LGraphicsView *view);
 
     void printToFile();
+    void exportAs(QString &);
+    void exportAsPng();
+    void exportAsJpg();
+    void exportAsBmp();
 
     void closeEvent(QCloseEvent *event);
 
@@ -673,6 +680,9 @@ private:
   QAction  *saveAsAct;
   QAction  *pageSetupAct2;
   QAction  *printToFileAct;
+  QAction  *exportPngAct;
+  QAction  *exportJpgAct;
+  QAction  *exportBmpAct;
   QAction  *exitAct;
 
   QAction  *undoAct;

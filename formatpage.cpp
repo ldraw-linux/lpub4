@@ -321,10 +321,10 @@ int Gui::addGraphicsPageItems(
               
               PlacementData pld;
               
-              pld.placement     = insert.placement;
-              pld.justification = insert.justification;
-              pld.relativeTo    = insert.relativeTo;
-              pld.preposition   = insert.preposition;
+              pld.placement    = TopLeft;
+              pld.justification    = Center;
+              pld.relativeTo      = PageType;
+              pld.preposition   = Inside;
               pld.offsets[0]    = insert.offsets[0];
               pld.offsets[1]    = insert.offsets[1];
               

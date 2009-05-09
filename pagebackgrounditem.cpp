@@ -35,6 +35,7 @@
 #include "range.h"
 #include "range_element.h"
 #include "step.h"
+#include "lpub.h"
 
 void PageBackgroundItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 {
@@ -43,51 +44,80 @@ void PageBackgroundItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
   // figure out if first step step number is greater than 1
 
   QAction *addNextAction = NULL;
-
-  Step    *lastStep = NULL;
-  AbstractStepsElement *range = page->list[page->list.size()-1];
-  if (range->relativeType == RangeType) {
-    AbstractRangeElement *rangeElement = range->list[range->list.size()-1];
-    if (rangeElement->relativeType == StepType) {
-      lastStep = dynamic_cast<Step *> (rangeElement);
-      MetaItem mi;
-      int numSteps = mi.numSteps(lastStep->topOfStep().modelName);
-      if (lastStep->stepNumber.number != numSteps) {
-        addNextAction = menu.addAction("Add Next Step");
-        addNextAction->setWhatsThis("Add Next Step:\n Add the first step of the next page to this page\n");
-      }
-    }
-  }
-
-  // figure out if first step step number is greater than 1
-
   QAction *addPrevAction = NULL;
-
-  Step    *firstStep = NULL;
-  range = page->list[0];
-  if (range->relativeType == RangeType) {
-    AbstractRangeElement *rangeElement = range->list[0];
-    if (rangeElement->relativeType == StepType) {
-      firstStep = dynamic_cast<Step *> (rangeElement);
-      if (firstStep->stepNumber.number > 1) {
-        addPrevAction = menu.addAction("Add Previous Step");
-        addPrevAction->setWhatsThis("Add Previous Step:\n Add the last step of the previous page to this page\n");
-      }
-    }
-  }
-
   QAction *calloutAction = NULL;
   QAction *ignoreAction = NULL;
+  Step      *lastStep = NULL;
+  Step      *firstStep = NULL;
 
-  if (page->meta.submodelStack.size() > 0) {
-    calloutAction = menu.addAction("Convert to Callout");
-    calloutAction->setWhatsThis("Convert to Callout:\n"
-      "  A callout shows how to build these steps in a picture next\n"
-      "  to where it is added the the set you are building");
+  if (page->list.size()) {
+    AbstractStepsElement *range = page->list[page->list.size()-1];
+    if (range->relativeType == RangeType) {
+      AbstractRangeElement *rangeElement = range->list[range->list.size()-1];
+      if (rangeElement->relativeType == StepType) {
+        lastStep = dynamic_cast<Step *> (rangeElement);
+        MetaItem mi;
+        int numSteps = mi.numSteps(lastStep->topOfStep().modelName);
+        if (lastStep->stepNumber.number != numSteps) {
+          addNextAction = menu.addAction("Add Next Step");
+          addNextAction->setWhatsThis("Add Next Step:\n Add the first step of the next page to this page\n");
+        }
+      }
+    }
+
+    // figure out if first step step number is greater than 1
+
+    range = page->list[0];
+    if (range->relativeType == RangeType) {
+      AbstractRangeElement *rangeElement = range->list[0];
+      if (rangeElement->relativeType == StepType) {
+        firstStep = dynamic_cast<Step *> (rangeElement);
+        if (firstStep->stepNumber.number > 1) {
+          addPrevAction = menu.addAction("Add Previous Step");
+          addPrevAction->setWhatsThis("Add Previous Step:\n Add the last step of the previous page to this page\n");
+        }
+      }
+    }
+
+    if (page->meta.submodelStack.size() > 0) {
+      calloutAction = menu.addAction("Convert to Callout");
+      calloutAction->setWhatsThis("Convert to Callout:\n"
+        "  A callout shows how to build these steps in a picture next\n"
+        "  to where it is added the the set you are building");
   
-    ignoreAction  = menu.addAction("Ignore this submodel");
-    ignoreAction->setWhatsThis("Stops these steps from showing up in your instructions");
+      ignoreAction  = menu.addAction("Ignore this submodel");
+      ignoreAction->setWhatsThis("Stops these steps from showing up in your instructions");
+    }
   }
+
+  QAction *insertCoverAction = NULL;
+
+  if (okToInsertCoverPage()) {
+    insertCoverAction = menu.addAction("Insert Cover Page");
+    insertCoverAction->setWhatsThis("Add a cover page before this page.  Cover pages have no page number\n");
+  }
+
+  QAction *appendCoverAction = NULL;
+  if (okToAppendCoverPage()) {
+    appendCoverAction = menu.addAction("Append Cover Page");
+    appendCoverAction->setWhatsThis("Add a cover page after this page.  Cover pages have no page number\n");
+  }
+
+  QAction *insertPageAction = NULL;
+
+  if (okToInsertNumberedPage()) {
+    insertPageAction = menu.addAction("Insert Page");
+    insertPageAction->setWhatsThis("Add a blank page before this page.\n");
+  }
+
+  QAction *appendPageAction = NULL;
+  if (okToAppendNumberedPage()) {
+    appendPageAction = menu.addAction("Append Page");
+    appendPageAction->setWhatsThis("Add a blank page after this page.\n");
+  }
+
+  QAction *addPictureAction = menu.addAction("Add Picture");
+  addPictureAction->setWhatsThis("Add a picture to this page.\n");
 
   QAction *selectedAction     = menu.exec(event->screenPos());
 
@@ -97,6 +127,16 @@ void PageBackgroundItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 
   if (selectedAction == calloutAction) {
     convertToCallout(&page->meta, page->bottom.modelName, page->isMirrored);
+  } else if (selectedAction == insertCoverAction) {
+    insertCoverPage();
+  } else if (selectedAction == appendCoverAction) {
+    appendCoverPage();
+  } else if (selectedAction == insertPageAction) {
+    insertNumberedPage();
+  } else if (selectedAction == appendPageAction) {
+    appendNumberedPage();
+  } else if (selectedAction == addPictureAction) {
+    insertPicture();
 
   } else if (selectedAction == ignoreAction) {
     convertToIgnore(&page->meta);
