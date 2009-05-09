@@ -48,7 +48,6 @@ class Step : public AbstractRangeElement
   public: 
     bool              calledOut;
     QList<Callout *>  list;
-    QList<InsertMeta> inserts;
     Pli               pli;
     CsiItem          *csiItem;
     Placement         csiPlacement;
@@ -84,10 +83,6 @@ class Step : public AbstractRangeElement
            QStringList const &csiParts,
            QPixmap          *pixmap,
            Meta             &meta);
-
-    void setInserts(QList<InsertMeta> _inserts) {
-      inserts = _inserts;
-    }
     
     int  sizeit(int  rows[],
                 int  cols[],
