@@ -510,7 +510,6 @@ bool LDrawFile::mirrored(
 void LDrawFile::countInstances(const QString &mcFileName, bool isMirrored)
 {
   QString fileName = mcFileName.toLower();
-  QByteArray FileName = fileName.toAscii();
   bool partsAdded = false;
   
   QMap<QString, LDrawSubFile>::iterator f = _subFiles.find(fileName);

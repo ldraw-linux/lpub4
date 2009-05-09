@@ -95,7 +95,7 @@ int Placement::relativeTo(
   int rc = 0;
 
   if (step) {
-    volatile PlacementType stepRelativeTo;
+    PlacementType stepRelativeTo;
     stepRelativeTo = step->csiItem->placement.value().relativeTo;
     if (stepRelativeTo == relativeType) {
       placeRelative(step->csiItem);
@@ -202,7 +202,7 @@ void Placement::placeRelative(
   for (int i = 0; i < 2; i++) {  
     them->boundingLoc[i] = them->loc[i];
   
-    volatile int top, bottom, height;
+    int top, bottom, height;
 
     // calculate changes in our size due to neighbors
     // if neighbor is left or top, calculate bounding top left
@@ -238,7 +238,7 @@ void Placement::placeRelative(
   for (int i = 0; i < 2; i++) {  
     them->boundingLoc[i] = them->loc[i];
   
-    volatile int top, bottom, height;
+    int top, bottom, height;
 
     top = them->loc[i];
     height = boundingLoc[i] - top;
@@ -264,7 +264,7 @@ void Placement::placeRelativeBounding(
     lmargin[i] = margin2[i] > lmargin[i] ? margin2[i] : lmargin[i];
   }
 
-  volatile int bias[2];
+  int bias[2];
   
   bias[XX] = them->loc[XX] - them->boundingLoc[XX];
   bias[YY] = them->loc[YY] - them->boundingLoc[YY];
@@ -280,7 +280,7 @@ void Placement::placeRelative(
   int   them_size[2],
   int   lmargin[2])
 {
-  PlacementData volatile placementData = them->placement.value();
+  PlacementData placementData = them->placement.value();
 
   them->relativeToLoc[0] = loc[0];
   them->relativeToLoc[1] = loc[1];

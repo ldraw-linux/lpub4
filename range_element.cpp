@@ -122,7 +122,6 @@ QStringList AbstractRangeElement::submodelStack()
 
 bool AbstractRangeElement::onlyChild()
 {
-  QByteArray ModelName = top.modelName.toAscii();
-  volatile int numSteps = gui->numSteps(top.modelName);
+  int numSteps = gui->numSteps(top.modelName);
   return numSteps < 2;
 }

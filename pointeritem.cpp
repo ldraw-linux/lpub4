@@ -83,10 +83,10 @@ CalloutPointerItem::CalloutPointerItem(
   placement = pointerData.placement;
   // Placement &csiPlacement = callout->parentStep->csiPlacement;
 
-  volatile int cX = callout->parentStep->csiItem->loc[XX];
-  volatile int cY = callout->parentStep->csiItem->loc[YY];
-  volatile int dX = pointerData.x*callout->parentStep->csiItem->size[XX];
-  volatile int dY = pointerData.y*callout->parentStep->csiItem->size[YY];
+  int cX = callout->parentStep->csiItem->loc[XX];
+  int cY = callout->parentStep->csiItem->loc[YY];
+  int dX = pointerData.x*callout->parentStep->csiItem->size[XX];
+  int dY = pointerData.y*callout->parentStep->csiItem->size[YY];
 
   points[Tip] = QPoint(cX + dX - callout->loc[XX], cY + dY - callout->loc[YY]);
   

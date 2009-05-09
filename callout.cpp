@@ -125,7 +125,7 @@ void Callout::sizeIt()
             
             /* Describe the instance count rectangle */
             
-            volatile int  instanceTop, instanceLeft, instanceWidth, instanceHeight;
+            int  instanceTop, instanceLeft, instanceWidth, instanceHeight;
               
             instanceWidth  = instanceCount.size[XX] + instanceCount.margin.valuePixels(XX);
             instanceHeight = instanceCount.size[YY] + instanceCount.margin.valuePixels(YY);
@@ -134,8 +134,8 @@ void Callout::sizeIt()
 
             /* if there is something yo work with */
             
-            volatile int  right;
-            volatile int  bottom;
+            int  right;
+            int  bottom;
             bool          fit = true;
             
             // Overlap count with CSI?
@@ -181,8 +181,8 @@ void Callout::sizeIt()
             } else {
               // enlarge the callout to make room
                     
-              volatile int a = instanceWidth  * size[YY];
-              volatile int b = instanceHeight * size[XX];
+              int a = instanceWidth  * size[YY];
+              int b = instanceHeight * size[XX];
               
               if (a < b) {
                 instanceCount.loc[XX] = size[XX] + instanceCount.margin.valuePixels(XX);
@@ -221,7 +221,7 @@ void Callout::addGraphicsItems(
     offsetY = 0;
   }
   
-  volatile int newLoc[2] = { offsetX + loc[XX], offsetY + loc[YY] };
+  int newLoc[2] = { offsetX + loc[XX], offsetY + loc[YY] };
   
   QRect calloutRect(newLoc[XX],newLoc[YY],size[XX],size[YY]);
 
