@@ -240,6 +240,20 @@ void Gui::updateRecentFileActions()
 
     int numRecentFiles = qMin(files.size(), (int)MaxRecentFiles);
 
+    // filter filest that don't exist
+
+    for (int i = 0; i < numRecentFiles; ) {
+       QFileInfo fileInfo(files[i]);
+       if (fileInfo.exists()) {
+         i++;
+       } else {
+         for (int j = i; j < numRecentFiles-1; j++) {
+           files[j] = files[j+1];
+         }
+       }
+     }
+    settings.setValue("recentFileList", files);
+
     for (int i = 0; i < numRecentFiles; i++) {
       QFileInfo fileInfo(files[i]);
       QString text = tr("&%1 %2").arg(i + 1).arg(fileInfo.fileName());
