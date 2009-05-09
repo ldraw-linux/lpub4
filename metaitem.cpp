@@ -37,6 +37,7 @@
 #include <QFileInfo>
 #include <QDir>
 #include <QTextStream>
+#include <QFileDialog>
 #include "metaitem.h"
 #include "lpub.h"
 #include "color.h"
@@ -1174,6 +1175,95 @@ void MetaItem::changeAlloc(
   setMetaBottomOf(topOfSteps,bottomOfSteps,&alloc,append,false,false,false);
 }
 
+/********************************************************************
+ *
+ * Insert cover and non-cover pages
+ *
+ ********************************************************************/
+
+bool MetaItem::okToInsertCoverPage()
+{
+  return gui->displayPageNum <= gui->firstStepPageNum ||
+            gui->displayPageNum >    gui->lastStepPageNum;
+}
+bool MetaItem::okToAppendCoverPage()
+{
+  return gui->displayPageNum < gui->firstStepPageNum ||
+            gui->displayPageNum >= gui->lastStepPageNum;
+}
+
+void MetaItem::insertCoverPage()
+{
+  QString meta = "0 !LPUB INSERT COVER_PAGE";
+  insertPage(meta);
+}
+void MetaItem::appendCoverPage()
+{
+  QString meta = "0 !LPUB INSERT COVER_PAGE";
+  appendPage(meta);
+}
+
+bool MetaItem::okToInsertNumberedPage()
+{
+  return gui->displayPageNum >= gui->firstStepPageNum &&
+            gui->displayPageNum <=  gui->lastStepPageNum;
+}
+bool MetaItem::okToAppendNumberedPage()
+{
+  return okToInsertNumberedPage();
+}
+
+void MetaItem::insertNumberedPage()
+{
+  QString meta = "0 !LPUB INSERT PAGE";
+  insertPage(meta);
+}
+void MetaItem::appendNumberedPage()
+{
+  QString meta = "0 !LPUB INSERT PAGE";
+  appendPage(meta);
+}
+
+void MetaItem::insertPage(QString &meta)
+{
+  Where topOfStep = gui->topOfPages[gui->displayPageNum-1];
+
+  scanPastGlobal(topOfStep);
+
+  beginMacro("InsertPage");
+  appendMeta(topOfStep,"0 STEP");
+  appendMeta(topOfStep,meta);
+  endMacro();
+}
+
+void MetaItem::appendPage(QString &meta)
+{
+  Where bottomOfStep= gui->topOfPages[gui->displayPageNum+1];
+  if (bottomOfStep.lineNumber == gui->subFileSize(bottomOfStep.modelName)) {
+    --bottomOfStep;
+  }
+
+  beginMacro("appendPage");
+  appendMeta(bottomOfStep,"0 STEP");
+  appendMeta(bottomOfStep,meta);
+  endMacro();
+}
+
+void MetaItem::insertPicture()
+{
+  QString title = QFileDialog::tr("Open Image");
+  QString cwd = QDir::currentPath();
+  QString filter = QFileDialog::tr("Image Files (*.png *.jpg *.jpeg *.bmp)");
+  QString fileName = QFileDialog::getOpenFileName(NULL,title, cwd, filter);
+
+  if (fileName != "") {
+    QString meta = QString("0 !LPUB INSERT PICTURE %1 OFFSET 0.5 0.5") .arg(fileName);
+    Where topOfStep = gui->topOfPages[gui->displayPageNum-1];
+    scanPastGlobal(topOfStep);
+    appendMeta(topOfStep,meta);
+  }
+}
+
 /***************************************************************************/
 
 void MetaItem::scanPastGlobal(
@@ -1389,15 +1479,15 @@ float determinant(
      d  e  f
      g  h  i */
     
-  volatile float a = tokens[5].toFloat();
-  volatile float b = tokens[6].toFloat();
-  volatile float c = tokens[7].toFloat();
-  volatile float d = tokens[8].toFloat();
-  volatile float e = tokens[9].toFloat();
-  volatile float f = tokens[10].toFloat();
-  volatile float g = tokens[11].toFloat();
-  volatile float h = tokens[12].toFloat();
-  volatile float i = tokens[13].toFloat();
+  float a = tokens[5].toFloat();
+  float b = tokens[6].toFloat();
+  float c = tokens[7].toFloat();
+  float d = tokens[8].toFloat();
+  float e = tokens[9].toFloat();
+  float f = tokens[10].toFloat();
+  float g = tokens[11].toFloat();
+  float h = tokens[12].toFloat();
+  float i = tokens[13].toFloat();
   
   return (a*e*i + b*f*g + c*d*h) - (g*e*c + h*f*a + i*d*b);
 }
@@ -1407,8 +1497,8 @@ bool equivalentAdds(
   QString const &second)
 {
   QStringList firstTokens, secondTokens;
-  volatile bool firstMirror, secondMirror;
-  volatile float firstDet, secondDet;
+  bool firstMirror, secondMirror;
+  float firstDet, secondDet;
   
   split(first,firstTokens);
   split(second,secondTokens);
@@ -1546,10 +1636,9 @@ void MetaItem::addCalloutMetas(
   walk = calledOut;
   numLines = gui->subFileSize(walk.modelName);
   Where lastInstance, firstInstance;
-  volatile int track = 0;
+  int track = 0;
   for ( ; walk.lineNumber < numLines; walk++) {
     QString line = gui->readLine(walk);
-    QByteArray Line = line.toAscii();
     QStringList argv;
     split(line,argv);
     if (argv.size() >= 2 && argv[0] == "0") {
@@ -1814,7 +1903,6 @@ int MetaItem::monoColorSubmodel(
         submodel = submodel.left(submodel.length()-5);
       }
       submodel += "." + suffix;
-      QByteArray foo = submodel.toAscii();
       if (gui->isSubmodel(submodel)) {
         QString model = QDir::currentPath() + "/" + Paths::tmpDir + "/" + argv[14];
         monoColorSubmodel(model,color);
@@ -1887,7 +1975,6 @@ QPointF MetaItem::defaultPointerTip(
    */
   
   QString addLine = in.readLine(0);
-  QByteArray Line = addLine.toAscii();
   QStringList argv;
   
   split(addLine,argv);
@@ -1949,7 +2036,7 @@ QPointF MetaItem::defaultPointerTip(
           if (a.blue()) {
             QColor c = color.pixel(x,y);
         
-            volatile int red = c.red(), green = c.green(), blue = c.blue();
+            int red = c.red(), green = c.green(), blue = c.blue();
           
             if (blue - (red + green)/2 > 64) {
               if (top == -1) {
