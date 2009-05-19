@@ -147,7 +147,7 @@ int Placement::relativeToSg(
 {
   if (steps) {
     // PLI
-    if (steps->pli.tsize() && 
+    if (steps->pli.tsize() &&
         steps->pli.placement.value().relativeTo == relativeType) {
       placeRelative(&steps->pli);
       appendRelativeTo(&steps->pli);

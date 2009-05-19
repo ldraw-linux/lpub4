@@ -63,8 +63,7 @@ class Step : public AbstractRangeElement
       int                    num, 
       Meta                  &meta, 
       bool                   calledOut, 
-      bool                   multiStep,
-      Pli                   &pli);
+      bool                   multiStep);
 
     virtual ~Step();
 

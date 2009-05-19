@@ -45,6 +45,7 @@ class Where;
 class Steps : public Placement {
   public:
     Meta           meta;
+    Meta           stepGroupMeta;
     QList<AbstractStepsElement *> list;  // of range
     QGraphicsView *view;
     Pli            pli;
@@ -86,6 +87,11 @@ class Page : public Steps {
   public:
     QList<InsertMeta> inserts;
     QList<InsertPixmapItem *> insertPixmaps;
+    bool coverPage;
+    Page()
+    {
+      coverPage = false;
+    }
     
     void addInsertPixmap(InsertPixmapItem *pixMap)
     {

@@ -40,6 +40,7 @@
 #include "numberitem.h"
 #include "csiitem.h"
 #include "calloutbackgrounditem.h"
+#include "textitem.h"
 
 /*
  * We need to draw page every time there is change to the LDraw file.
@@ -338,10 +339,41 @@ int Gui::addGraphicsPageItems(
           }
         break;
         case InsertData::InsertText:
+          {
+            TextItem *text = new TextItem(page->inserts[i],pageBg);
+
+            PlacementData pld;
+
+            pld.placement    = TopLeft;
+            pld.justification    = Center;
+            pld.relativeTo      = PageType;
+            pld.preposition   = Inside;
+            pld.offsets[0]    = insert.offsets[0];
+            pld.offsets[1]    = insert.offsets[1];
+
+            text->placement.setValue(pld);
+
+            plPage.placeRelative(text);
+            text->setPos(text->loc[XX],text->loc[YY]);
+            text->relativeToSize[0] = plPage.size[XX];
+            text->relativeToSize[1] = plPage.size[YY];
+          }
         break;
         case InsertData::InsertArrow:
         break;
         case InsertData::InsertBom:
+          {
+            Where current(ldrawFile.topLevelFile(),0);
+            QStringList bomParts;
+            getBOMParts(current,bomParts);
+            page->pli.bom = true;
+            page->pli.pliMeta = page->meta.LPub.bom;
+            page->pli.setParts(bomParts,page->meta);
+            bomParts.clear();
+            page->pli.sizePli(&page->meta,PageType);
+            page->pli.relativeToSize[0] = plPage.size[XX];
+            page->pli.relativeToSize[1] = plPage.size[YY];
+          }
         break;
       }
     }
@@ -460,18 +492,34 @@ int Gui::addGraphicsPageItems(
     PlacementData data = page->meta.LPub.multiStep.placement.value();
     page->placement.setValue(data);
     page->sizeIt();             // multi-step
-      
-    plPage.relativeToSg(page);  // place callouts relative to PAGE
 
+    plPage.relativeToSg(page);  // place callouts relative to PAGE
     plPage.placeRelative(page); // place multi-step relative to the page    
 
     page->relativeToSg(page);   // place callouts relative to MULTI_STEP
     
     plPage.placeRelativeBounding(page); // center multi-step in page's bounding box
     
-    page->relativeToSg(page);           // place callouts relative to MULTI_STEP    
+    page->relativeToSg(page);           // place callouts relative to MULTI_STEP
 
     page->addGraphicsItems(0,0,pageBg);
+
+    if (page->pli.tsize()) {
+      if (page->pli.bom) {
+        page->pli.setFlag(QGraphicsItem::ItemIsSelectable,true);
+        page->pli.setFlag(QGraphicsItem::ItemIsMovable,true);
+
+        PlacementData pld;
+
+        pld = page->pli.pliMeta.placement.value();
+
+        page->pli.placement.setValue(pld);
+        plPage.placeRelative(page->pli.background);
+        page->pli.loc[XX] = page->pli.background->loc[XX];
+        page->pli.loc[YY] = page->pli.background->loc[YY];
+      }
+      page->pli.setPos(page->pli.loc[0],page->pli.loc[1]);
+    }
   }
   
   scene->addItem(pageBg);

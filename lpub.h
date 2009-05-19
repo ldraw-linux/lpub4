@@ -398,14 +398,30 @@ public:
   QList<Where> topOfPages;
   
   FitMode fitMode;         // how to fit the scene into the view
-  bool    ldrawFileContains(const QString &fileName) 
-  { 
-    return ldrawFile.contains(fileName);
-  }
+
   int     subFileSize(const QString &modelName)
   {
     return ldrawFile.size(modelName);
   }
+  int  numSteps(const QString &modelName)
+  {
+    return ldrawFile.numSteps(modelName);
+  }
+  QString readLine(const Where &here);
+  bool isSubmodel(const QString &modelName)
+  {
+    return ldrawFile.contains(modelName);
+  }
+
+  bool isMpd() { return ldrawFile.isMpd(); }
+  bool isOlder(const QStringList &foo,const QDateTime &lastModified)
+  {
+    bool older = ldrawFile.older(foo,lastModified);
+    return older;
+  }
+  Where &topOfPage();
+  Where &bottomOfPage();
+
   void    changePageNum(int offset)
   {
     displayPageNum += offset;
@@ -418,19 +434,11 @@ public:
     LGraphicsView *view,           // page for viewing.  It depends heavily
     QGraphicsScene *scene,         // on the next two functions
     bool            printing);
-  
-  int  numSteps(const QString &modelName)
-  {
-    return ldrawFile.numSteps(modelName);
-  }
 
   /*--------------------------------------------------------------------*
    * These are the work horses for back annotating user changes into    *
    * the LDraw files                                                    *
    *--------------------------------------------------------------------*/
-
-  QString readLine(const Where &here);
-  bool    isSubmodel(const QString &modelName);
 
   void insertLine (const Where &here, const QString &line, QUndoCommand *parent = 0);
   void appendLine (const Where &here, const QString &line, QUndoCommand *parent = 0);
@@ -440,13 +448,6 @@ public:
   void endMacro   ();
 
   void displayFile(LDrawFile *ldrawFile, const QString &modelName);
-
-  bool isMpd() { return ldrawFile.isMpd(); }
-  bool isOlder(const QStringList &foo,const QDateTime &lastModified)
-  {
-    bool older = ldrawFile.older(foo,lastModified);
-    return older;
-  }
 
   int             maxPages;
   
@@ -545,7 +546,7 @@ private:
     QGraphicsScene *scene,         // page, and then finish by counting the rest
     int           &pageNum,        // of the pages
     QString const &addLine,
-    Where          current,
+    Where         &current,
     bool           mirrored,
     Meta           meta,
     bool           printing);
@@ -557,8 +558,8 @@ private:
     int            stepNum,
     QString const &addLine,
     Where         &current,
-    QStringList    csiParts,
-    Pli           &pli,
+    QStringList   &csiParts,
+    QStringList   &pliParts,
     bool           isMirrored,
     QHash<QString, QStringList> &bfx,
     bool           printing,
@@ -576,6 +577,10 @@ private:
     LGraphicsView  *view,
     QGraphicsScene *scene,
     bool            printing);
+
+  int Gui::getBOMParts(
+    Where           current,
+    QStringList &csiParts);
 
 private slots:
     void open();

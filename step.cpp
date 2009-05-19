@@ -61,11 +61,9 @@ Step::Step(
   int      num,            // step number as seen by the user
   Meta    &meta,           // the current state of the meta-commands
   bool     calledOut,      // if we're a callout
-  bool     multiStep,      // we can't be a multi-step
-  Pli     &_pli)
+  bool     multiStep)      // we can't be a multi-step
   : 
-  calledOut(calledOut), 
-  pli(_pli)
+  calledOut(calledOut)
 {
   top = topOfStep;
   parent = _parent;
@@ -82,8 +80,8 @@ Step::Step(
   if (calledOut) {
     csiPlacement.margin     = meta.LPub.callout.csi.margin;    // assembly meta's
     csiPlacement.placement  = meta.LPub.callout.csi.placement;
-    _pli.margin             = meta.LPub.callout.pli.margin;    // PLI info
-    _pli.placement          = meta.LPub.callout.pli.placement;
+    pli.margin             = meta.LPub.callout.pli.margin;    // PLI info
+    pli.placement          = meta.LPub.callout.pli.placement;
     stepNumber.placement    = meta.LPub.callout.stepNum.placement;
     stepNumber.font         = meta.LPub.callout.stepNum.font.valueFoo();
     stepNumber.color        = meta.LPub.callout.stepNum.color.value();
@@ -92,8 +90,8 @@ Step::Step(
   } else if (multiStep) {
     csiPlacement.margin     = meta.LPub.multiStep.csi.margin;  // assembly meta's
     csiPlacement.placement  = meta.LPub.multiStep.csi.placement;
-    _pli.margin             = meta.LPub.multiStep.pli.margin;
-    _pli.placement          = meta.LPub.multiStep.pli.placement;
+    pli.margin             = meta.LPub.multiStep.pli.margin;
+    pli.placement          = meta.LPub.multiStep.pli.placement;
     stepNumber.placement    = meta.LPub.multiStep.stepNum.placement;
     stepNumber.font         = meta.LPub.multiStep.stepNum.font.valueFoo();
     stepNumber.color        = meta.LPub.multiStep.stepNum.color.value();
@@ -102,8 +100,8 @@ Step::Step(
   } else {
     csiPlacement.margin     = meta.LPub.assem.margin;         // assembly meta's
     csiPlacement.placement  = meta.LPub.assem.placement;
-    _pli.margin             = meta.LPub.assem.margin;
-    _pli.placement          = meta.LPub.pli.placement;
+    pli.margin             = meta.LPub.assem.margin;
+    pli.placement          = meta.LPub.pli.placement;
     stepNumber.font         = meta.LPub.stepNumber.font.valueFoo();
     stepNumber.color        = meta.LPub.stepNumber.color.value();
     stepNumber.margin       = meta.LPub.stepNumber.margin;

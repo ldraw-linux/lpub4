@@ -50,7 +50,6 @@ Callout::Callout(
   relativeType  = CalloutType;
   meta = _meta;
   instances = 1;
-  pli.callout = this;
   shared = false;
 }
 

@@ -169,8 +169,9 @@ public:
   } type;
   QString picName;
   qreal      picScale;
-  QString textFont;
   QString text;
+  QString textFont;
+  QString textColor;
   QPointF arrowHead;
   QPointF arrowTail;
   qreal       haftingDepth;
@@ -182,6 +183,7 @@ public:
     offsets[0] = 0.5;
     offsets[1] = 0.5;
     haftingDepth = 0;
+    textColor = "Black";
   }
 };
 

@@ -199,17 +199,20 @@ int LDGLite::renderCsi(
 int LDGLite::renderPli(
   const QString &ldrName,
   const QString &pngName,
-  Meta    &meta)
+  Meta    &meta,
+  bool     bom)
 {
   int width  = meta.LPub.page.size.valuePixels(0);
   int height = meta.LPub.page.size.valuePixels(1);
   
   /* determine camera distance */
 
-  int cd = cameraDistance(meta,meta.LPub.pli.modelScale.value());
+  PliMeta &pliMeta = bom ? meta.LPub.bom : meta.LPub.pli;
 
-  QString cg = QString("-cg%1,%2,%3") .arg(meta.LPub.pli.angle.value(0)) 
-                                      .arg(meta.LPub.pli.angle.value(1))
+  int cd = cameraDistance(meta,pliMeta.modelScale.value());
+
+  QString cg = QString("-cg%1,%2,%3") .arg(pliMeta.angle.value(0))
+                                      .arg(pliMeta.angle.value(1))
                                       .arg(cd);
 
   QString v  = QString("-v%1,%2")   .arg(width)
@@ -389,7 +392,8 @@ int LDView::renderCsi(
 int LDView::renderPli(
   const QString &ldrName,
   const QString &pngName,
-  Meta    &meta)
+  Meta    &meta,
+  bool     bom)
 {
   int width  = meta.LPub.page.size.valuePixels(0);
   int height = meta.LPub.page.size.valuePixels(1);
@@ -401,11 +405,13 @@ int LDView::renderPli(
   }
 
   /* determine camera distance */
-  
-  int cd = cameraDistance(meta,meta.LPub.pli.modelScale.value())*1376/1074;
 
-  QString cg = QString("-cg%1,%2,%3") .arg(meta.LPub.pli.angle.value(0)) 
-                                      .arg(meta.LPub.pli.angle.value(1))
+  PliMeta &pliMeta = bom ? meta.LPub.bom : meta.LPub.pli;
+  
+  int cd = cameraDistance(meta,pliMeta.modelScale.value())*1376/1074;
+
+  QString cg = QString("-cg%1,%2,%3") .arg(pliMeta.angle.value(0))
+                                      .arg(pliMeta.angle.value(1))
                                       .arg(cd);
   QString w  = QString("-SaveWidth=%1")  .arg(width);
   QString h  = QString("-SaveHeight=%1") .arg(height);

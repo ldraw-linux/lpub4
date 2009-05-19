@@ -130,6 +130,21 @@ PlacementDialog::PlacementDialog(
 
   switch (parentType) {
     case StepGroupType:
+      switch (placedType) {
+        case PartsListType:
+          oks = Page | Ms;
+        break;
+        case StepNumberType:
+          oks = Csi | Pli;
+        break;
+        case CalloutType:
+          oks = Page | Csi | Pli | Sn | Ms;
+        break;
+        default:
+          oks = Csi | Pli | Sn;
+        break;
+      }
+    break;
     case CalloutType:
       switch (placedType) {
         case PartsListType:

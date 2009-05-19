@@ -51,10 +51,6 @@ QString Gui::readLine(const Where &here)
 {
   return ldrawFile.readLine(here.modelName,here.lineNumber);
 }
-bool Gui::isSubmodel(const QString &modelName)
-{
-  return ldrawFile.contains(modelName);
-}
 
 void Gui::beginMacro(QString name)
 {

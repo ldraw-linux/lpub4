@@ -119,6 +119,16 @@ void PageBackgroundItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
   QAction *addPictureAction = menu.addAction("Add Picture");
   addPictureAction->setWhatsThis("Add a picture to this page.\n");
 
+  QAction *addTextAction = menu.addAction("Add Text");
+  addTextAction->setWhatsThis("Add text to this page\n");
+
+  QAction *addBomAction = NULL;
+
+  if (page->coverPage) {
+    addBomAction = menu.addAction("Add Bill Of Materials");
+    addTextAction->setWhatsThis("Add Bill Of Materials to this page\n");
+  }
+
   QAction *selectedAction     = menu.exec(event->screenPos());
 
   if (selectedAction == NULL) {
@@ -137,6 +147,10 @@ void PageBackgroundItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
     appendNumberedPage();
   } else if (selectedAction == addPictureAction) {
     insertPicture();
+  } else if (selectedAction == addTextAction) {
+    insertText();
+  } else if (selectedAction == addBomAction) {
+    insertBOM();
 
   } else if (selectedAction == ignoreAction) {
     convertToIgnore(&page->meta);

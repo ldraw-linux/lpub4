@@ -41,7 +41,7 @@ class Render
 	static QString const getRenderer();
 	static void          setRenderer(QString const &name);
     virtual int renderCsi(const QString &, const QStringList &, const QString &, Meta &) = 0;
-    virtual int renderPli(                 const QString &,     const QString &, Meta &) = 0;
+    virtual int renderPli(                 const QString &,     const QString &, Meta &, bool bom) = 0;
   protected:
     virtual float cameraDistance(Meta &meta, float) = 0;
     int rotateParts(const QString     &addLine,
@@ -58,7 +58,7 @@ class LDGLite : public Render
     LDGLite() {}
     virtual ~LDGLite() {}
     virtual int renderCsi(const QString &,  const QStringList &, const QString &, Meta &);
-    virtual int renderPli(                  const QString &,     const QString &, Meta &);
+    virtual int renderPli(                  const QString &,     const QString &, Meta &, bool bom);
     virtual float cameraDistance(Meta &meta, float);
 };
 
@@ -68,7 +68,7 @@ class LDView : public Render
     LDView() {}
     virtual ~LDView() {}
     virtual int renderCsi(const QString &,  const QStringList &, const QString &, Meta &);
-    virtual int renderPli(                  const QString &,     const QString &, Meta &);
+    virtual int renderPli(                  const QString &,     const QString &, Meta &, bool bom);
     virtual float cameraDistance(Meta &meta, float);
 };
 

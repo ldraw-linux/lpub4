@@ -17,6 +17,8 @@
 
 #include "resize.h"
 #include "metaitem.h"
+#include <QMenu>
+#include <QAction>
 
 qreal AbstractResize::grabsize = 0.125; // inches
 
@@ -275,3 +277,21 @@ void InsertPixmapItem::change()
   }
 }
 
+void InsertPixmapItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
+{
+  QMenu menu;
+
+  QAction *deleteAction = menu.addAction("Delete this Picture");
+  deleteAction->setWhatsThis("Delete this picture");
+
+  QAction *selectedAction   = menu.exec(event->screenPos());
+
+  if (selectedAction == NULL) {
+    return;
+  }
+
+  if (selectedAction == deleteAction) {
+    MetaItem mi;
+    mi.deleteMeta(insertMeta.here());
+  }
+}

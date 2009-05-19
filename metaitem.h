@@ -236,6 +236,7 @@ public:
                         bool askLocal = true,
                         bool global = true);
   void changeConstraint(Where topOfStep, Where bottomOfStep, ConstrainMeta *constraint,int append = 1);
+  void changeConstraintStepGroup(Where topOfStep, Where bottomOfStep, ConstrainMeta *constraint, int append = 1);
   void changeInsertOffset(InsertMeta *placement);
 
   void replaceMeta(const Where &here, const QString &line);
@@ -265,6 +266,8 @@ public:
   void appendPage(QString &meta);
 
   void insertPicture();
+  void insertText();
+  void insertBOM();
 
   Where firstLine(QString);
   void firstLine(Where &);

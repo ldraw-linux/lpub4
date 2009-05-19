@@ -193,6 +193,7 @@ class InsertPixmapItem : public ResizePixmapItem
       QGraphicsItem *parent = 0);
 
     virtual void change();
+    void contextMenuEvent(QGraphicsSceneContextMenuEvent *event);
 };
 
 #endif

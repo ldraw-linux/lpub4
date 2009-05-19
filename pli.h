@@ -73,7 +73,6 @@ class PliPart {
     InstanceTextItem    *instanceText;
     AnnotateTextItem    *annotateText;
     PGraphicsPixmapItem *pixmap;
-    bool                 includeSubmodel;
   
     int           width;
     int           height;
@@ -107,17 +106,16 @@ class PliPart {
       pixmap       = NULL;
     }
 
-    PliPart(QString _type, QString _color, bool _includeSubmodel)
+    PliPart(QString _type, QString _color)
     {
       type         = _type;
       color        = _color;
-      includeSubmodel = _includeSubmodel;
       placed       = false;
       instanceText = NULL;
       annotateText = NULL;
       pixmap       = NULL;
     }
-	float maxMargin();
+    float maxMargin();
 
     virtual ~PliPart();
 };
@@ -143,20 +141,16 @@ class Pli : public Placement {
     Meta              *meta;
     Steps             *steps;   // topOfSteps()
                                 // bottomOfSteps()
-    Callout           *callout; // topOfCallout()
-                                // bottomOfCallout()                              
     Step              *step;    // topOfStep()
                                 // bottomOfStep()
     int                widestPart;
     int                tallestPart;
 
-    Pli(bool _bom = false)
+    Pli(bool _bom = false) : bom(_bom)
     {
       relativeType = PartsListType;
-      bom = _bom;
       initAnnotationString();
       steps = NULL;
-      callout = NULL;
       step = NULL;
       meta = NULL;
       widestPart = 1;
@@ -177,16 +171,13 @@ class Pli : public Placement {
     const Where &bottomOfCallout();
     
     void setPos(float x, float y);
+    void setFlag(QGraphicsItem::GraphicsItemFlag flag,bool value);
 
-    /* Append a new part instance to the parts of parts used so far */
-
-    void append(
-      Meta    *meta,
-      bool     bom,
-      QString &type,
-      QString &color,
-      Where   &here,
-      bool     includeSub);
+    static QString partLine(QString &line, Where & /*here*/, Meta &/*meta*/);
+    void setParts(
+      QStringList &csiParts,
+      Meta        &meta,
+      bool         bom = false);
 
     int tsize()
     {
@@ -195,7 +186,6 @@ class Pli : public Placement {
 
     void clear();
 
-    void unite(Pli &pli);
 
     int  sizePli(Meta *, PlacementType);
     int  sizePli(ConstrainData::PliConstrain, unsigned height);

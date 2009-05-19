@@ -906,6 +906,15 @@ void MetaItem::changeConstraint(
   setMetaTopOf(topOfStep,bottomOfStep,constraint,append,true,false);
 }
 
+void MetaItem::changeConstraintStepGroup(
+  Where          topOfStep,
+  Where          bottomOfStep,
+  ConstrainMeta *constraint,
+  int            append)
+{
+  setMetaBottomOf(topOfStep,bottomOfStep,constraint,append,true,false);
+}
+
 void MetaItem::changeInsertOffset(
   InsertMeta *placement)
 {
@@ -1257,11 +1266,26 @@ void MetaItem::insertPicture()
   QString fileName = QFileDialog::getOpenFileName(NULL,title, cwd, filter);
 
   if (fileName != "") {
-    QString meta = QString("0 !LPUB INSERT PICTURE %1 OFFSET 0.5 0.5") .arg(fileName);
+    QString meta = QString("0 !LPUB INSERT PICTURE \"%1\" OFFSET 0.5 0.5") .arg(fileName);
     Where topOfStep = gui->topOfPages[gui->displayPageNum-1];
     scanPastGlobal(topOfStep);
     appendMeta(topOfStep,meta);
   }
+}
+
+void MetaItem::insertText()
+{
+  QString meta = QString("0 !LPUB INSERT TEXT \"%1\" \"%2\" \"%3\"") .arg("TEST") .arg("Arial,20,-1,75,0,0,0,0,0") .arg("Black");
+  Where topOfStep = gui->topOfPages[gui->displayPageNum-1];
+  scanPastGlobal(topOfStep);
+  appendMeta(topOfStep,meta);
+}
+void MetaItem::insertBOM()
+{
+  QString meta = QString("0 !LPUB INSERT BOM");
+  Where topOfStep = gui->topOfPages[gui->displayPageNum-1];
+  scanPastGlobal(topOfStep);
+  appendMeta(topOfStep,meta);
 }
 
 /***************************************************************************/
@@ -1319,13 +1343,17 @@ Rc  MetaItem::scanForward(
     } else {
       Rc rc = tmpMeta.parse(line,here);
       
-      if (rc == StepRc || rc == RotStepRc) {
+      if (rc == InsertRc) {
+        return rc;
+      } else if (rc == StepRc || rc == RotStepRc) {
         if (((mask >> rc) & 1) && partsAdded) {
           return rc;
         }
         partsAdded = false;
-      } else if (rc < ClearRc && ((mask >> rc) & 1)) {
-        return rc;
+      } else {
+        if (rc < ClearRc && ((mask >> rc) & 1)) {
+          return rc;
+        }
       }
     }
   }
@@ -1717,6 +1745,12 @@ void MetaItem::addCalloutMetas(
   if (instanceCount) {
     Where instance;
     for (int i = 0; i < instanceCount; i++) {
+      /* defaultPointerTip is the trick - it calculates the pointer tip
+         for a given instance of a callout.  It does this by rendering
+         the parent image with the non-called out parts color A and
+         the called out parts color B.  Then the resulatant image is
+         searched for color B.  The parent model needs to be rotated
+         by ROTSTEP for this to work. */
       QPointF offset = defaultPointerTip(*meta, instances[i],isMirrored);
       QString line = QString("%1 %2") .arg(offset.x()) .arg(offset.y());
       appendMeta(lastInstance,"0 !LPUB CALLOUT POINTER CENTER 0 " + line);

@@ -44,6 +44,8 @@
 
 QHash<QString, int> tokenMap;
 
+bool AbstractMeta::reportErrors = false;
+
 void AbstractMeta::init(
   BranchMeta *parent, 
   QString name)
@@ -232,9 +234,12 @@ Rc IntMeta::parse(QStringList &argv, int index,Where &here)
       return rc;
     }
   }
-  QMessageBox::warning(NULL,
-    QMessageBox::tr("LPub"),
-    QMessageBox::tr("Expected a whole number but got \"%1\" %2") .arg(argv[index]) .arg(argv.join(" ")));
+
+  if (reportErrors) {
+    QMessageBox::warning(NULL,
+      QMessageBox::tr("LPub"),
+      QMessageBox::tr("Expected a whole number but got \"%1\" %2") .arg(argv[index]) .arg(argv.join(" ")));
+  }
 
   return FailureRc;
 }
@@ -276,10 +281,11 @@ Rc FloatMeta::parse(QStringList &argv, int index,Where &here)
       return rc;
     }
   }
-
-  QMessageBox::warning(NULL,
-    QMessageBox::tr("LPub"),
-    QMessageBox::tr("Expected a floating point number but got \"%1\" %2") .arg(argv[index]) .arg(argv.join(" ")));
+  if (reportErrors) {
+    QMessageBox::warning(NULL,
+      QMessageBox::tr("LPub"),
+      QMessageBox::tr("Expected a floating point number but got \"%1\" %2") .arg(argv[index]) .arg(argv.join(" ")));
+  }
 
   return FailureRc;
 }
@@ -355,9 +361,11 @@ Rc FloatPairMeta::parse(QStringList &argv, int index,Where &here)
     }
   }
 
-  QMessageBox::warning(NULL,
-    QMessageBox::tr("LPub"),
-    QMessageBox::tr("Expected two floating point numbers but got \"%1\" \"%2\" %3") .arg(argv[index]) .arg(argv[index+1]) .arg(argv.join(" ")));
+  if (reportErrors) {
+    QMessageBox::warning(NULL,
+      QMessageBox::tr("LPub"),
+      QMessageBox::tr("Expected two floating point numbers but got \"%1\" \"%2\" %3") .arg(argv[index]) .arg(argv[index+1]) .arg(argv.join(" ")));
+  }
 
   return FailureRc;
 }
@@ -391,10 +399,12 @@ Rc StringMeta::parse(QStringList &argv, int index,Where &here)
     _here[pushed] = here;
     return rc;
   }
-  
-  QMessageBox::warning(NULL,
-    QMessageBox::tr("LPub"),
-    QMessageBox::tr("Expected a string after \"%1\"") .arg(argv.join(" ")));
+
+  if (reportErrors) {
+    QMessageBox::warning(NULL,
+      QMessageBox::tr("LPub"),
+      QMessageBox::tr("Expected a string after \"%1\"") .arg(argv.join(" ")));
+  }
 
   return FailureRc;
 }
@@ -457,9 +467,11 @@ Rc BoolMeta::parse(QStringList &argv, int index,Where &here)
     return OkRc;
   }
   
-  QMessageBox::warning(NULL,
-    QMessageBox::tr("LPub"),
-    QMessageBox::tr("Expected TRUE or FALSE \"%1\" %2") .arg(argv[index]) .arg(argv.join(" ")));
+  if (reportErrors) {
+    QMessageBox::warning(NULL,
+      QMessageBox::tr("LPub"),
+      QMessageBox::tr("Expected TRUE or FALSE \"%1\" %2") .arg(argv[index]) .arg(argv.join(" ")));
+  }
 
   return FailureRc;
 }
@@ -803,9 +815,11 @@ Rc BackgroundMeta::parse(QStringList &argv, int index,Where &here)
     return rc;
   } else {
       
-    QMessageBox::warning(NULL,
-      QMessageBox::tr("LPub"),
-      QMessageBox::tr("Malformed background \"%1\"") .arg(argv.join(" ")));
+    if (reportErrors) {
+      QMessageBox::warning(NULL,
+        QMessageBox::tr("LPub"),
+        QMessageBox::tr("Malformed background \"%1\"") .arg(argv.join(" ")));
+    }
 
     return FailureRc;
   }
@@ -1039,11 +1053,12 @@ Rc PointerMeta::parse(QStringList &argv, int index,Where &here)
     _here[1] = here;
     return CalloutPointerRc;
   } else {
-      
-    QMessageBox::warning(NULL,
-      QMessageBox::tr("LPub"),
-      QMessageBox::tr("Malformed callout arrow \"%1\"") .arg(argv.join(" ")));
 
+    if (reportErrors) {
+      QMessageBox::warning(NULL,
+        QMessageBox::tr("LPub"),
+        QMessageBox::tr("Malformed callout arrow \"%1\"") .arg(argv.join(" ")));
+    }
     return FailureRc;
   }
 }
@@ -1203,11 +1218,11 @@ Rc AllocMeta::parse(QStringList &argv, int index, Where &here)
     _here[pushed] = here;
     return OkRc;
   }
-      
-  QMessageBox::warning(NULL,
-    QMessageBox::tr("LPub"),
-    QMessageBox::tr("Expected HORIZONTAL or VERTICAL got \"%1\" in \"%2\"") .arg(argv[index]) .arg(argv.join(" ")));
-
+  if (reportErrors) {
+    QMessageBox::warning(NULL,
+      QMessageBox::tr("LPub"),
+      QMessageBox::tr("Expected HORIZONTAL or VERTICAL got \"%1\" in \"%2\"") .arg(argv[index]) .arg(argv.join(" ")));
+  }
   return FailureRc;
 }
 QString AllocMeta::format(bool local, bool global)
@@ -1250,11 +1265,11 @@ Rc SepMeta::parse(QStringList &argv, int index,Where &here)
       return OkRc;
     }
   }
-        
-  QMessageBox::warning(NULL,
-    QMessageBox::tr("LPub"),
-    QMessageBox::tr("Malformed separator \"%1\"") .arg(argv.join(" ")));
-
+  if (reportErrors) {
+    QMessageBox::warning(NULL,
+      QMessageBox::tr("LPub"),
+      QMessageBox::tr("Malformed separator \"%1\"") .arg(argv.join(" ")));
+  }
   return FailureRc;
 }
 QString SepMeta::format(bool local, bool global)
@@ -1273,46 +1288,15 @@ void SepMeta::doc(QTextStream &out, QString preamble)
 
 /* ------------------ */ 
 
-/* INSERT
- *   ((TOP|BOTTOM) (LEFT|CENTER|RIGHT)|
- *    (LEFT|RIGHT) (TOP|CENTER|BOTTOM)|
- *    (TOP_LEFT|TOP_RIGHT|BOTTOM_RIGHT|BOTTOM_LEFT))
- *      (PAGE|ASSEM|STEP_NUMBER|STEP_GROUP|....) (INSIDE|OUTSIDE) (OFFSET X Y) (MARGIN X Y)
- *        (PICTURE "name" (SCALE x))|
- *         TEXT |
- *         ARROW HX HY TX TY |
- *         BOM)
- *
- *              . ' (hox hoy) (hafting outside)
- *          . '  /
- *      . '     /---------------------------------------+
- *   tx--------- hix (hafting center)                   | shaft
- *      ` .     \---------------------------------------+
- *          ` .  \
- *              ` .
- *  TEXT
- *    FONT
- *    COLOR
- *    ALIGNMENT
- *
- *  ARROW
- *    HEAD
- *    SHAFT
- *    COLOR
- *    END (ROUND|SQUARE)
- *
- *  Picture takes up    area (placement)  PictureItem (ImageMeta?)
- *  BOM     takes up    area (placement)  Pli
- *  Text    takes up no area (placement)  TextItem
- *  Arrows  take  up no area (placement)  ArrowItem (GroupItem)
- *
- *  STEP INSERT PART STEP (build a list of inserts, append to Step)
- *    PICTURE relativeTo (STEP_NUM|PLI|ASSEM|STEP_GROUP|PAGE)
- *    TEXT relativeTo    (STEP_NUM|PLI|ASSEM|STEP_GROUP|PAGE)
- *    ARROW relativeTo   (STEP_NUM|PLI|ASSEM|STEP_GROUP|PAGE)
- *    BOM relativeTo     (STEP_NUM|PLI|ASSEM|STEP_GROUP|PAGE)
+/*
+ *  INSERT (
+ *   PICTURE "name" (SCALE x) |
+ *   TEXT "text" "font" color  |
+ *   ARROW HDX HDY TLX TLY HD HFX HFY |
+ *   BOM)
+ *   OFFSET x y
  */
- 
+
 Rc InsertMeta::parse(QStringList &argv, int index, Where &here)
 {
   InsertData insertData;
@@ -1321,8 +1305,7 @@ Rc InsertMeta::parse(QStringList &argv, int index, Where &here)
   if (argv.size() - index == 1) {
     if (argv[index] == "PAGE") {
       return InsertPageRc;
-    }
-    if (argv[index] == "COVER_PAGE") {
+    } else if (argv[index] == "COVER_PAGE") {
       return InsertCoverPageRc;
     }
   }
@@ -1342,10 +1325,11 @@ Rc InsertMeta::parse(QStringList &argv, int index, Where &here)
       }
     }
 
-  } else if (argv.size() - index > 2 && argv[index] == "TEXT") {
+  } else if (argv.size() - index > 3 && argv[index] == "TEXT") {
     insertData.type = InsertData::InsertText;
-    insertData.textFont = argv[++index];
-    insertData.text         = argv[++index];
+    insertData.text           = argv[++index];
+    insertData.textFont   = argv[++index];
+    insertData.textColor = argv[++index];
     ++index;
 
   } else if (argv.size() - index >= 8 && argv[index] == "ARROW") {
@@ -1370,6 +1354,7 @@ Rc InsertMeta::parse(QStringList &argv, int index, Where &here)
     ++index;
 
   } else if (argv[index] == "BOM") {
+    insertData.type = InsertData::InsertBom;
     ++index;
   }
 
@@ -1381,7 +1366,7 @@ Rc InsertMeta::parse(QStringList &argv, int index, Where &here)
       if ( ! ok[0] || ! ok[1]) {
         rc = FailureRc;
       }
-    } else {
+    } else if (argv.size() - index > 0) {
       rc = FailureRc;
     }
   }
@@ -1389,12 +1374,14 @@ Rc InsertMeta::parse(QStringList &argv, int index, Where &here)
   if (rc == OkRc) {
     _value[pushed] = insertData;
     _here[pushed] = here;
-    return InsertRc;
 
+    return InsertRc;
   } else {
-    QMessageBox::warning(NULL,
-      QMessageBox::tr("LPub"),
-      QMessageBox::tr("Malformed Insert metacommand \"%1\"") .arg(argv.join(" ")));
+    if (reportErrors) {
+      QMessageBox::warning(NULL,
+        QMessageBox::tr("LPub"),
+        QMessageBox::tr("Malformed Insert metacommand \"%1\"") .arg(argv.join(" ")));
+    }
     return FailureRc;
   } 
 }
@@ -1410,10 +1397,9 @@ QString InsertMeta::format(bool local, bool global)
       }
     break;
     case InsertData::InsertText:
-      foo += " TEXT";
-      for (int i = 0; i < _value[pushed].text.size(); i++) {
-        foo += " \"" + _value[pushed].text[i] + "\"";
-      }
+      foo += QString("TEXT \"%1\" \"%2\" \"%3\"") .arg(_value[pushed].text)
+                                                                                   .arg(_value[pushed].textFont)
+                                                                                   .arg(_value[pushed].textColor);
     break;
     case InsertData::InsertArrow:
       foo += " ARROW";
@@ -1759,11 +1745,11 @@ Rc RotStepMeta::parse(QStringList &argv, int index,Where &here)
     _here[1] = here;
     return RotStepRc;
   }
-    
-  QMessageBox::warning(NULL,
-    QMessageBox::tr("LPub"),
-    QMessageBox::tr("Malformed rotation step \"%1\"") .arg(argv.join(" ")));
-
+  if (reportErrors) {
+    QMessageBox::warning(NULL,
+      QMessageBox::tr("LPub"),
+      QMessageBox::tr("Malformed rotation step \"%1\"") .arg(argv.join(" ")));
+  }
   return FailureRc;
 }
 QString RotStepMeta::format(bool local, bool global)
@@ -1796,11 +1782,11 @@ Rc BuffExchgMeta::parse(QStringList &argv, int index,Where &here)
       }
     } 
   }
-
-  QMessageBox::warning(NULL,
-    QMessageBox::tr("LPub"),
-    QMessageBox::tr("Malformed buffer exchange \"%1\"") .arg(argv.join(" ")));
-
+  if (reportErrors) {
+    QMessageBox::warning(NULL,
+      QMessageBox::tr("LPub"),
+      QMessageBox::tr("Malformed buffer exchange \"%1\"") .arg(argv.join(" ")));
+  }
   return FailureRc;
 }
 QString BuffExchgMeta::format(bool local, bool global)
@@ -1956,7 +1942,7 @@ void BomBeginMeta::init(BranchMeta *parent, QString name)
 
 BomMeta::BomMeta() : PliMeta()
 {
-  placement.setValue(TopLeftInsideCorner,PageType);
+  placement.setValue(CenterCenter,PageType);
   BorderData borderData;
   borderData.type = BorderData::BdrSquare;
   borderData.color = "Black";
@@ -2264,11 +2250,14 @@ void Meta::init(BranchMeta * /* unused */, QString /* unused */)
 
 Rc Meta::parse(
   QString  &line,
-  Where    &here)
+  Where    &here,
+  bool           reportErrors)
 {
   QStringList argv;
   
   QRegExp bgt("^\\s*0\\s+(MLCAD)\\s+(BTG)\\s+(.*)$");
+
+  AbstractMeta::reportErrors = reportErrors;
 
   if (line.contains(bgt)) {
     argv << "MLCAD" << "BTG" << bgt.cap(3);
@@ -2299,9 +2288,11 @@ Rc Meta::parse(
     Rc rc = this->BranchMeta::parse(argv,0,here);
 
     if (rc == FailureRc) {
-      QMessageBox::warning(NULL,QMessageBox::tr("LPub"),
-                              QMessageBox::tr("Parse failed %1:%2\n%3")
-                              .arg(here.modelName) .arg(here.lineNumber) .arg(line));
+      if (reportErrors) {
+        QMessageBox::warning(NULL,QMessageBox::tr("LPub"),
+                                QMessageBox::tr("Parse failed %1:%2\n%3")
+                                .arg(here.modelName) .arg(here.lineNumber) .arg(line));
+      }
     }
     return rc;
   }

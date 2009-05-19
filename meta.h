@@ -130,6 +130,8 @@ public:
   bool      global;
   QString            preamble;
 
+  static bool reportErrors;
+
   AbstractMeta()
   {
      pushed = 0;
@@ -1764,9 +1766,6 @@ public:
   }
   void setValue(ResolutionType _type, float _resolution)
   {
-    	
-    QMessageBox::information(NULL,QMessageBox::tr("LPub"),QMessageBox::tr("Startup"));
-
     setResolutionType(_type);
     setResolution(_resolution);
   }
@@ -1798,7 +1797,7 @@ public:
   CalloutMeta    callout;
   MultiStepMeta  multiStep;
   PliMeta        pli;
-  PliMeta        bom;
+  BomMeta        bom;
   RemoveMeta     remove;
   FloatMeta      reserve;
   PartIgnMeta    partSub;
@@ -1895,10 +1894,10 @@ public:
 
   QList<SubmodelStack>  submodelStack;
 
-           Meta();
+  Meta();
   virtual ~Meta();
-          Rc    parse(QString &line, Where &here);
-          bool  preambleMatch(QString &line, QString &preamble);
+  Rc    parse(QString &line, Where &here, bool reportErrors = 0);
+  bool  preambleMatch(QString &line, QString &preamble);
   virtual void  init(BranchMeta *parent, QString name);
   virtual void  pop();
   void  doc();

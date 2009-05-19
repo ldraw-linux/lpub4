@@ -54,11 +54,27 @@ QCache<QString,QString> Pli::orientation;
     
 const Where &Pli::topOfStep()
 {
-  return step->topOfStep();
+  if (bom) {
+    return gui->topOfPage();
+  } else {
+    if (step) {
+      return step->topOfStep();
+    } else {
+      return steps->topOfSteps();
+    }
+  }
 }
 const Where &Pli::bottomOfStep()
 {
-  return step->bottomOfStep();
+  if (bom) {
+    return gui->bottomOfPage();
+  } else {
+    if (step) {
+      return step->bottomOfStep();
+    } else {
+      return steps->bottomOfSteps();
+    }
+  }
 }
 const Where &Pli::topOfSteps()
 {
@@ -70,21 +86,11 @@ const Where &Pli::bottomOfSteps()
 }
 const Where &Pli::topOfCallout()
 {
-  if (callout) {
-    return callout->topOfCallout();
-  } else {
-    static Where stupid;
-    return stupid;
-  }
+  return step->callout()->topOfCallout();
 }
 const Where &Pli::bottomOfCallout()
 {
-  if (callout) {
-     return callout->bottomOfCallout();
-  } else {
-    static Where stupid;
-    return stupid;
-  }
+  return step->callout()->bottomOfCallout();
 }
 
 /****************************************************************************
@@ -108,47 +114,51 @@ float PliPart::maxMargin()
   return margin1;
 }
 
+QString Pli::partLine(QString &line, Where &here, Meta & /*meta*/)
+{
+  return line + QString(";%1;%2") .arg(here.modelName) .arg(here.lineNumber);
+}
+
+void Pli::setParts(
+  QStringList &csiParts,
+  Meta        &meta,
+  bool         bom)
+{
+  const int numParts = csiParts.size();
+  for (int i = 0; i < numParts; i++) {
+    QString part = csiParts[i];
+    QStringList sections = part.split(";");
+    QString line = sections[0];
+    Where here(sections[1],sections[2].toInt());
+
+    QStringList tokens;
+
+    split(line,tokens);
+
+    if (tokens.size() == 15 && tokens[0] == "1") {
+      QString &color = tokens[1];
+      QString &type = tokens[14];
+
+      QFileInfo info(type);
+
+      QString key = info.baseName() + "_" + color;
+
+      if ( ! parts.contains(key)) {
+        PliPart *part = new PliPart(type,color);
+        part->annotateMeta = bom ? meta.LPub.bom.annotate : meta.LPub.pli.annotate;
+        part->instanceMeta = bom ? meta.LPub.bom.instance : meta.LPub.pli.instance;
+        part->csiMargin    = meta.LPub.pli.part.margin;
+        parts.insert(key,part);
+      }
+
+      parts[key]->instances.append(here);
+    }
+  }
+}
+
 void Pli::clear()
 {
   parts.clear();
-}
-
-/* Append a new part instance to the parts of parts used so far */
-
-void Pli::append(
-  Meta          *meta,
-  bool           bom,
-  QString       &type,
-  QString       &color,
-  Where         &here,
-  bool           includeSubs)
-{
-  QFileInfo info(type);
-
-  QString key = info.baseName() + "_" + color;
-
-  if ( ! parts.contains(key)) {
-    PliPart *part = new PliPart(type,color,includeSubs);
-    part->annotateMeta = bom ? meta->LPub.bom.annotate : meta->LPub.pli.annotate;
-    part->instanceMeta = bom ? meta->LPub.bom.instance : meta->LPub.pli.instance;
-    part->csiMargin    = meta->LPub.pli.part.margin;
-    parts.insert(key,part);
-  }
-
-  parts[key]->instances.append(here);
-}
-
-void Pli::unite(Pli &pli)
-{
-  QString key;
-  foreach(key,pli.parts.keys()) {
-    if (parts.contains(key)) {
-      parts[key]->instances += pli.parts[key]->instances;
-    } else {
-      PliPart *part = new PliPart(*pli.parts[key]);
-      parts.insert(key,part);
-    }
-  }
 }
 
 QHash<int, QString>     annotationString;
@@ -329,7 +339,7 @@ int Pli::createPartImage(
       
     // feed DAT to LDGLite
   
-    int rc = renderer->renderPli(ldrName,imageName,*meta);
+    int rc = renderer->renderPli(ldrName,imageName,*meta, bom);
   
     if (rc != 0) {
       QMessageBox::warning(NULL,QMessageBox::tr(LPUB),
@@ -756,9 +766,7 @@ int Pli::sortPli()
 
     part = parts[key];
 
-    if (PartsList::isKnownPart(part->type) || 
-        part->includeSubmodel && !bom &&
-        gui->ldrawFileContains(part->type)) {
+    if (PartsList::isKnownPart(part->type)) {
 
       if (part->color == "16") {
         part->color = "0";
@@ -1255,6 +1263,12 @@ void Pli::setPos(float x, float y)
     background->setPos(x,y);
   }
 }
+void Pli::setFlag(QGraphicsItem::GraphicsItemFlag flag, bool value)
+{
+  if (background) {
+    background->setFlag(flag,value);
+  }
+}
 
 QString PGraphicsPixmapItem::pliToolTip(
   QString type,
@@ -1406,14 +1420,17 @@ void PliBackgroundItem::contextMenuEvent(
     Where bottom;
     bool  local;
       
-    Where topOfStep = pli->topOfStep();
-    Where bottomOfStep = pli->bottomOfStep();
+    Where topOfStep;
+    Where bottomOfStep;
+    
+    if (pli->step) {
+      topOfStep = pli->topOfStep();
+      bottomOfStep = pli->bottomOfStep();
+    }
   
     switch (parentRelativeType) {
       case StepGroupType:
         top    = pli->topOfSteps();
-        MetaItem mi;
-        mi.scanForward(top,StepGroupMask);
         bottom = pli->bottomOfSteps();
         local = false;
       break;
@@ -1423,8 +1440,8 @@ void PliBackgroundItem::contextMenuEvent(
         local = false;
       break;
       default:
-        top    = topOfStep;
-        bottom = bottomOfStep;
+        top    = pli->topOfStep();
+        bottom = pli->bottomOfStep();
         local = true;
       break;
     }
@@ -1439,8 +1456,8 @@ void PliBackgroundItem::contextMenuEvent(
       changePlacement(parentRelativeType,
                       PartsListType,
                       me+" Placement",
-                      topOfStep,
-                      bottomOfStep,
+                      top,
+                      bottom,
                     &pli->placement);
     } else if (selectedAction == marginAction) {
       changeMargins(me+" Margins",
@@ -1473,8 +1490,8 @@ void PliBackgroundItem::resize(QPointF grabbed)
   point = grabbed;
   grabHeight = grabbed.y()-pos().y();
   
-  if (pli && pli->parentRelativeType == CalloutType && pli->callout && pli->callout->parentStep) {
-    Step *step = pli->callout->parentStep;
+  if (pli && pli->parentRelativeType == CalloutType && pli->step->callout()->parentStep) {
+    Step *step = pli->step->callout()->parentStep;
     grabHeight -= step->parent->loc[YY];
     grabHeight -= step->parent->parent->loc[YY];
   }
