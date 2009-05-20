@@ -564,9 +564,9 @@ void LDrawFile::countInstances()
 {
   for (int i = 0; i < _subFileOrder.size(); i++) {
     QString fileName = _subFileOrder[i].toLower();
-    QMap<QString, LDrawSubFile>::iterator i = _subFiles.find(fileName);
-    i->_instances = 0;
-    i->_mirrorInstances = 0;
+    QMap<QString, LDrawSubFile>::iterator it = _subFiles.find(fileName);
+    it->_instances = 0;
+    it->_mirrorInstances = 0;
   }
   countInstances(topLevelFile(),false);
 }
