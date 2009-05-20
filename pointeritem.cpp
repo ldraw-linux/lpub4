@@ -170,9 +170,9 @@ void CalloutPointerItem::drawPointerPoly()
   QPolygonF poly;
   
   poly << QPointF(-2*grabSize(), 0);
-  poly << QPointF(-2*grabSize(),grabSize());
-  poly << QPointF(0,0);
-  poly << QPointF(-2*grabSize(),-grabSize());
+  poly << QPointF(-2*grabSize(),grabSize()/2);
+  poly << QPointF(grabSize()/2,0);
+  poly << QPointF(-2*grabSize(),-grabSize()/2);
   poly << QPointF(-2*grabSize(),0);
   
   removeFromGroup(head);
