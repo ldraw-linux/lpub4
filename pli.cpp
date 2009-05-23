@@ -197,8 +197,9 @@ bool Pli::initAnnotationString()
     annotationString[32+14]= "TY";  // yellow
     annotationString[32+22]= "TPpl";// purple
     annotationString[32+25]= "TO";  // orange
-    titles << "^Technic Axle\\s+(\\d+)\\s*$";
+    titles << "^Technic Axle\\s+(\\d+)\\s*.*$";
     titles << "^Technic Axle Flexible\\s+(\\d+)\\s*$";
+    //titles << "^Technic Beam\\s+(\\d+)\\s*$";
     titles << "^Electric Cable NXT\\s+([0-9].*)$";
     titles << "^Electric Cable RCX\\s+([0-9].*)$";
   }
