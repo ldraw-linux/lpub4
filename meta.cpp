@@ -34,7 +34,7 @@
  ***************************************************************************/
 
 #include <QtGui>
-#include <QTextStream>
+#include <QStringList>
 #include "meta.h"
 #include "lpub.h"
 
@@ -54,7 +54,7 @@ void AbstractMeta::init(
   parent->list[name] = this;
 }
 
-void AbstractMeta::doc(QTextStream &out, QString preamble)
+void AbstractMeta::doc(QStringList &out, QString preamble)
 {
   out << preamble;
 }
@@ -172,7 +172,7 @@ bool BranchMeta::preambleMatch(QStringList &argv, int index, QString &match)
  * graph
  */
 
-void BranchMeta::doc(QTextStream &out, QString preamble)
+void BranchMeta::doc(QStringList &out, QString preamble)
 {
   QString key;
   QStringList keys = list.keys();
@@ -204,9 +204,9 @@ Rc RcMeta::parse(QStringList &argv, int index, Where &here)
   return rc;
 }
 
-void RcMeta::doc(QTextStream &out, QString preamble)
+void RcMeta::doc(QStringList &out, QString preamble)
 {
-  out << preamble << endl;
+  out << preamble;
 }
 
 /* ------------------ */
@@ -251,9 +251,9 @@ QString IntMeta::format(bool local, bool global)
   return LeafMeta::format(local,global,foo);
 }
 
-void IntMeta::doc(QTextStream &out, QString preamble)
+void IntMeta::doc(QStringList &out, QString preamble)
 {
-  out << preamble << " <integer>" << endl;
+  out << preamble + " <integer>";
 }
 
 /* ------------------ */
@@ -295,9 +295,9 @@ QString FloatMeta::format(bool local, bool global)
   foo = QString("%1") .arg(value(),_fieldWidth,'f',_precision);
   return LeafMeta::format(local,global,foo);
 }
-void FloatMeta::doc(QTextStream &out, QString preamble)
+void FloatMeta::doc(QStringList &out, QString preamble)
 {
-  out << preamble << " <float>" << endl;
+  out << preamble + " <float>";
 }
 
 /* ------------------ */
@@ -376,9 +376,9 @@ QString FloatPairMeta::format(bool local, bool global)
     .arg(_value[pushed][1],_fieldWidth,'f',_precision);
   return LeafMeta::format(local,global,foo);
 }
-void FloatPairMeta::doc(QTextStream &out, QString preamble)
+void FloatPairMeta::doc(QStringList &out, QString preamble)
 {
-  out << preamble << " <float> <float>" << endl;
+  out << preamble + " <float> <float>";
 }
 
 /* ------------------ */
@@ -414,9 +414,9 @@ QString StringMeta::format(bool local, bool global)
   return LeafMeta::format(local,global,foo);
 }
 
-void StringMeta::doc(QTextStream &out, QString preamble)
+void StringMeta::doc(QStringList &out, QString preamble)
 {
-  out << preamble << " <\"string\">" << endl;
+  out << preamble + " <\"string\">";
 }
 
 /* ------------------ */
@@ -449,9 +449,9 @@ QString StringListMeta::format(bool local, bool global)
   return LeafMeta::format(local,global,foo);
 }
 
-void StringListMeta::doc(QTextStream &out, QString preamble)
+void StringListMeta::doc(QStringList &out, QString preamble)
 {
-  out << preamble << " <\"string\"> <\"string\"> ....." << endl;
+  out << preamble + " <\"string\"> <\"string\"> .....";
 }
 
 /* ------------------ */
@@ -481,9 +481,9 @@ QString BoolMeta::format(bool local, bool global)
   return LeafMeta::format(local,global,foo);
 }
 
-void BoolMeta::doc(QTextStream &out, QString preamble)
+void BoolMeta::doc(QStringList &out, QString preamble)
 {
-  out << preamble << " <TRUE|FALSE>" << endl;
+  out << preamble + " <TRUE|FALSE>";
 }
 
 /* ------------------ */ 
@@ -766,11 +766,11 @@ QString PlacementMeta::format(bool local, bool global)
   return LeafMeta::format(local,global,foo);
 }
 
-void PlacementMeta::doc(QTextStream &out, QString preamble)
+void PlacementMeta::doc(QStringList &out, QString preamble)
 {
-  out << preamble << " (TOP|BOTTOM) (LEFT|CENTER|RIGHT) (PAGE|ASSEM (INSIDE|OUTSIDE)|MULTI_STEP|STEP_NUMBER|PLI|CALLOUT)" << endl;
-  out << preamble << " (LEFT|RIGHT) (TOP|CENTER|BOTTOM) (PAGE|ASSEM (INSIDE|OUTSIDE)|MULTI_STEP|STEP_NUMBER|PLI|CALLOUT)" << endl;
-  out << preamble << " (TOP_LEFT|TOP_RIGHT|BOTTOM_LEFT|BOTTOM_RIGHT) (PAGE|ASSEM (INSIDE|OUTIDE)|MULTI_STEP|STEP_NUMBER|PLI|CALLOUT)" << endl;
+  out << preamble + " (TOP|BOTTOM) (LEFT|CENTER|RIGHT) (PAGE|ASSEM (INSIDE|OUTSIDE)|MULTI_STEP|STEP_NUMBER|PLI|CALLOUT)";
+  out << preamble + " (LEFT|RIGHT) (TOP|CENTER|BOTTOM) (PAGE|ASSEM (INSIDE|OUTSIDE)|MULTI_STEP|STEP_NUMBER|PLI|CALLOUT)";
+  out << preamble + " (TOP_LEFT|TOP_RIGHT|BOTTOM_LEFT|BOTTOM_RIGHT) (PAGE|ASSEM (INSIDE|OUTIDE)|MULTI_STEP|STEP_NUMBER|PLI|CALLOUT)";
 }
 /* ------------------ */ 
 
@@ -847,9 +847,9 @@ QString BackgroundMeta::format(bool local, bool global)
   return LeafMeta::format(local,global,foo);
 }
 
-void BackgroundMeta::doc(QTextStream &out, QString preamble)
+void BackgroundMeta::doc(QStringList &out, QString preamble)
 {
-  out << preamble << " (TRANSPARENT|SUBMODEL_BACKGROUND_COLOR|COLOR <color>|PICTURE (STRETCH) <\"picture\">)" << endl;
+  out << preamble + " (TRANSPARENT|SUBMODEL_BACKGROUND_COLOR|COLOR <color>|PICTURE (STRETCH) <\"picture\">)";
 }
 
 QString BackgroundMeta::text()
@@ -953,9 +953,9 @@ QString BorderMeta::format(bool local, bool global)
   return LeafMeta::format(local,global,foo);
 }
 
-void BorderMeta::doc(QTextStream &out, QString preamble)
+void BorderMeta::doc(QStringList &out, QString preamble)
 {
-  out << preamble << " (NONE|SQUARE <color> <thickness>|ROUND <color> <thickness> <radius>) MARGINS <x> <y>" << endl;
+  out << preamble + " (NONE|SQUARE <color> <thickness>|ROUND <color> <thickness> <radius>) MARGINS <x> <y>";
 }
 
 QString BorderMeta::text()
@@ -1089,10 +1089,10 @@ QString PointerMeta::format(bool local, bool global)
   return LeafMeta::format(local,global,foo);
 }
 
-void PointerMeta::doc(QTextStream &out, QString preamble)
+void PointerMeta::doc(QStringList &out, QString preamble)
 {
-  out << preamble << " (TOP_LEFT|TOP_RIGHT|BOTTOM_LEFT|BOTTOM_RIGHT) <floatX> <floatY> <intBase>" << endl;
-  out << preamble << " (TOP|BOTTOM|LEFT|RIGHT) <floatLoc> <floatX> <floatY> <intBase>" << endl;
+  out << preamble +  " (TOP_LEFT|TOP_RIGHT|BOTTOM_LEFT|BOTTOM_RIGHT) <floatX> <floatY> <intBase>";
+  out << preamble + " (TOP|BOTTOM|LEFT|RIGHT) <floatLoc> <floatX> <floatY> <intBase>";
 }
 
 /* ------------------ */ 
@@ -1134,9 +1134,9 @@ QString FreeFormMeta::format(bool local, bool global)
   }
   return LeafMeta::format(local,global,foo);
 }
-void FreeFormMeta::doc(QTextStream &out, QString preamble)
+void FreeFormMeta::doc(QStringList &out, QString preamble)
 {
-  out << preamble << " (FALSE|(STEP_NUMBER|ASSEM|PLI) (LEFT|RIGHT|TOP|BOTTOM|CENTER))" << endl;
+  out << preamble + " (FALSE|(STEP_NUMBER|ASSEM|PLI) (LEFT|RIGHT|TOP|BOTTOM|CENTER))";
 }
 
 /* ------------------ */ 
@@ -1199,9 +1199,9 @@ QString ConstrainMeta::format(bool local, bool global)
   }
   return LeafMeta::format(local,global,foo);
 }
-void ConstrainMeta::doc(QTextStream &out, QString preamble)
+void ConstrainMeta::doc(QStringList &out, QString preamble)
 {
-  out << preamble << " (AREA|SQUARE|(WIDTH|HEIGHT|COLS) <integer>)" << endl;
+  out << preamble + " (AREA|SQUARE|(WIDTH|HEIGHT|COLS) <integer>)";
 }
 
 /* ------------------ */ 
@@ -1235,9 +1235,9 @@ QString AllocMeta::format(bool local, bool global)
   }
   return LeafMeta::format(local,global,foo);
 }
-void AllocMeta::doc(QTextStream &out, QString preamble)
+void AllocMeta::doc(QStringList &out, QString preamble)
 {
-  out << preamble << " (HORIZONTAL|VERTICAL)" << endl;
+  out << preamble + " (HORIZONTAL|VERTICAL)";
 }
 
 /* ------------------ */ 
@@ -1281,9 +1281,9 @@ QString SepMeta::format(bool local, bool global)
    .arg(_value[pushed].margin[1]);
   return LeafMeta::format(local,global,foo);
 }
-void SepMeta::doc(QTextStream &out, QString preamble)
+void SepMeta::doc(QStringList &out, QString preamble)
 {
-  out << preamble << " <intThickness> <color> <marginX> <marginY>" << endl;
+  out << preamble + " <intThickness> <color> <marginX> <marginY>";
 }
 
 /* ------------------ */ 
@@ -1424,9 +1424,9 @@ QString InsertMeta::format(bool local, bool global)
   return LeafMeta::format(local,global,foo);
 }
 
-void InsertMeta::doc(QTextStream &out, QString preamble)
+void InsertMeta::doc(QStringList &out, QString preamble)
 {
-  out << preamble << " <placement> (PICTURE \"name\"|ARROW x y x y |BOM|TEXT \"\" \"\"" << endl;
+  out << preamble + " <placement> (PICTURE \"name\"|ARROW x y x y |BOM|TEXT \"\" \"\"";
 }
 
 /* ------------------ */
@@ -1466,9 +1466,9 @@ QString AlignmentMeta::format(bool local, bool global)
   return LeafMeta::format(local,global,foo);
 }
 
-void AlignmentMeta::doc(QTextStream &out, QString preamble)
+void AlignmentMeta::doc(QStringList &out, QString preamble)
 {
-  out << preamble << "(LEFT|CENTER|RIGHT)";
+  out << preamble + "(LEFT|CENTER|RIGHT)";
 }
 
 /* ------------------ */ 
@@ -1522,9 +1522,9 @@ QString ArrowHeadMeta::format(bool local, bool global)
   return LeafMeta::format(local,global,foo);
 }
 
-void ArrowHeadMeta::doc(QTextStream &out, QString preamble)
+void ArrowHeadMeta::doc(QStringList &out, QString preamble)
 {
-  out << preamble << "TipX HaftingInsideX HaftingOutsideX HaftingOutsideY";
+  out << preamble + "TipX HaftingInsideX HaftingOutsideX HaftingOutsideY";
 }
 
 /* ------------------ */ 
@@ -1557,9 +1557,9 @@ QString ArrowEndMeta::format(bool local, bool global)
   return LeafMeta::format(local,global,foo);
 }
 
-void ArrowEndMeta::doc(QTextStream &out, QString preamble)
+void ArrowEndMeta::doc(QStringList &out, QString preamble)
 {
-  out << preamble << "(SQUARE|ROUND)";
+  out << preamble + "(SQUARE|ROUND)";
 }
 
 /* ------------------ */ 
@@ -1693,10 +1693,10 @@ QString SubMeta::format(bool local, bool global)
   return LeafMeta::format(local,global,foo);
 }
 
-void SubMeta::doc(QTextStream &out, QString preamble)
+void SubMeta::doc(QStringList &out, QString preamble)
 {
-  out << preamble << " <part> <color>" << endl;
-  out << preamble << " <part>" << endl;
+  out << preamble + " <part> <color>";
+  out << preamble + " <part>";
 }
 
 /* ------------------ */ 
@@ -1760,9 +1760,9 @@ QString RotStepMeta::format(bool local, bool global)
   return LeafMeta::format(local,global,foo);
 }
 
-void RotStepMeta::doc(QTextStream &out, QString preamble)
+void RotStepMeta::doc(QStringList &out, QString preamble)
 {
-  out << preamble << " <rotX> <rotY> <rotZ> <ABS|REL|ADD>" << endl;
+  out << preamble + " <rotX> <rotY> <rotZ> <ABS|REL|ADD>";
 }
 
 /* ------------------ */ 
@@ -1795,9 +1795,9 @@ QString BuffExchgMeta::format(bool local, bool global)
   return LeafMeta::format(local,global,foo);
 }
 
-void BuffExchgMeta::doc(QTextStream &out, QString preamble)
+void BuffExchgMeta::doc(QStringList &out, QString preamble)
 {
-  out << preamble << " <bufferName> <STORE|RETRIEVE>" << endl;
+  out << preamble + " <bufferName> <STORE|RETRIEVE>";
 }
 
 /*---------------------------------------------------------------
@@ -2128,9 +2128,9 @@ QString ResolutionMeta::format(bool local, bool global)
   return LeafMeta::format(local,global,res);
 } 
 
-void ResolutionMeta::doc(QTextStream &out, QString preamble)
+void ResolutionMeta::doc(QStringList &out, QString preamble)
 {
-  out << preamble << "<integer> (DPI|DPCM)" << endl;
+  out << preamble + "<integer> (DPI|DPCM)";
 }
 
 LPubMeta::LPubMeta() : BranchMeta()
@@ -2325,14 +2325,8 @@ void Meta::pop()
   BranchMeta::pop();
 }
 
-void Meta::doc()
+void Meta::doc(QStringList &out)
 {
-  QString fileName = QDir::currentPath() + "/lpubMeta.ldr";
-  QFile docFile(fileName);
-  if ( ! docFile.open(QFile::WriteOnly | QFile::Text)) {
-    return;
-  }
-  QTextStream out(&docFile);
   QString key;
   QStringList keys = list.keys();
   keys.sort();

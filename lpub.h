@@ -593,6 +593,15 @@ private slots:
     void redo();
     void undo();
 
+    void insertCoverPage();
+    void appendCoverPage();
+    void insertNumberedPage();
+    void appendNumberedPage();
+    void deletePage();
+    void addPicture();
+    void addText();
+    void addBom();
+
     void nextPage();
     void prevPage();
     void setPage();
@@ -619,10 +628,10 @@ private slots:
       LGraphicsView  *view,
       QGraphicsScene *scene);
 
-    void redrawPage();
     void clearAndRedrawPage();
     
     void enableActions();
+    void enableActions2();
 
     /******************************************************************
      * File management functions
@@ -692,6 +701,14 @@ private:
 
   QAction  *undoAct;
   QAction  *redoAct;
+  QAction  *insertCoverPageAct;
+  QAction  *appendCoverPageAct;
+  QAction  *insertNumberedPageAct;
+  QAction  *appendNumberedPageAct;
+  QAction  *deletePageAct;
+  QAction  *addPictureAct;
+  QAction  *addTextAct;
+  QAction  *addBomAct;
 
   // view
   // zoom toolbar

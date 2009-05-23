@@ -88,76 +88,22 @@ void PageBackgroundItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
       ignoreAction  = menu.addAction("Ignore this submodel");
       ignoreAction->setWhatsThis("Stops these steps from showing up in your instructions");
     }
-  }
 
-  QAction *insertCoverAction = NULL;
+    QAction *selectedAction     = menu.exec(event->screenPos());
 
-  if (okToInsertCoverPage()) {
-    insertCoverAction = menu.addAction("Insert Cover Page");
-    insertCoverAction->setWhatsThis("Add a cover page before this page.  Cover pages have no page number\n");
-  }
+    if (selectedAction == NULL) {
+      return;
+    }
 
-  QAction *appendCoverAction = NULL;
-  if (okToAppendCoverPage()) {
-    appendCoverAction = menu.addAction("Append Cover Page");
-    appendCoverAction->setWhatsThis("Add a cover page after this page.  Cover pages have no page number\n");
-  }
+    if (selectedAction == calloutAction) {
+      convertToCallout(&page->meta, page->bottom.modelName, page->isMirrored);
+    } else if (selectedAction == ignoreAction) {
+      convertToIgnore(&page->meta);
 
-  QAction *insertPageAction = NULL;
-
-  if (okToInsertNumberedPage()) {
-    insertPageAction = menu.addAction("Insert Page");
-    insertPageAction->setWhatsThis("Add a blank page before this page.\n");
-  }
-
-  QAction *appendPageAction = NULL;
-  if (okToAppendNumberedPage()) {
-    appendPageAction = menu.addAction("Append Page");
-    appendPageAction->setWhatsThis("Add a blank page after this page.\n");
-  }
-
-  QAction *addPictureAction = menu.addAction("Add Picture");
-  addPictureAction->setWhatsThis("Add a picture to this page.\n");
-
-  QAction *addTextAction = menu.addAction("Add Text");
-  addTextAction->setWhatsThis("Add text to this page\n");
-
-  QAction *addBomAction = NULL;
-
-  if (page->coverPage) {
-    addBomAction = menu.addAction("Add Bill Of Materials");
-    addTextAction->setWhatsThis("Add Bill Of Materials to this page\n");
-  }
-
-  QAction *selectedAction     = menu.exec(event->screenPos());
-
-  if (selectedAction == NULL) {
-    return;
-  }
-
-  if (selectedAction == calloutAction) {
-    convertToCallout(&page->meta, page->bottom.modelName, page->isMirrored);
-  } else if (selectedAction == insertCoverAction) {
-    insertCoverPage();
-  } else if (selectedAction == appendCoverAction) {
-    appendCoverPage();
-  } else if (selectedAction == insertPageAction) {
-    insertNumberedPage();
-  } else if (selectedAction == appendPageAction) {
-    appendNumberedPage();
-  } else if (selectedAction == addPictureAction) {
-    insertPicture();
-  } else if (selectedAction == addTextAction) {
-    insertText();
-  } else if (selectedAction == addBomAction) {
-    insertBOM();
-
-  } else if (selectedAction == ignoreAction) {
-    convertToIgnore(&page->meta);
-
-  } else if (selectedAction == addNextAction) {
-    addNextMultiStep(lastStep->topOfSteps(),lastStep->bottomOfSteps());
-  } else if (selectedAction == addPrevAction) {
-    addPrevMultiStep(firstStep->topOfSteps(),firstStep->bottomOfSteps());
+    } else if (selectedAction == addNextAction) {
+      addNextMultiStep(lastStep->topOfSteps(),lastStep->bottomOfSteps());
+    } else if (selectedAction == addPrevAction) {
+      addPrevMultiStep(firstStep->topOfSteps(),firstStep->bottomOfSteps());
+    }
   }
 }

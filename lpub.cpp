@@ -30,6 +30,7 @@
 #include "resolution.h"
 #include "lpub_preferences.h"
 #include "render.h"
+#include "metaitem.h"
 
 Gui *gui;
 
@@ -49,12 +50,61 @@ void clearCsiCache()
  * the code that creates the basic GUI framekwork 
  *
  ***************************************************************************/
-   
+
+void Gui::insertCoverPage()
+{
+  MetaItem mi;
+  mi.insertCoverPage();
+}
+
+void Gui::appendCoverPage()
+{
+  MetaItem mi;
+  mi.appendCoverPage();
+}
+
+void Gui::insertNumberedPage()
+{
+  MetaItem mi;
+  mi.insertNumberedPage();
+}
+
+void Gui::appendNumberedPage()
+{
+  MetaItem mi;
+  mi.appendNumberedPage();
+}
+
+void Gui::deletePage()
+{
+  MetaItem mi;
+  mi.deletePage();
+}
+
+void Gui::addPicture()
+{
+  MetaItem mi;
+  mi.insertPicture();
+}
+
+void Gui::addText()
+{
+  MetaItem mi;
+  mi.insertText();
+}
+
+void Gui::addBom()
+{
+  MetaItem mi;
+  mi.insertBOM();
+}
+
 void Gui::displayPage()
 {
   if (macroNesting == 0) {
     clearPage(KpageView,KpageScene);
     drawPage(KpageView,KpageScene,false);
+    enableActions2();
   }
 }
 
@@ -87,13 +137,9 @@ void Gui::clearAndRedrawPage()
 {
   clearCSICache();
   clearPLICache();
-  redrawPage();
-}
-
-void Gui::redrawPage()
-{
   displayPage();
 }
+
 
 void Gui::lastPage()
 {
@@ -323,7 +369,7 @@ void Gui::preferences()
       gui->clearCSICache();
       gui->clearPLICache();
     }
-    redrawPage();
+    displayPage();
   }
 }
 
@@ -509,6 +555,47 @@ void Gui::createActions()
     redoAct->setStatusTip(tr("Redo last change"));
     connect(redoAct, SIGNAL(triggered()), this, SLOT(redo()));
 
+    insertCoverPageAct = new QAction(tr("Insert Cover Page"),this);
+    insertCoverPageAct->setStatusTip(tr("Insert an unnumbered page"));
+    insertCoverPageAct->setEnabled(false);
+    connect(insertCoverPageAct, SIGNAL(triggered()), this, SLOT(insertCoverPage()));
+
+
+    appendCoverPageAct = new QAction(tr("Append Cover Page"),this);
+    appendCoverPageAct->setStatusTip(tr("Append a numbered page"));
+    appendCoverPageAct->setEnabled(false);
+    connect(appendCoverPageAct, SIGNAL(triggered()), this, SLOT(appendCoverPage()));
+
+    insertNumberedPageAct = new QAction(tr("Insert Page"),this);
+    insertNumberedPageAct->setStatusTip(tr("Insert a numbered page"));
+    insertNumberedPageAct->setEnabled(false);
+    connect(insertNumberedPageAct, SIGNAL(triggered()), this, SLOT(insertNumberedPage()));
+
+    appendNumberedPageAct = new QAction(tr("Append Page"),this);
+    appendNumberedPageAct->setStatusTip(tr("Append a numbered page"));
+    appendNumberedPageAct->setEnabled(false);
+    connect(appendNumberedPageAct, SIGNAL(triggered()), this, SLOT(appendNumberedPage()));
+
+    deletePageAct = new QAction(tr("Delete Page"),this);
+    deletePageAct->setStatusTip(tr("Delete this page"));
+    deletePageAct->setEnabled(false);
+    connect(deletePageAct, SIGNAL(triggered()), this, SLOT(deletePage()));
+
+    addPictureAct = new QAction(tr("Add Picture"),this);
+    addPictureAct->setStatusTip(tr("Add a picture to this page"));
+    addPictureAct->setEnabled(false);
+    connect(addPictureAct, SIGNAL(triggered()), this, SLOT(addPicture()));
+
+    addTextAct = new QAction(tr("Add Text"),this);
+    addTextAct->setStatusTip(tr("Add text to this page"));
+    addTextAct->setEnabled(false);
+    connect(addTextAct, SIGNAL(triggered()), this, SLOT(addText()));
+
+    addBomAct = new QAction(tr("Add Bill of Materials"),this);
+    addBomAct->setStatusTip(tr("Add Bill of Materials to this page"));
+    addBomAct->setEnabled(false);
+    connect(addBomAct, SIGNAL(triggered()), this, SLOT(addBom()));
+
     // fitWidth,fitVisible,actualSize
 
     fitWidthAct = new QAction(QIcon(":/images/fitWidth.png"), tr("Fit Width"), this);
@@ -632,6 +719,19 @@ void Gui::enableActions()
     calloutSetupAct->setEnabled(true);
     multiStepSetupAct->setEnabled(true);
     projectSetupAct->setEnabled(true);
+    addPictureAct->setEnabled(true);
+    addBomAct->setEnabled(true);
+}
+
+void Gui::enableActions2()
+{
+    MetaItem mi;
+    insertCoverPageAct->setEnabled(mi.okToInsertCoverPage());
+    appendCoverPageAct->setEnabled(mi.okToAppendCoverPage());
+    insertNumberedPageAct->setEnabled(mi.okToInsertNumberedPage());
+    appendNumberedPageAct->setEnabled(mi.okToAppendNumberedPage());
+    deletePageAct->setEnabled(page.list.size() == 0);
+    addTextAct->setEnabled(false);
 }
 
 void Gui::createMenus()
@@ -662,6 +762,14 @@ void Gui::createMenus()
     editMenu = menuBar()->addMenu(tr("&Edit"));
     editMenu->addAction(undoAct);
     editMenu->addAction(redoAct);
+    editMenu->addAction(insertCoverPageAct);
+    editMenu->addAction(appendCoverPageAct);
+    editMenu->addAction(insertNumberedPageAct);
+    editMenu->addAction(appendNumberedPageAct);
+    editMenu->addAction(deletePageAct);
+    editMenu->addAction(addPictureAct);
+    editMenu->addAction(addTextAct);
+    editMenu->addAction(addBomAct);
 
     viewMenu = menuBar()->addMenu(tr("&View"));
     viewMenu->addAction(fitWidthAct);

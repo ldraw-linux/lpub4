@@ -268,6 +268,8 @@ public:
   void insertPicture();
   void insertText();
   void insertBOM();
+  void deleteBOM();
+  void deletePage();
 
   Where firstLine(QString);
   void firstLine(Where &);

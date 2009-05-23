@@ -334,7 +334,7 @@ int LDView::renderCsi(
   
   QStringList arguments;
 
-  int cd = cameraDistance(meta,meta.LPub.assem.modelScale.value())*1376/1074;
+  int cd = cameraDistance(meta,meta.LPub.assem.modelScale.value())*1700/1000;
   int width = meta.LPub.page.size.valuePixels(0);
   int height = meta.LPub.page.size.valuePixels(1);
 
@@ -408,7 +408,7 @@ int LDView::renderPli(
 
   PliMeta &pliMeta = bom ? meta.LPub.bom : meta.LPub.pli;
   
-  int cd = cameraDistance(meta,pliMeta.modelScale.value())*1376/1074;
+  int cd = cameraDistance(meta,pliMeta.modelScale.value())*1700/1000;
 
   QString cg = QString("-cg%1,%2,%3") .arg(pliMeta.angle.value(0))
                                       .arg(pliMeta.angle.value(1))

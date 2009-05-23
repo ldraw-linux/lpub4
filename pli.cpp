@@ -31,6 +31,7 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QFile>
+#include <QTextStream>
 #include "pli.h"
 #include "step.h"
 #include "ranges.h"
@@ -1409,7 +1410,13 @@ void PliBackgroundItem::contextMenuEvent(
     QAction *backgroundAction = commonMenus.backgroundMenu(menu,pl);
     QAction *borderAction     = commonMenus.borderMenu(menu,pl);
     QAction *marginAction     = commonMenus.marginMenu(menu,pl);
-     
+
+    QAction *deleteBomAction  = NULL;
+
+    if (pli->bom) {
+      deleteBomAction = menu.addAction("Delete Bill of Materials");
+    }
+
     QAction *selectedAction   = menu.exec(event->screenPos());
 
     if (selectedAction == NULL) {
@@ -1474,7 +1481,9 @@ void PliBackgroundItem::contextMenuEvent(
                    top,
                    bottom,
                    &pli->pliMeta.border);
-  	}
+    } else if (selectedAction == deleteBomAction) {
+      deleteBOM();
+    }
   }
 }
 

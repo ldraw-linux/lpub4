@@ -258,8 +258,11 @@ void Gui::exportAs(QString &suffix)
 
   // Strangeness needing to warm up the process?
 
-  for (displayPageNum = 1; displayPageNum <= maxPages &&
-                                                displayPageNum < 6; displayPageNum++) {
+  QImage image(pageWidth,pageHeight,QImage::Format_ARGB32);
+
+  for (displayPageNum = 1;
+       displayPageNum <= maxPages && displayPageNum < 6;
+       displayPageNum++) {
 
     qApp->processEvents();
 
@@ -273,7 +276,6 @@ void Gui::exportAs(QString &suffix)
     view.centerOn(boundingRect.center());
     drawPage(&view,&scene,true);
 
-    QImage image(pageWidth,pageHeight,QImage::Format_ARGB32);
     QPainter painter;
     painter.begin(&image);
     view.render(&painter);
@@ -298,7 +300,6 @@ void Gui::exportAs(QString &suffix)
     view.centerOn(boundingRect.center());
     drawPage(&view,&scene,true);
 
-    QImage image(pageWidth,pageHeight,QImage::Format_ARGB32);
     QPainter painter;
     painter.begin(&image);
     view.render(&painter);

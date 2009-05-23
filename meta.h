@@ -41,13 +41,13 @@
 #include <QList>
 #include <QHash>
 #include <QRegExp>
-#include <QTextStream>
+#include <QStringList>
 #include "where.h"
 #include "metatypes.h"
 #include "resolution.h"
 #include <QMessageBox>
 
-class QTextStream;
+class QStringList;
 
 class Meta;
 class BranchMeta;
@@ -159,7 +159,7 @@ public:
   virtual bool preambleMatch(QStringList &, int index, QString &match) = 0;
 
   /* Document thyself */
-  virtual void doc(QTextStream &out, QString preamble);
+  virtual void doc(QStringList &out, QString preamble);
 
   /* Undo a push */
 
@@ -205,7 +205,7 @@ public:
   
   virtual QString format(bool local, bool global, QString);
 
-  virtual void doc(QTextStream &out, QString preamble)  { out << preamble; }
+  virtual void doc(QStringList &out, QString preamble)  { out << preamble; }
 };
 
 /*
@@ -226,7 +226,7 @@ public:
   
   virtual Rc parse(QStringList &argv, int index, Where &here);
   virtual bool    preambleMatch(QStringList &argv, int index, QString &_preamble);
-  virtual void    doc(QTextStream &out, QString preamble);
+  virtual void    doc(QStringList &out, QString preamble);
   virtual void    pop();
   BranchMeta &operator= (const BranchMeta &rhs)
   {
@@ -264,7 +264,7 @@ public:
   virtual void    init(BranchMeta *parent, const QString name, Rc _rc=OkRc);
   virtual Rc parse(QStringList &argv, int index, Where &here);
   virtual QString format(bool,bool) { QString foo; return foo; }
-  virtual void    doc(QTextStream &out, QString preamble);
+  virtual void    doc(QStringList &out, QString preamble);
 };
 
 /*
@@ -309,7 +309,7 @@ public:
                     Rc _rc=OkRc);
   virtual Rc parse(QStringList &argv, int index, Where &here);
           QString format(bool,bool);
-  virtual void    doc(QTextStream &out, QString preamble);
+  virtual void    doc(QStringList &out, QString preamble);
 };
 /*
  * This is a leaf object for floating point number */
@@ -368,7 +368,7 @@ public:
                        Rc _rc=OkRc);
   virtual Rc parse(QStringList &argv, int index, Where &here);
           QString format(bool,bool);
-  virtual void    doc(QTextStream &out, QString preamble);
+  virtual void    doc(QStringList &out, QString preamble);
 };
 
 /* This is a leaf object class for two floating point numbers */
@@ -439,7 +439,7 @@ public:
                     Rc _rc=OkRc);
   virtual Rc parse(QStringList &argv, int index, Where &here);
   virtual QString format(bool,bool);
-  virtual void doc(QTextStream &out, QString preamble);
+  virtual void doc(QStringList &out, QString preamble);
 };
 
 /*
@@ -603,7 +603,7 @@ public:
     }
   }
 
-  virtual void doc(QTextStream &out, QString preamble);
+  virtual void doc(QStringList &out, QString preamble);
 };
 
 /* This leaf class is for multiple strings */
@@ -650,7 +650,7 @@ public:
       pushed = 0;
     }
   }
-  virtual void doc(QTextStream &out, QString preamble);
+  virtual void doc(QStringList &out, QString preamble);
 };
 
 /* This leaf class is used for fonts */
@@ -770,7 +770,7 @@ public:
   virtual ~BoolMeta() {}
   Rc parse(QStringList &argv, int index, Where &here);
   QString format(bool,bool);
-  virtual void doc(QTextStream &out, QString preamble);
+  virtual void doc(QStringList &out, QString preamble);
 };
 
 /* This class is used to parse placement information */
@@ -804,7 +804,7 @@ public:
   Rc parse(QStringList &argv, int index, Where &here);
   QString format(bool,bool);
   QString formatOffset(bool,bool);
-  virtual void doc(QTextStream &out, QString preamble);
+  virtual void doc(QStringList &out, QString preamble);
 };
 
 /* This class is used to parse background data */
@@ -852,7 +852,7 @@ public:
       pushed = 0;
     }
   }
-  virtual void doc(QTextStream &out, QString preamble);
+  virtual void doc(QStringList &out, QString preamble);
   virtual QString text();
 };
 
@@ -921,7 +921,7 @@ public:
       pushed = 0;
     }
   }
-  virtual void doc(QTextStream &out, QString preamble);
+  virtual void doc(QStringList &out, QString preamble);
   virtual QString text();
 };
 
@@ -981,7 +981,7 @@ public:
   virtual ~PointerMeta() {}
   Rc parse(QStringList &argv, int index, Where &here);
   QString format(bool,bool);
-  virtual void doc(QTextStream &out, QString preamble);
+  virtual void doc(QStringList &out, QString preamble);
 };
 
 /*
@@ -1005,7 +1005,7 @@ public:
   virtual ~FreeFormMeta() {}
   Rc parse(QStringList &argv, int index, Where &here);
   QString format(bool,bool);
-  virtual void doc(QTextStream &out, QString preamble);
+  virtual void doc(QStringList &out, QString preamble);
 };
 
 /*
@@ -1034,7 +1034,7 @@ public:
   virtual ~AllocMeta() {}
   Rc parse(QStringList &argv, int index, Where &here);
   QString format(bool,bool);
-  virtual void doc(QTextStream &out, QString preamble);
+  virtual void doc(QStringList &out, QString preamble);
 };
 
 /*
@@ -1078,7 +1078,7 @@ public:
   virtual ~InsertMeta() {}
   Rc parse(QStringList &argv, int index, Where &here);
   QString format(bool,bool);
-  virtual void doc(QTextStream &out, QString preamble);
+  virtual void doc(QStringList &out, QString preamble);
 };
 
 class AlignmentMeta : public LeafMeta
@@ -1097,7 +1097,7 @@ public:
   }
   Rc parse(QStringList &argv, int index, Where &here);
   QString format(bool,bool);
-  virtual void doc(QTextStream &out, QString preamble);
+  virtual void doc(QStringList &out, QString preamble);
 };
 
 class TextMeta : public BranchMeta
@@ -1141,7 +1141,7 @@ public:
   }
   Rc parse(QStringList &argv, int index, Where &here);
   QString format(bool,bool);
-  virtual void doc(QTextStream &out, QString preamble);
+  virtual void doc(QStringList &out, QString preamble);
 };
 
 class ArrowEndMeta : public LeafMeta
@@ -1160,7 +1160,7 @@ public:
 
   Rc parse(QStringList &argv, int index, Where &here);
   QString format(bool,bool);
-  virtual void doc(QTextStream &out, QString preamble);
+  virtual void doc(QStringList &out, QString preamble);
 };
 
 /*
@@ -1246,7 +1246,7 @@ public:
       pushed = 0;
     }
   }
-  virtual void doc(QTextStream &out, QString preamble);
+  virtual void doc(QStringList &out, QString preamble);
 };
 
 class CalloutCsiMeta : public BranchMeta
@@ -1261,7 +1261,7 @@ public:
 
   virtual ~CalloutCsiMeta() {}
   virtual void init(BranchMeta *parent, QString name);
-  //virtual void doc(QTextStream &out, QString preamble);
+  //virtual void doc(QStringList &out, QString preamble);
 };
 
 /*------------------------*/
@@ -1382,7 +1382,7 @@ public:
   virtual ~SubMeta() {}
   Rc parse(QStringList &argv, int index, Where &here);
   QString format(bool,bool);
-  virtual void doc(QTextStream &out, QString preamble);
+  virtual void doc(QStringList &out, QString preamble);
 };
 
 /* This class parses PLI constraints */
@@ -1444,7 +1444,7 @@ public:
   virtual ~ConstrainMeta() {}
   Rc parse(QStringList &argv, int index, Where &here);
   QString format(bool,bool);
-  virtual void doc(QTextStream &out, QString preamble);
+  virtual void doc(QStringList &out, QString preamble);
 
 };
 
@@ -1550,7 +1550,7 @@ public:
   virtual ~RotStepMeta() {}
   Rc parse(QStringList &argv, int index, Where &here);
   QString format(bool,bool);
-  virtual void doc(QTextStream &out, QString preamble);
+  virtual void doc(QStringList &out, QString preamble);
 };
 
 /* This class is to parse MLCad's buffer exchange */
@@ -1575,7 +1575,7 @@ public:
   Rc parse(QStringList &argv, int index, Where &here);
   QString format(bool,bool);
   void    pop() { pushed = 0; }
-  virtual void doc(QTextStream &out, QString preamble);
+  virtual void doc(QStringList &out, QString preamble);
 };
 
 /*---------------------------------------------------------------
@@ -1784,7 +1784,7 @@ public:
                     QString name);
   virtual Rc parse(QStringList &argv, int index, Where &here);
           QString format(bool,bool);
-  virtual void    doc(QTextStream &out, QString preamble);
+  virtual void    doc(QStringList &out, QString preamble);
 };
 
 class LPubMeta : public BranchMeta
@@ -1900,7 +1900,7 @@ public:
   bool  preambleMatch(QString &line, QString &preamble);
   virtual void  init(BranchMeta *parent, QString name);
   virtual void  pop();
-  void  doc();
+  void  doc(QStringList &out);
 
   Meta (const Meta &rhs) : BranchMeta(rhs)
   {

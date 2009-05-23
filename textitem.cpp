@@ -32,6 +32,9 @@ void TextItem::contextMenuEvent(
   QAction *editColorAction = menu.addAction("Edit Color");
   editColorAction->setWhatsThis("Edit this text's color");
 
+  QAction *deleteTextAction = menu.addAction("Delete This Text");
+  deleteTextAction->setWhatsThis("Delete this text");
+
   QAction *selectedAction  = menu.exec(event->screenPos());
 
   if (selectedAction == NULL) {
@@ -52,5 +55,7 @@ void TextItem::contextMenuEvent(
       replaceMeta(meta.here(),meta.format(false,false));
     }
   } else if (selectedAction == editColorAction) {
+  } else if (selectedAction == deleteTextAction) {
+    deleteMeta(meta.here());
   }
 }

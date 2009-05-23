@@ -1258,6 +1258,20 @@ void MetaItem::appendPage(QString &meta)
   endMacro();
 }
 
+void MetaItem::deletePage()
+{
+  Where topOfPage    = gui->topOfPages[gui->displayPageNum-1];
+  Where bottomOfPage = gui->topOfPages[gui->displayPageNum];
+  ++topOfPage;
+  int numLines = bottomOfPage.lineNumber - topOfPage.lineNumber;
+
+  beginMacro("deletePage");
+  for (int i = 0; i <= numLines; i++) {
+    deleteMeta(topOfPage);
+  }
+  endMacro();
+ }
+
 void MetaItem::insertPicture()
 {
   QString title = QFileDialog::tr("Open Image");
@@ -1286,6 +1300,29 @@ void MetaItem::insertBOM()
   Where topOfStep = gui->topOfPages[gui->displayPageNum-1];
   scanPastGlobal(topOfStep);
   appendMeta(topOfStep,meta);
+}
+
+void MetaItem::deleteBOM()
+{
+  Where topOfPage    = gui->topOfPages[gui->displayPageNum-1];
+  Where bottomOfPage = gui->topOfPages[gui->displayPageNum];
+  for (++topOfPage; topOfPage.lineNumber < bottomOfPage.lineNumber; topOfPage++) {
+    QString line = gui->readLine(topOfPage);
+    Meta meta;
+    Rc rc;
+
+    rc = meta.parse(line,topOfPage);
+    if (rc == InsertRc) {
+      InsertData insertData = meta.LPub.insert.value();
+
+      if (insertData.type == InsertData::InsertBom) {
+        beginMacro("deleteBOM");
+        deleteMeta(topOfPage);
+        endMacro();
+        break;
+      }
+    }
+  }
 }
 
 /***************************************************************************/
