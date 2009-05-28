@@ -243,15 +243,14 @@ void Gui::updateRecentFileActions()
     // filter filest that don't exist
 
     for (int i = 0; i < numRecentFiles; ) {
-       QFileInfo fileInfo(files[i]);
-       if (fileInfo.exists()) {
-         i++;
-       } else {
-         for (int j = i; j < numRecentFiles-1; j++) {
-           files[j] = files[j+1];
-         }
-       }
-     }
+      QFileInfo fileInfo(files[i]);
+      if (fileInfo.exists()) {
+        i++;
+      } else {
+        files.removeOne(files[i]);
+        --numRecentFiles;
+      }
+    }
     settings.setValue("recentFileList", files);
 
     for (int i = 0; i < numRecentFiles; i++) {

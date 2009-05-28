@@ -687,7 +687,7 @@ int Gui::drawPage(
             if (pliParts.size() && steps->meta.LPub.multiStep.pli.perStep.value() == false) {
               steps->pli.bom = false;
               steps->pli.setParts(pliParts,steps->stepGroupMeta);
-              steps->pli.sizePli(&steps->stepGroupMeta, StepGroupType);
+              steps->pli.sizePli(&steps->stepGroupMeta, StepGroupType, false);
             }
             pliParts.clear();
 
@@ -754,7 +754,7 @@ int Gui::drawPage(
                 }
                 step->pli.setParts(pliParts,steps->meta);
                 pliParts.clear();
-                step->pli.sizePli(&steps->meta,relativeType);
+                step->pli.sizePli(&steps->meta,relativeType,pliPerStep);
               }
 
               int rc = step->createCsi(
@@ -1056,7 +1056,7 @@ int Gui::findPage(
                 if (line[0] == '0') {
                   rc = tmpMeta.parse(line,current);
                 } else if (line[0] >= '1' && line[0] <= '5') {
-                  if (line[0] == '1' && pageNum <= displayPageNum) {
+                  if (line[0] == '1') {
                     partsAdded++;
                     csiParts << line;
                   }

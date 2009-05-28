@@ -370,7 +370,7 @@ int Gui::addGraphicsPageItems(
             page->pli.pliMeta = page->meta.LPub.bom;
             page->pli.setParts(bomParts,page->meta);
             bomParts.clear();
-            page->pli.sizePli(&page->meta,PageType);
+            page->pli.sizePli(&page->meta,PageType,false);
             page->pli.relativeToSize[0] = plPage.size[XX];
             page->pli.relativeToSize[1] = plPage.size[YY];
           }

@@ -342,6 +342,11 @@ void Gui::pliSetup()
   GlobalPliDialog::getPliGlobals(ldrawFile.topLevelFile(),page.meta);
 }
 
+void Gui::bomSetup()
+{
+  GlobalPliDialog::getBomGlobals(ldrawFile.topLevelFile(),page.meta);
+}
+
 void Gui::calloutSetup()
 {
   GlobalCalloutDialog::getCalloutGlobals(ldrawFile.topLevelFile(),page.meta);
@@ -679,6 +684,11 @@ void Gui::createActions()
     pliSetupAct->setStatusTip(tr("Default values for your project's parts lists"));
     connect(pliSetupAct, SIGNAL(triggered()), this, SLOT(pliSetup()));
 
+    bomSetupAct = new QAction(tr("Bill of Materials Setup"), this);
+    bomSetupAct->setEnabled(false);
+    bomSetupAct->setStatusTip(tr("Default values for your project's bill of materials"));
+    connect(bomSetupAct, SIGNAL(triggered()), this, SLOT(bomSetup()));
+
     calloutSetupAct = new QAction(tr("Callout Setup"), this);
     calloutSetupAct->setEnabled(false);
     calloutSetupAct->setStatusTip(tr("Default values for your project's callouts"));
@@ -716,6 +726,7 @@ void Gui::enableActions()
     pageSetupAct->setEnabled(true);
     assemSetupAct->setEnabled(true);
     pliSetupAct->setEnabled(true);
+    bomSetupAct->setEnabled(true);
     calloutSetupAct->setEnabled(true);
     multiStepSetupAct->setEnabled(true);
     projectSetupAct->setEnabled(true);
@@ -792,6 +803,7 @@ void Gui::createMenus()
     configMenu->addAction(pageSetupAct);
     configMenu->addAction(assemSetupAct);
     configMenu->addAction(pliSetupAct);
+    configMenu->addAction(bomSetupAct);
     configMenu->addAction(calloutSetupAct);
     configMenu->addAction(multiStepSetupAct);
     configMenu->addAction(projectSetupAct);

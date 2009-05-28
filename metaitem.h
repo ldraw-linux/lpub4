@@ -106,6 +106,18 @@ public:
                         bool local = true,
                         bool checkLocal = true);
 
+  void changePlacement( PlacementType parentType,
+                        bool          pliPerStep,
+                        PlacementType placedType,
+                        QString,
+                        const Where &top,
+                        const Where &bottom,
+                        PlacementMeta *,
+                        bool useTop = true,
+                        int  append = 1,
+                        bool local = true,
+                        bool checkLocal = true);
+
   void changePlacementOffset(
                         Where defaultconst,
                         PlacementMeta *placement, 

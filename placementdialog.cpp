@@ -47,9 +47,10 @@ bool PlacementDialog::getPlacement(
   PlacementType  placedType,
   PlacementData &goods,
   QString        title,
-  QWidget       *parent)
+  QWidget       *parent,
+  bool           pliPerStep)
 {
-  PlacementDialog *dialog = new PlacementDialog(parentType,placedType,goods,title,parent);
+  PlacementDialog *dialog = new PlacementDialog(parentType,placedType,goods,title,parent,pliPerStep);
 
   bool ok = dialog->exec() == QDialog::Accepted;
   if (ok) {
@@ -113,8 +114,9 @@ PlacementDialog::PlacementDialog(
   PlacementType  parentType,
   PlacementType  placedType,
   PlacementData &_goods,
-  QString  title,
-  QWidget *parent)
+  QString        title,
+  QWidget       *parent,
+  bool           pliPerStep)
 {
   goods = &_goods;
 
@@ -132,7 +134,11 @@ PlacementDialog::PlacementDialog(
     case StepGroupType:
       switch (placedType) {
         case PartsListType:
-          oks = Page | Ms;
+          if (pliPerStep) {
+            oks = Csi | Sn;
+          } else {
+            oks = Page | Ms;
+          }
         break;
         case StepNumberType:
           oks = Csi | Pli;

@@ -135,6 +135,7 @@ class Pli : public Placement {
 
   public:
     PlacementType      parentRelativeType;
+    bool               perStep;
     PliBackgroundItem *background;
     bool               bom;
     PliMeta            pliMeta;
@@ -187,7 +188,7 @@ class Pli : public Placement {
     void clear();
 
 
-    int  sizePli(Meta *, PlacementType);
+    int  sizePli(Meta *, PlacementType, bool perStep);
     int  sizePli(ConstrainData::PliConstrain, unsigned height);
 	  int  sortPli();
     int  resizePli(Meta *, ConstrainData &constrainData);

@@ -867,6 +867,30 @@ void MetaItem::changePlacement(
   }
 }
 
+void MetaItem::changePlacement(
+  PlacementType  parentType,
+  bool           pliPerStep,
+  PlacementType  relativeType,
+  QString        title,
+  const Where   &topOfSteps,
+  const Where   &bottomOfSteps,
+  PlacementMeta *placement,
+  bool           useTop,
+  int            append,
+  bool           local,
+  bool           useLocal)
+{
+  PlacementData placementData = placement->value();
+  bool ok;
+  ok = PlacementDialog
+       ::getPlacement(parentType,relativeType,placementData,title,NULL,pliPerStep);
+
+  if (ok) {
+    placement->setValue(placementData);
+    setMeta(topOfSteps,bottomOfSteps,placement,useTop,append,local,useLocal);
+  }
+}
+
 void MetaItem::changePlacementOffset(
   Where          defaultWhere,
   PlacementMeta *placement,

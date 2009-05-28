@@ -489,6 +489,7 @@ public slots:
   void pageSetup();
   void assemSetup();
   void pliSetup();
+  void bomSetup();
   void calloutSetup();
   void multiStepSetup();
   void projectSetup();
@@ -736,6 +737,7 @@ private:
   QAction *pageSetupAct;
   QAction *assemSetupAct;
   QAction *pliSetupAct;
+  QAction *bomSetupAct;
   QAction *calloutSetupAct;
   QAction *multiStepSetupAct;
   QAction *projectSetupAct;

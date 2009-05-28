@@ -39,11 +39,13 @@ public:
   QList<MetaGui *> children;
   MetaGui *viewAngle;
   MetaGui *scale;
+  bool     bom;
 
-  GlobalPliPrivate(QString &_topLevelFile, Meta &_meta)
+  GlobalPliPrivate(QString &_topLevelFile, Meta &_meta, bool &_bom = false)
   {
     topLevelFile = _topLevelFile;
     meta = _meta;
+    bom = _bom;
     MetaItem mi; // examine all the globals and then return
 
     mi.sortedGlobalWhere(meta,topLevelFile,"ZZZZZZZ");
@@ -51,11 +53,15 @@ public:
 };
 
 GlobalPliDialog::GlobalPliDialog(
-  QString &topLevelFile, Meta &meta)
+  QString &topLevelFile, Meta &meta, bool bom)
 {
-  data = new GlobalPliPrivate(topLevelFile,meta);
+  data = new GlobalPliPrivate(topLevelFile,meta,bom);
 
-  setWindowTitle(tr("Parts List Globals Setup"));
+  if (bom) {
+    setWindowTitle(tr("Bill of Materials Setup"));
+  } else {
+    setWindowTitle(tr("Parts List Setup"));
+  }
 
   QTabWidget  *tab = new QTabWidget(this);
   QVBoxLayout *layout = new QVBoxLayout(this);  
@@ -72,11 +78,13 @@ GlobalPliDialog::GlobalPliDialog(
   MetaGui *child;
   QGroupBox *box;
 
-  PliMeta *pliMeta = &data->meta.LPub.pli;
+  PliMeta *pliMeta = bom ? &data->meta.LPub.bom : &data->meta.LPub.pli;
 
-  child = new CheckBoxGui("Show Parts List",&pliMeta->show);
-  data->children.append(child);
-  grid->addWidget(child);
+  if ( ! bom) {
+    child = new CheckBoxGui("Show Parts List",&pliMeta->show);
+    data->children.append(child);
+    grid->addWidget(child);
+  }
 
   box = new QGroupBox("Background",this);
   grid->addWidget(box);
@@ -131,10 +139,12 @@ GlobalPliDialog::GlobalPliDialog(
   data->children.append(child);
   partsLayout->addWidget(child);
 
-  box = new QGroupBox("Submodels",this);
-  grid->addWidget(box);
-  child = new CheckBoxGui("Show in Parts List",&pliMeta->includeSubs,box);
-  data->children.append(child);
+  if ( ! bom) {
+    box = new QGroupBox("Submodels",this);
+    grid->addWidget(box);
+    child = new CheckBoxGui("Show in Parts List",&pliMeta->includeSubs,box);
+    data->children.append(child);
+  }
 
   box = new QGroupBox("Part Counts",this);
   grid->addWidget(box);
@@ -164,7 +174,14 @@ GlobalPliDialog::GlobalPliDialog(
 void GlobalPliDialog::getPliGlobals(
   QString topLevelFile, Meta &meta)
 {
-  GlobalPliDialog *dialog = new GlobalPliDialog(topLevelFile, meta);
+  GlobalPliDialog *dialog = new GlobalPliDialog(topLevelFile, meta, false);
+  dialog->exec();
+}
+
+void GlobalPliDialog::getBomGlobals(
+  QString topLevelFile, Meta &meta)
+{
+  GlobalPliDialog *dialog = new GlobalPliDialog(topLevelFile, meta, true);
   dialog->exec();
 }
 

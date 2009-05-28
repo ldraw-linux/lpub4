@@ -921,11 +921,12 @@ int Pli::sortPli()
   return 0;
 }
 
-int Pli::sizePli(Meta *_meta, PlacementType _parentRelativeType)
+int Pli::sizePli(Meta *_meta, PlacementType _parentRelativeType, bool _perStep)
 {
   int rc;
 
   parentRelativeType = _parentRelativeType;
+  perStep = _perStep;
   
   if (parts.size() == 0) {
     return 1;
@@ -1462,11 +1463,12 @@ void PliBackgroundItem::contextMenuEvent(
                        &pli->pliMeta.constrain);
     } else if (selectedAction == placementAction) {
       changePlacement(parentRelativeType,
+                      pli->perStep,
                       PartsListType,
                       me+" Placement",
                       top,
                       bottom,
-                    &pli->placement);
+                     &pli->placement);
     } else if (selectedAction == marginAction) {
       changeMargins(me+" Margins",
                     topOfStep,

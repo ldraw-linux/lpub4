@@ -62,7 +62,8 @@ public:
     PlacementType   placedType,
     PlacementData  &goods,
     QString         title,
-    QWidget        *parent);
+    QWidget        *parent,
+    bool            pliPerStep);
 
  ~PlacementDialog();
 
@@ -71,7 +72,8 @@ public:
     PlacementType   placedType,
     PlacementData  &goods,  // the type in here provides default value
     QString         title,
-    QWidget        *parent = 0);
+    QWidget        *parent = 0,
+    bool            pliPerStep = false);
 
   static QString relativeToName(int relativeTo);
 
