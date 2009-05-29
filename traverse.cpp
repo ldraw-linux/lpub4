@@ -1235,12 +1235,21 @@ int Gui::getBOMParts(
             }
           break;
 
+          case PliBeginIgnRc:
+            pliIgnore = true;
+          break;
+
+          case PliEndRc:
+            pliIgnore = false;
+          break;
+
           case PartBeginIgnRc:
             partIgnore = true;
           break;
 
           case PartEndRc:
             partIgnore = false;
+            pliIgnore = false;
           break;
 
           case SynthBeginRc:
