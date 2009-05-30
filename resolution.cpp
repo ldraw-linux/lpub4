@@ -28,7 +28,7 @@
 #include "resolution.h"
 
 static ResolutionType _resolutionType = DPI;
-static float          _resolution     = 150;  // presumably always inches
+static float          _resolution = 150;  // presumably always inches
 
 float inches2centimeters(float inches)
 {
@@ -48,7 +48,7 @@ float resolution()
 void setResolution(float res)
 {
   if (_resolutionType == DPCM) {
-    _resolution = inches2centimeters(res);
+    _resolution = centimeters2inches(res);
   } else {
     _resolution = res;
   }

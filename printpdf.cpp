@@ -105,11 +105,14 @@ void Gui::printToFile()
 {
   float pageWidth = page.meta.LPub.page.size.value(0);
   float pageHeight = page.meta.LPub.page.size.value(1);
+
   if (page.meta.LPub.resolution.type() == DPI) {
     // convert to MM
-  	pageWidth = int(inches2centimeters(pageWidth)*10);
-	  pageHeight = int(inches2centimeters(pageHeight)*10);
+    pageWidth = int(inches2centimeters(pageWidth));
+    pageHeight = int(inches2centimeters(pageHeight));
   }
+  pageWidth  *= 10;  // convert to mm
+  pageHeight *= 10;
 
   QPrinter::PaperSize paperSize = QPrinter::PaperSize();
   QPrinter::Orientation orientation = QPrinter::Orientation();
@@ -132,6 +135,10 @@ void Gui::printToFile()
   }
   pageWidth *= resolution();
   pageHeight *= resolution();
+  if (resolutionType() == DPCM) {
+    pageWidth = centimeters2inches(pageWidth);
+    pageHeight = centimeters2inches(pageHeight);
+  }
 
   QFileInfo fileInfo(curFile);
   QString   baseName = fileInfo.baseName();
@@ -245,6 +252,10 @@ void Gui::exportAs(QString &suffix)
   }
   pageWidth *= resolution();
   pageHeight *= resolution();
+  if (resolutionType() == DPCM) {
+    pageWidth = centimeters2inches(pageWidth);
+    pageHeight = centimeters2inches(pageHeight);
+  }
 
   QGraphicsScene scene;
   LGraphicsView  view(&scene);

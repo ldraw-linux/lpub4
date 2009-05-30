@@ -32,6 +32,7 @@ int main(int argc, char *argv[])
     Preferences::ldrawPreferences(false);
     Preferences::unitsPreferences();
     defaultResolutionType(Preferences::preferCentimeters);
+    setResolution(150);  // DPI
 
     Gui     LPubWin;
     LPubWin.show();
