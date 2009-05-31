@@ -463,9 +463,6 @@ int Pli::placePli(
     while (nPlaced < parts.size()) {
 
       int overlap = 0;
-
-      int limit1 = prevPart->height;
-
       bool overlapped = false;
 
       // new possible upstairs neighbors
@@ -480,24 +477,27 @@ int Pli::placePli(
 
           bot += splitMargin;
 
-          int limit2 = part->height;
-
           // dropping part down into prev part (top part is right edge, bottom left)
 
-          for (overlap = 1; overlap < limit1 && ! overlapped; ) {
-            if (overlap > limit2) {
+          for (overlap = 1; overlap < prevPart->height && ! overlapped; overlap++) {
+            if (overlap > part->height) { // in over our heads?
+
+              // slide the part from the left to right until it bumps into previous
+              // part
               for (int right = 0, left = 0;
-                       right < limit2;
+                       right < part->height;
                        right++,left++) {
                 if (part->rightEdge[right] + splitMargin > 
-                    prevPart->leftEdge[left+overlap-limit2]) {
+                    prevPart->leftEdge[left+overlap-part->height]) {
                   overlapped = true;
                   break;
                 }
               }
             } else {
-              for (int right = limit2 - overlap - 1, left = 0;
-                       right < limit2 && left < overlap;
+              // slide the part from the left to right until it bumps into previous
+              // part
+              for (int right = part->height - overlap - 1, left = 0;
+                       right < part->height && left < overlap;
                        right++,left++) {
                 if (right >= 0 && part->rightEdge[right] + splitMargin > 
                     prevPart->leftEdge[left]) {
@@ -506,7 +506,6 @@ int Pli::placePli(
                 }
               }
             }
-            overlap++;
           }
 
           // overlap = 0;
@@ -815,14 +814,18 @@ int Pli::sortPli()
       
       part->instanceText = 
         new InstanceTextItem(this,part,descr,font,color,parentRelativeType);
+
+      int textWidth, textHeight;
         
-      part->instanceText->size(part->textWidth,part->textHeight);
+      part->instanceText->size(textWidth,textHeight);
+
+      part->textHeight = textHeight;
 
       // if text width greater than image width
       // the bounding box is wider
 
-      if (part->textWidth > part->width) {
-        part->width = part->textWidth;
+      if (textWidth > part->width) {
+        part->width = textWidth;
       }
 
       /* Add annotation area */
@@ -870,9 +873,21 @@ int Pli::sortPli()
         part->partBotMargin = part->csiMargin.valuePixels(YY);
       }
 
-      for (int h = 0; h < part->textHeight + part->partBotMargin; h++) {
+      /* Lets see if we can slide the text up in the bottom left corner of
+       * part image */
+
+      int overlap;
+      bool overlapped = false;
+
+      for (overlap = 1; overlap < textHeight && ! overlapped; overlap++) {
+        if (part->leftEdge[part->leftEdge.size() - overlap] < textWidth) {
+          overlapped = true;
+        }
+      }
+
+      for (int h = overlap; h < textHeight + part->partBotMargin; h++) {
         part->leftEdge << 0;
-        part->rightEdge << part->textWidth;
+        part->rightEdge << textWidth;
       }
 
       part->height = part->leftEdge.size();

@@ -81,7 +81,6 @@ class PliPart {
 
     int           pixmapWidth;
     int           pixmapHeight;
-    int           textWidth;
     int           textHeight;
     int           annotHeight;
     int           annotWidth;

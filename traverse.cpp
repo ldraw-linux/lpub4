@@ -1163,7 +1163,6 @@ int Gui::findPage(
           case RemoveNameRc:
             if (pageNum < displayPageNum) {
               QStringList newCSIParts;
-              QString     remove;
               if (rc == RemoveGroupRc) {
                 remove_group(csiParts,    meta.LPub.remove.group.value(),newCSIParts);
               } else if (rc == RemovePartRc) {
@@ -1377,7 +1376,6 @@ int Gui::getBOMParts(
           case RemoveNameRc:
             {
               QStringList newCSIParts;
-              QString     remove;
               if (rc == RemoveGroupRc) {
                 remove_group(pliParts,meta.LPub.remove.group.value(),newCSIParts);
               } else if (rc == RemovePartRc) {
@@ -1662,7 +1660,6 @@ void Gui::writeToTmp(
           case RemoveNameRc:
             {
               QStringList newCSIParts;
-              QString     remove;
               if (rc == RemoveGroupRc) {
                 remove_group(csiParts,meta.LPub.remove.group.value(),newCSIParts);
               } else if (rc == RemovePartRc) {
