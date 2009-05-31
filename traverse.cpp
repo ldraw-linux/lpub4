@@ -42,6 +42,7 @@
 #include "range.h"
 #include "reserve.h"
 #include "step.h"
+#include "paths.h"
 
 /*********************************************
  *
@@ -229,6 +230,8 @@ int Gui::drawPage(
   bool            isMirrored,
   QHash<QString, QStringList> &bfx,
   bool            printing,
+  bool            bfxStore2,
+  QStringList    &bfxParts,
   bool            calledOut)
 {
   bool        global = true;
@@ -242,6 +245,8 @@ int Gui::drawPage(
   bool        multiStep   = false;
   bool        partsAdded  = false;
   bool        coverPage   = false;
+  bool        bfxStore1   = false;
+  bool        bfxLoad     = false;
   int         numLines = ldrawFile.size(current.modelName);
   bool        firstStep   = true;
   
@@ -313,7 +318,25 @@ int Gui::drawPage(
           && ! partIgnore 
           && ! synthBegin) {
         if (! isSubmodel(type) || curMeta.LPub.pli.includeSubs.value()) {
-          pliParts << Pli::partLine(line,current,steps->meta);
+          if (bfxStore2 && bfxLoad) {
+            QString colorType = tokens[1]+type;
+            bool removed = false;
+            if (bfxStore1) {
+              bfxParts << colorType;
+            }
+            for (int i = 0; i < bfxParts.size(); i++) {
+              if (bfxParts[i] == colorType) {
+                bfxParts.removeAt(i);
+                removed = true;
+                break;
+              }
+            }
+            if ( ! removed) {
+              pliParts << Pli::partLine(line,current,steps->meta);
+            }
+          } else {
+            pliParts << Pli::partLine(line,current,steps->meta);
+          }
         }
       }
 
@@ -356,6 +379,8 @@ int Gui::drawPage(
                  ldrawFile.mirrored(tokens),
                  calloutBfx,
                  printing,
+                 bfxStore2,
+                 bfxParts,
                  true);
 
           callout->meta = saveMeta;
@@ -437,10 +462,13 @@ int Gui::drawPage(
         /* Buffer exchange */
         case BufferStoreRc:
           bfx[curMeta.bfx.value()] = csiParts;
+          bfxStore1 = true;
+          bfxParts.clear();
         break;
 
         case BufferLoadRc:
           csiParts = bfx[curMeta.bfx.value()];
+          bfxLoad = true;
         break;
 
         case MLCadGroupRc:
@@ -811,6 +839,9 @@ int Gui::drawPage(
             partsAdded = false;
             coverPage = false;
             step = NULL;
+            bfxStore2 = bfxStore1;
+            bfxStore1 = false;
+            bfxLoad = false;
           }
           inserts.clear();
           steps->setBottomOfSteps(current);
@@ -857,6 +888,9 @@ int Gui::findPage(
   bool partIgnore = false;
   bool coverPage  = false;
   bool stepPage   = false;
+  bool bfxStore1  = false;
+  bool bfxStore2  = false;
+  QStringList bfxParts;
   int  partsAdded = 0;
   int  stepNumber = 1;
   Rc   rc;
@@ -933,6 +967,9 @@ int Gui::findPage(
               meta.submodelStack.pop_back();
             }
           }
+          if (bfxStore1) {
+            bfxParts << token[1]+type;
+          }
         }
       case '2':
       case '3':
@@ -979,7 +1016,9 @@ int Gui::findPage(
                                 pliParts,
                                 isMirrored,
                                 saveBfx,
-                                printing);
+                                printing,
+                                bfxStore2,
+                                bfxParts);
                                 
                 saveCurrent.modelName.clear();
                 saveCsiParts.clear();
@@ -1027,7 +1066,9 @@ int Gui::findPage(
                                   pliParts,
                                   isMirrored,
                                   saveBfx,
-                                  printing);
+                                  printing,
+                                  bfxStore2,
+                                  bfxParts);
 
                   saveCurrent.modelName.clear();
                   saveCsiParts.clear();
@@ -1040,6 +1081,11 @@ int Gui::findPage(
               meta.pop();
               coverPage = false;
               stepPage = false;
+              bfxStore2 = bfxStore1;
+              bfxStore1 = false;
+              if ( ! bfxStore2) {
+                bfxParts.clear();
+              }
             } else if ( ! stepGroup) {
               saveCurrent = current;  // so that draw page doesn't have to
                                       // deal with steps that are not steps
@@ -1094,6 +1140,8 @@ int Gui::findPage(
             if (pageNum < displayPageNum) {
               bfx[meta.bfx.value()] = csiParts;
             }
+            bfxStore1 = true;
+            bfxParts.clear();
           break;
           case BufferLoadRc:
             if (pageNum < displayPageNum) {
@@ -1143,7 +1191,19 @@ int Gui::findPage(
     if (pageNum == displayPageNum) {
       page.meta = saveMeta;
       QStringList pliParts;
-      (void) drawPage(view, scene, &page,saveStepNumber,addLine,saveCurrent,saveCsiParts,pliParts,isMirrored,bfx,printing);
+      (void) drawPage(view,
+                      scene,
+                      &page,
+                      saveStepNumber,
+                      addLine,
+                      saveCurrent,
+                      saveCsiParts,
+                      pliParts,
+                      isMirrored,
+                      bfx,
+                      printing,
+                      bfxStore2,
+                      bfxParts);
     }
     ++pageNum;
     topOfPages.append(current);
@@ -1159,6 +1219,11 @@ int Gui::getBOMParts(
   bool partIgnore = false;
   bool pliIgnore = false;
   bool synthBegin = false;
+  bool bfxStore1 = false;
+  bool bfxStore2 = false;
+  bool bfxLoad = false;
+  bool partsAdded = false;
+  QStringList bfxParts;
 
   Meta meta;
 
@@ -1201,8 +1266,32 @@ int Gui::getBOMParts(
 
             getBOMParts(current2,pliParts);
           } else {
-            pliParts << Pli::partLine(line,current,meta);
+            QString colorPart = token[1] + type;
+
+            /*
+             * Automatically ignore parts added twice due to buffer exchange
+             */
+            if (bfxStore1) {
+              bfxParts << colorPart;
+            }
+            if (bfxStore2 && bfxLoad) {
+              int i;
+              bool removed = false;
+              for (i = 0; i < bfxParts.size(); i++) {
+                if (bfxParts[i] == colorPart) {
+                  bfxParts.removeAt(i);
+                  removed = true;
+                  break;
+                }
+              }
+              if ( ! removed) {
+                pliParts << Pli::partLine(line,current,meta);
+              }
+            } else {
+              pliParts << Pli::partLine(line,current,meta);
+            }
           }
+          partsAdded = true;
         }
       break;
       case '0':
@@ -1260,6 +1349,15 @@ int Gui::getBOMParts(
             synthBegin = false;
           break;
 
+          /* Buffer exchange */
+          case BufferStoreRc:
+            bfxStore1 = true;
+            bfxParts.clear();
+          break;
+          case BufferLoadRc:
+            bfxLoad = true;
+          break;
+
 
           // Any of the metas that can change pliParts needs
           // to be processed here
@@ -1289,6 +1387,18 @@ int Gui::getBOMParts(
               }
               pliParts = newCSIParts;
             }
+          break;
+
+          case StepRc:
+            if (partsAdded) {
+              bfxStore2 = bfxStore1;
+              bfxStore1 = false;
+              bfxLoad = false;
+              if ( ! bfxStore2) {
+                bfxParts.clear();
+              }
+            }
+            partsAdded = false;
           break;
 
           default:
@@ -1355,7 +1465,7 @@ void Gui::attitudeAdjustment()
 void Gui::countPages()
 {
   if (maxPages < 1) {
-    ldrawFile.writeToTmp();
+    writeToTmp();
     statusBarMsg("Counting");
     Where       current(ldrawFile.topLevelFile(),0);
     int savedDpn   = displayPageNum;
@@ -1391,7 +1501,7 @@ void Gui::drawPage(
   
   ldrawFile.unrendered();
   ldrawFile.countInstances();
-  ldrawFile.writeToTmp();
+  writeToTmp();
 
   Where       current(ldrawFile.topLevelFile(),0);
   maxPages = 1;
@@ -1500,3 +1610,92 @@ Where &Gui::bottomOfPage()
     return dummy;
   }
 }
+
+/*
+ * This function applies buffer exchange and LPub's remove
+ * meta commands before writing them out for the renderers to use.
+ * This eliminates the need for ghosting parts removed by buffer
+ * exchange
+ */
+
+void Gui::writeToTmp(
+  const QString &fileName,
+  const QStringList &contents)
+{
+  QString fname = QDir::currentPath() + "/" + Paths::tmpDir + "/" + fileName;
+  QFile file(fname);
+  if ( ! file.open(QFile::WriteOnly|QFile::Text)) {
+    QMessageBox::warning(NULL,QMessageBox::tr("LPub"),
+    QMessageBox::tr("Failed to open %1 for writing: %2")
+      .arg(fname) .arg(file.errorString()));
+  } else {
+    QStringList csiParts;  
+    QHash<QString, QStringList> bfx;
+
+    for (int i = 0; i < contents.size(); i++) {
+      QString line = contents[i];
+      QStringList tokens;
+
+      split(line,tokens);
+      if (tokens[0] != "0") {
+        csiParts << line;
+      } else {
+        Meta meta;
+        Rc   rc;
+        Where here(fileName,i);
+        rc = meta.parse(line,here,false);
+
+        switch (rc) {
+
+          /* Buffer exchange */
+          case BufferStoreRc:
+            bfx[meta.bfx.value()] = csiParts;
+          break;
+          case BufferLoadRc:
+            csiParts = bfx[meta.bfx.value()];
+          break;
+
+          /* remove a group or all instances of a part type */
+          case GroupRemoveRc:
+          case RemoveGroupRc:
+          case RemovePartRc:
+          case RemoveNameRc:
+            {
+              QStringList newCSIParts;
+              QString     remove;
+              if (rc == RemoveGroupRc) {
+                remove_group(csiParts,meta.LPub.remove.group.value(),newCSIParts);
+              } else if (rc == RemovePartRc) {
+                remove_parttype(csiParts, meta.LPub.remove.parttype.value(),newCSIParts);
+              } else {
+                remove_partname(csiParts, meta.LPub.remove.partname.value(),newCSIParts);
+              }
+              csiParts = newCSIParts;
+            }
+          break;
+          default:
+          break;
+        }
+      }
+    }
+
+    QTextStream out(&file);
+    for (int i = 0; i < csiParts.size(); i++) {
+      out << csiParts[i] << endl;
+    }
+    file.close();
+  }
+}
+
+void Gui::writeToTmp()
+{
+  for (int i = 0; i < ldrawFile._subFileOrder.size(); i++) {
+    QString fileName = ldrawFile._subFileOrder[i].toLower();
+    QStringList c = ldrawFile.contents(fileName);
+    if (ldrawFile.changedSinceLastWrite(fileName)) {
+      writeToTmp(fileName,c);
+    }
+  }
+}
+
+

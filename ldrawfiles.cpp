@@ -46,6 +46,7 @@ LDrawSubFile::LDrawSubFile(
   _mirrorInstances = 0;
   _rendered = false;
   _mirrorRendered = false;
+  _changedSinceLastWrite = true;
 }
 
 void LDrawFile::empty()
@@ -180,6 +181,7 @@ void LDrawFile::setContents(const QString     &mcFileName,
     i.value()._modified = true;
     //i.value()._datetime = QDateTime::currentDateTime();
     i.value()._contents = contents;
+    i.value()._changedSinceLastWrite = true;
   }
 }
 
@@ -224,6 +226,7 @@ void LDrawFile::insertLine(const QString &mcFileName, int lineNumber, const QStr
     i.value()._contents.insert(lineNumber,line);
     i.value()._modified = true;
  //   i.value()._datetime = QDateTime::currentDateTime();
+    i.value()._changedSinceLastWrite = true;
   }
 }
   
@@ -236,6 +239,7 @@ void LDrawFile::replaceLine(const QString &mcFileName, int lineNumber, const QSt
     i.value()._contents[lineNumber] = line;
     i.value()._modified = true;
 //    i.value()._datetime = QDateTime::currentDateTime();
+    i.value()._changedSinceLastWrite = true;
   }
 }
 
@@ -248,6 +252,7 @@ void LDrawFile::deleteLine(const QString &mcFileName, int lineNumber)
     i.value()._contents.removeAt(lineNumber);
     i.value()._modified = true;
 //    i.value()._datetime = QDateTime::currentDateTime();
+    i.value()._changedSinceLastWrite = true;
   }
 }
 
@@ -402,7 +407,7 @@ void LDrawFile::loadMPDFile(const QString &fileName, QDateTime &datetime)
       if (sof || eof) {
         if ( ! mpdName.isEmpty()) {
           insert(mpdName,contents,datetime);
-          writeToTmp(mpdName,contents);
+          //writeToTmp(mpdName,contents);
         }
         contents.clear();
         if (sof) {
@@ -417,7 +422,7 @@ void LDrawFile::loadMPDFile(const QString &fileName, QDateTime &datetime)
 
     if ( ! mpdName.isEmpty() && ! contents.isEmpty()) {
       insert(mpdName,contents,datetime);
-      writeToTmp(mpdName,contents);
+      //writeToTmp(mpdName,contents);
     }
     _mpd = true;
 }
@@ -452,7 +457,7 @@ void LDrawFile::loadLDRFile(const QString &path, const QString &fileName)
       QDateTime datetime = QFileInfo(fullName).lastModified();
     
       insert(fileName,contents,datetime);
-      writeToTmp(fileName,contents);
+      //writeToTmp(fileName,contents);
 
       /* read it a second time to find submodels */
 
@@ -634,35 +639,6 @@ bool LDrawFile::saveLDRFile(const QString &fileName)
     }
     return true;
 }
-
-void LDrawFile::writeToTmp(
-  const QString &fileName,
-  const QStringList &contents)
-{
-  QString fname = QDir::currentPath() + "/" + Paths::tmpDir + "/" + fileName;
-  QFile file(fname);
-  if ( ! file.open(QFile::WriteOnly|QFile::Text)) {
-    QMessageBox::warning(NULL,QMessageBox::tr("LPub"),
-    QMessageBox::tr("Failed to open %1 for writing: %2") 
-      .arg(fname) .arg(file.errorString()));
-  } else {
-    QTextStream out(&file);
-    for (int i = 0; i < contents.size(); i++) {
-      out << contents[i] << endl;
-    }
-    file.close();
-  }
-}
-
-void LDrawFile::writeToTmp()
-{
-  for (int i = 0; i < _subFileOrder.size(); i++) {
-    QString fileName = _subFileOrder[i].toLower();
-    QStringList c = contents(fileName);
-    writeToTmp(fileName,c);
-  }
-}
-
 int split(const QString &line, QStringList &argv)
 {
   QString     chopped = line;
@@ -795,6 +771,18 @@ LDrawFile::LDrawFile()
        << QRegExp("^\\s*0\\s+ROTATION[^\n]*");
     }
 }
+
+bool LDrawFile::changedSinceLastWrite(const QString &fileName)
+{
+  QMap<QString, LDrawSubFile>::iterator i = _subFiles.find(fileName);
+  if (i != _subFiles.end()) {
+    bool value = i.value()._changedSinceLastWrite;
+    i.value()._changedSinceLastWrite = false;
+    return value;
+  }
+  return false;
+}
+
 
 bool isHeader(QString &line)
 {

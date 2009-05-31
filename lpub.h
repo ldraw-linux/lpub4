@@ -564,6 +564,8 @@ private:
     bool           isMirrored,
     QHash<QString, QStringList> &bfx,
     bool           printing,
+    bool           bfxStore2,
+    QStringList   &bfxParts,
     bool           calledOut = false);
   
   void attitudeAdjustment(); // reformat the LDraw file to fix LPub backward compatibility issues 
@@ -582,6 +584,10 @@ private:
   int Gui::getBOMParts(
     Where           current,
     QStringList &csiParts);
+
+  void writeToTmp(const QString &fileName, const QStringList &);
+  void writeToTmp();
+
 
 private slots:
     void open();

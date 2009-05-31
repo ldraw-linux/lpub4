@@ -49,6 +49,7 @@ class LDrawSubFile {
     int         _mirrorInstances;
     bool        _rendered;
     bool        _mirrorRendered;
+    bool        _changedSinceLastWrite;
 
     LDrawSubFile()
     {
@@ -65,7 +66,6 @@ class LDrawSubFile {
 class LDrawFile {
   private:
     QMap<QString, LDrawSubFile> _subFiles;
-    QStringList                  _subFileOrder;
     QStringList                  _emptyList;
     QString                      _emptyString;
     bool                                _mpd;
@@ -76,12 +76,11 @@ class LDrawFile {
     {
       _subFiles.empty();
     }
+    QStringList                  _subFileOrder;
 
     bool saveFile(const QString &fileName);
     bool saveMPDFile(const QString &filename);
     bool saveLDRFile(const QString &filename);
-    void writeToTmp(const QString &fileName, const QStringList &);
-    void writeToTmp();
 
     void insert(const QString     &fileName, 
                       QStringList &contents, 
@@ -123,6 +122,7 @@ class LDrawFile {
     int instances(const QString &fileName, bool mirrored);
     void countInstances();
     void countInstances(const QString &fileName, bool mirrored);
+    bool changedSinceLastWrite(const QString &fileName);
 };
 
 int split(const QString &line, QStringList &argv);
