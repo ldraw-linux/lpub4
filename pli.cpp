@@ -148,7 +148,7 @@ void Pli::setParts(
         PliPart *part = new PliPart(type,color);
         part->annotateMeta = bom ? meta.LPub.bom.annotate : meta.LPub.pli.annotate;
         part->instanceMeta = bom ? meta.LPub.bom.instance : meta.LPub.pli.instance;
-        part->csiMargin    = meta.LPub.pli.part.margin;
+        part->csiMargin    = bom ? meta.LPub.bom.part.margin : meta.LPub.pli.part.margin;
         parts.insert(key,part);
       }
 

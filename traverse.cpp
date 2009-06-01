@@ -262,6 +262,8 @@ int Gui::drawPage(
 
   page.coverPage = false;
 
+  QStringList calloutParts;
+
   /*
    * do until end of page
    */
@@ -360,7 +362,7 @@ int Gui::drawPage(
 
           step->append(callout);
 
-          QStringList pliParts2;
+          calloutParts.clear();
           QStringList csiParts2;
 
           QHash<QString, QStringList> calloutBfx;
@@ -375,7 +377,7 @@ int Gui::drawPage(
                  line,
                  current2,
                  csiParts2,
-                 pliParts2,
+                 calloutParts,
                  ldrawFile.mirrored(tokens),
                  calloutBfx,
                  printing,
@@ -389,7 +391,7 @@ int Gui::drawPage(
             ! callout->meta.LPub.callout.pli.perStep.value() &&
             ! pliIgnore && ! partIgnore && ! synthBegin) {
 
-            pliParts += pliParts2;
+            pliParts += calloutParts;
           }
 
           if (rc != 0) {
@@ -397,7 +399,7 @@ int Gui::drawPage(
             return rc;
           }
         } else {
-          callout->instances++;
+          pliParts += calloutParts;
         }
 
         /* remind user what file we're working on */
@@ -955,7 +957,7 @@ int Gui::findPage(
           bool rendered   = ldrawFile.rendered(type,isMirrored);
                     
           if (contains) {
-            if ( ! rendered) {
+            if ( ! rendered && ! bfxStore2) {
               
               // can't be a callout
               SubmodelStack tos(current.modelName,current.lineNumber,stepNumber);
@@ -1259,7 +1261,7 @@ int Gui::getBOMParts(
 
           bool contains   = ldrawFile.contains(type);
 
-          if (contains) {
+          if (contains && ! bfxStore2) {
 
             Where current2(type,0);
 
@@ -1337,7 +1339,6 @@ int Gui::getBOMParts(
 
           case PartEndRc:
             partIgnore = false;
-            pliIgnore = false;
           break;
 
           case SynthBeginRc:

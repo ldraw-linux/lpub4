@@ -149,6 +149,10 @@ void Gui::printToFile()
 	  QDir::currentPath() + "/" + baseName,
 	  tr("PDF (*.pdf)\nPDF (*.PDF)"));
 
+  if (fileName == "") {
+    return;
+  }
+
   fileInfo.setFile(fileName);
 
   QString suffix = fileInfo.suffix();

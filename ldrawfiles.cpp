@@ -527,7 +527,7 @@ void LDrawFile::countInstances(const QString &mcFileName, bool isMirrored)
       
       /* Sorry, but models that are callouts are not counted as instances */
       
-      if (tokens.size() == 4 && 
+      if (0 && tokens.size() == 4 &&
           tokens[0] == "0" && 
           (tokens[1] == "LPUB" || tokens[1] == "!LPUB") && 
           tokens[2] == "CALLOUT" && 
