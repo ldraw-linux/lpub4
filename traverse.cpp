@@ -1635,43 +1635,45 @@ void Gui::writeToTmp(
       QStringList tokens;
 
       split(line,tokens);
-      if (tokens[0] != "0") {
-        csiParts << line;
-      } else {
-        Meta meta;
-        Rc   rc;
-        Where here(fileName,i);
-        rc = meta.parse(line,here,false);
+      if (tokens.size()) {
+        if (tokens[0] != "0") {
+          csiParts << line;
+        } else {
+          Meta meta;
+          Rc   rc;
+          Where here(fileName,i);
+          rc = meta.parse(line,here,false);
 
-        switch (rc) {
+          switch (rc) {
 
-          /* Buffer exchange */
-          case BufferStoreRc:
-            bfx[meta.bfx.value()] = csiParts;
-          break;
-          case BufferLoadRc:
-            csiParts = bfx[meta.bfx.value()];
-          break;
+            /* Buffer exchange */
+            case BufferStoreRc:
+              bfx[meta.bfx.value()] = csiParts;
+            break;
+            case BufferLoadRc:
+              csiParts = bfx[meta.bfx.value()];
+            break;
 
-          /* remove a group or all instances of a part type */
-          case GroupRemoveRc:
-          case RemoveGroupRc:
-          case RemovePartRc:
-          case RemoveNameRc:
-            {
-              QStringList newCSIParts;
-              if (rc == RemoveGroupRc) {
-                remove_group(csiParts,meta.LPub.remove.group.value(),newCSIParts);
-              } else if (rc == RemovePartRc) {
-                remove_parttype(csiParts, meta.LPub.remove.parttype.value(),newCSIParts);
-              } else {
-                remove_partname(csiParts, meta.LPub.remove.partname.value(),newCSIParts);
+            /* remove a group or all instances of a part type */
+            case GroupRemoveRc:
+            case RemoveGroupRc:
+            case RemovePartRc:
+            case RemoveNameRc:
+              {
+                QStringList newCSIParts;
+                if (rc == RemoveGroupRc) {
+                  remove_group(csiParts,meta.LPub.remove.group.value(),newCSIParts);
+                } else if (rc == RemovePartRc) {
+                  remove_parttype(csiParts, meta.LPub.remove.parttype.value(),newCSIParts);
+                } else {
+                  remove_partname(csiParts, meta.LPub.remove.partname.value(),newCSIParts);
+                }
+                csiParts = newCSIParts;
               }
-              csiParts = newCSIParts;
-            }
-          break;
-          default:
-          break;
+            break;
+            default:
+            break;
+          }
         }
       }
     }

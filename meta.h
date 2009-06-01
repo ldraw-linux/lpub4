@@ -672,18 +672,19 @@ public:
     // 8 fixedPitch
     // 9 rawMode
 
-    QStringList list = _value[pushed].split(",");
+    QString pixels = _value[pushed];
+
+    QStringList list = pixels.split(",");
 
     // points = 1/72
     // height = points/72
-
     float units;
     units = list[1].toFloat()/72.0;  // now we have inches
     units *= resolution();
 
     list[1] = QString("%1") .arg(int(units+0.5));
 
-    QString pixels = list.join(",");
+    pixels = list.join(",");
 
     return pixels;
   }
@@ -710,7 +711,7 @@ public:
 
       float units;
       units = list[1].toFloat()/72.0;  // now we have inches
-      //units *= 02.54;
+      units /= 02.54;
 
       list[1] = QString("%1") .arg(int(units+0.5));
 

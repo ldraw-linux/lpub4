@@ -362,10 +362,10 @@ void Pli::partClass(
   pclass = PartsList::title(type);
 
   if (pclass.length()) {
-    QRegExp rx("^(\\w+)\\s+([a-zA-Z]+).*$");
+    QRegExp rx("^(\\w+)\\s+([0-9a-zA-Z]+).*$");
     if (pclass.contains(rx)) {
       pclass = rx.cap(1);
-      if (rx.numCaptures() == 2) {
+      if (rx.numCaptures() == 2 && rx.cap(1) == "Technic") {
         pclass += rx.cap(2);
       }
     } else {
