@@ -1261,7 +1261,7 @@ int Gui::getBOMParts(
 
           bool contains   = ldrawFile.contains(type);
 
-          if (contains && ! bfxStore2) {
+          if (contains) {
 
             Where current2(type,0);
 
@@ -1272,9 +1272,6 @@ int Gui::getBOMParts(
             /*
              * Automatically ignore parts added twice due to buffer exchange
              */
-            if (bfxStore1) {
-              bfxParts << colorPart;
-            }
             if (bfxStore2 && bfxLoad) {
               int i;
               bool removed = false;
@@ -1290,6 +1287,9 @@ int Gui::getBOMParts(
               }
             } else {
               pliParts << Pli::partLine(line,current,meta);
+            }
+            if (bfxStore1) {
+              bfxParts << colorPart;
             }
           }
           partsAdded = true;
