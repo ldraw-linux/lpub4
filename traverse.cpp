@@ -319,13 +319,10 @@ int Gui::drawPage(
           && ! pliIgnore 
           && ! partIgnore 
           && ! synthBegin) {
+        QString colorType = color+type;
         if (! isSubmodel(type) || curMeta.LPub.pli.includeSubs.value()) {
           if (bfxStore2 && bfxLoad) {
-            QString colorType = tokens[1]+type;
             bool removed = false;
-            if (bfxStore1) {
-              bfxParts << colorType;
-            }
             for (int i = 0; i < bfxParts.size(); i++) {
               if (bfxParts[i] == colorType) {
                 bfxParts.removeAt(i);
@@ -339,6 +336,9 @@ int Gui::drawPage(
           } else {
             pliParts << Pli::partLine(line,current,steps->meta);
           }
+        }
+        if (bfxStore1) {
+          bfxParts << colorType;
         }
       }
 
