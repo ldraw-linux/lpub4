@@ -1259,38 +1259,35 @@ int Gui::getBOMParts(
 
           QString    type = token[token.size()-1];
 
-          bool contains   = ldrawFile.contains(type);
-
-          if (contains) {
-
-            Where current2(type,0);
-
-            getBOMParts(current2,pliParts);
-          } else {
-            QString colorPart = token[1] + type;
-
             /*
              * Automatically ignore parts added twice due to buffer exchange
              */
-            if (bfxStore2 && bfxLoad) {
-              int i;
-              bool removed = false;
-              for (i = 0; i < bfxParts.size(); i++) {
-                if (bfxParts[i] == colorPart) {
-                  bfxParts.removeAt(i);
-                  removed = true;
-                  break;
-                }
+          bool removed = false;
+          QString colorPart = token[1] + type;
+
+          if (bfxStore2 && bfxLoad) {
+            int i;
+            for (i = 0; i < bfxParts.size(); i++) {
+              if (bfxParts[i] == colorPart) {
+                bfxParts.removeAt(i);
+                removed = true;
+                break;
               }
-              if ( ! removed) {
-                pliParts << Pli::partLine(line,current,meta);
-              }
+            }
+          }
+          if ( ! removed) {
+            if (ldrawFile.contains(type)) {
+
+              Where current2(type,0);
+
+              getBOMParts(current2,pliParts);
             } else {
+
               pliParts << Pli::partLine(line,current,meta);
             }
-            if (bfxStore1) {
-              bfxParts << colorPart;
-            }
+          }
+          if (bfxStore1) {
+            bfxParts << colorPart;
           }
           partsAdded = true;
         }
