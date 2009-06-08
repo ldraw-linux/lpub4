@@ -2026,6 +2026,7 @@ CalloutMeta::CalloutMeta() : BranchMeta()
   placement.setValue(RightOutside,CsiType);
   // freeform
   alloc.setValue(Vertical);
+  pli.placement.setValue(TopLeftOutside,CsiType);
   pli.perStep.setValue(true);
 }
 

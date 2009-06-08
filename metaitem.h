@@ -61,9 +61,11 @@ public:
   void convertToCallout(       Meta *, const QString &, bool isMirrored);
   void addCalloutMetas(        Meta *, const QString &, bool isMirrored);
   int  nestCallouts(           Meta *, const QString &, bool isMirrored);
-  QString makeMonoName(QString &fileName, QString &color);
-  int monoColorSubmodel(QString &modelName,QString &color);
-  QPointF defaultPointerTip(Meta  &meta,Where &instance,bool isMirrored);
+  QString makeMonoName(const QString &fileName, QString &color);
+  int monoColorSubmodel(QString &modelName,QString &outFileName, QString &color);
+  QPointF defaultPointerTip(
+    Meta &meta,QString &modelName,int lineNumber,
+    const QString &subModel,int instance,bool isMirrored);
 
   void removeCallout(          const QString &, const Where &, const Where &);
   void unnestCallouts(         const QString &);

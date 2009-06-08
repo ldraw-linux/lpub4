@@ -1693,7 +1693,8 @@ void MetaItem::addCalloutMetas(
   const QString &modelName,
   bool  isMirrored)
 {
-  /* Scan the file and remove any multi-step stuff */
+  /* Scan the file and remove any multi-step stuff from the file
+     we're converting to callout*/
 
   int  numLines  = gui->subFileSize(modelName);
   Where walk(modelName,numLines-1);
@@ -1706,6 +1707,12 @@ void MetaItem::addCalloutMetas(
     }
   } while (--walk >= 0);
 
+  /* submodelStack tells us where this submodel is referenced in the
+     parent file */
+
+  SubmodelStack tos = meta->submodelStack[meta->submodelStack.size() - 1];
+  Where calledOut(tos.modelName,tos.lineNumber);
+
   /* Now scan the lines following this line, to see if there is another
    * part just like this one that needs to be added as a callout
    * multiplier.
@@ -1716,49 +1723,12 @@ void MetaItem::addCalloutMetas(
    * top stop on other sub-models, or mirror images of the same sub-model.
    */
 
-  QList<Where> instances;
-
-  SubmodelStack tos = meta->submodelStack[meta->submodelStack.size() - 1];
-  Where calledOut(tos.modelName,tos.lineNumber);
+  int instanceCount = 0;
     
   QString firstLine;
-  walk = calledOut;
-  numLines = gui->subFileSize(walk.modelName);
   Where lastInstance, firstInstance;
-  int track = 0;
-  for ( ; walk.lineNumber < numLines; walk++) {
-    QString line = gui->readLine(walk);
-    QStringList argv;
-    split(line,argv);
-    if (argv.size() >= 2 && argv[0] == "0") {
-      if (argv[1] == "STEP" || argv[1] == "ROTSTEP" || 
-          argv[1] == "LPUB" || argv[1] == "!LPUB") {
-        track = 1;
-        break;
-      }
-    } else if (argv.size() == 15 && argv[0] == "1") {
-      if (gui->isSubmodel(argv[14])) {
-        if (argv[14] == modelName) {
-          if (firstLine == "") {
-            firstLine = line;
-            firstInstance = walk;
-          } else {
-            if (equivalentAdds(firstLine,line)) {
-              lastInstance = walk;
-            } else {
-              track = 2;
-              break;
-            }
-          }
-        } else {
-          track = 3;
-          break;
-        }
-      }
-    }
-  }
-  
-  Where walkBack = calledOut - 1;
+
+  Where walkBack = calledOut;
   for (; walkBack.lineNumber >= 0; walkBack--) {
     QString line = gui->readLine(walkBack);
 
@@ -1768,43 +1738,68 @@ void MetaItem::addCalloutMetas(
       QStringList argv;
       split(line,argv);
       if (argv.size() >= 2 && argv[0] == "0") {
-        if (argv[1] == "STEP" || argv[1] == "ROTSTEP" || 
+        if (argv[1] == "STEP" || argv[1] == "ROTSTEP" ||
             argv[1] == "LPUB" || argv[1] == "!LPUB") {
           break;
         }
       } else if (argv.size() == 15 && argv[0] == "1") {
         if (gui->isSubmodel(argv[14])) {
           if (argv[14] == modelName) {
-            if (equivalentAdds(firstLine,line)) {
+            if (firstLine == "") {
+              firstLine = line;
               firstInstance = walkBack;
+              lastInstance = walkBack;
+              ++instanceCount;
             } else {
-              break;
+              if (equivalentAdds(firstLine,line)) {
+                firstInstance = walkBack;
+                ++instanceCount;
+              } else {
+                break;
+              }
             }
           } else {
             break;
           }
         }
       }
-    }    
+    }
   }
-  
-  if (lastInstance.lineNumber == 0) {
-    lastInstance = firstInstance;
-  }
-  
-  for (walk = firstInstance ; walk.lineNumber <= lastInstance.lineNumber; walk++) {
+
+  walk = calledOut + 1;
+  numLines = gui->subFileSize(walk.modelName);
+  for ( ; walk.lineNumber < numLines; walk++) {
     QString line = gui->readLine(walk);
     QStringList argv;
     split(line,argv);
-    if (argv.size() == 15 && argv[14] == modelName) {
-      instances << walk;
+    if (argv.size() >= 2 && argv[0] == "0") {
+      if (argv[1] == "STEP" || argv[1] == "ROTSTEP" ||
+          argv[1] == "LPUB" || argv[1] == "!LPUB") {
+        break;
+      }
+    } else if (argv.size() == 15 && argv[0] == "1") {
+      if (gui->isSubmodel(argv[14])) {
+        if (argv[14] == modelName) {
+          if (firstLine == "") {
+            firstLine = line;
+            firstInstance = walk;
+            ++instanceCount;
+          } else {
+            if (equivalentAdds(firstLine,line)) {
+              lastInstance = walk;
+              ++instanceCount;
+            } else {
+              break;
+            }
+          }
+        } else {
+          break;
+        }
+      }
     }
   }
   
-  int instanceCount = instances.size();
-  
   if (instanceCount) {
-    Where instance;
     for (int i = 0; i < instanceCount; i++) {
       /* defaultPointerTip is the trick - it calculates the pointer tip
          for a given instance of a callout.  It does this by rendering
@@ -1812,13 +1807,20 @@ void MetaItem::addCalloutMetas(
          the called out parts color B.  Then the resulatant image is
          searched for color B.  The parent model needs to be rotated
          by ROTSTEP for this to work. */
-      QPointF offset = defaultPointerTip(*meta, instances[i],isMirrored);
+      //QPointF offset = defaultPointerTip(*meta, instances[i],isMirrored);
+      QStringList argv;
+      split(firstLine,argv);
+      QPointF offset = defaultPointerTip(*meta,
+                                         walk.modelName, firstInstance.lineNumber,
+                                         modelName, i,
+                                         gui->isMirrored(argv));
+
       QString line = QString("%1 %2") .arg(offset.x()) .arg(offset.y());
       appendMeta(lastInstance,"0 !LPUB CALLOUT POINTER CENTER 0 " + line);
 
       lastInstance.lineNumber++;
     }
-    appendMeta(lastInstance,    "0 !LPUB CALLOUT END");
+    appendMeta(lastInstance, "0 !LPUB CALLOUT END");
     insertMeta(firstInstance,"0 !LPUB CALLOUT BEGIN");
   }
 }
@@ -1944,7 +1946,7 @@ void MetaItem::deletePointer(const Where &here)
  *
  */
  
-QString MetaItem::makeMonoName(QString &fileName, QString &color)
+QString MetaItem::makeMonoName(const QString &fileName, QString &color)
 {
   QFileInfo info(fileName);
   return info.absolutePath() + "/" + info.baseName() + "_" + color + "." + info.suffix();
@@ -1952,23 +1954,9 @@ QString MetaItem::makeMonoName(QString &fileName, QString &color)
   
 int MetaItem::monoColorSubmodel(
   QString &modelName,
+  QString &outFileName,
   QString &color)
-{
-  QString inFileName  = modelName;
-  QString outFileName = makeMonoName(inFileName, color);
-  
-  QFile inFile(inFileName);
-  if ( ! inFile.open(QFile::ReadOnly | QFile::Text)) {
-#if 0
-    QMessageBox::warning(NULL, 
-      QMessageBox::tr(LPUB),
-      QMessageBox::tr("MonoColorSubmodel cannot read file %1:\n%2.")
-      .arg(inFileName)
-      .arg(inFile.errorString()));
-#endif
-    return -1;
-  }
-    
+{    
   QFile outFile(outFileName);
   if ( ! outFile.open(QFile::WriteOnly | QFile::Text)) {
     QMessageBox::warning(NULL, 
@@ -1979,11 +1967,13 @@ int MetaItem::monoColorSubmodel(
     return -1;
   }
 
-  QTextStream in(&inFile);
   QTextStream out(&outFile);
+  int numLines = gui->subFileSize(modelName);
+
+  Where walk(modelName,0);
   
-  while ( ! in.atEnd()) {
-    QString line = in.readLine(0);
+  for ( ; walk < numLines; walk++) {
+    QString line = gui->readLine(walk);
     QStringList argv;
     
     split(line,argv);
@@ -2000,8 +1990,8 @@ int MetaItem::monoColorSubmodel(
       submodel += "." + suffix;
       if (gui->isSubmodel(submodel)) {
         QString model = QDir::currentPath() + "/" + Paths::tmpDir + "/" + argv[14];
-        monoColorSubmodel(model,color);
         model = makeMonoName(model,color);
+        monoColorSubmodel(submodel,model,color);
         QFileInfo info(model);
         argv[14] = info.fileName();
       }
@@ -2016,151 +2006,152 @@ int MetaItem::monoColorSubmodel(
     out << line << endl;
   }
   
-  inFile.close();
   outFile.close();
   return 0;
 }
 
 QPointF MetaItem::defaultPointerTip(
-  Meta  &meta,
-  Where &instance,
-  bool  isMirrored)
+  Meta    &meta,
+  QString &modelName,
+  int      lineNumber,
+  const QString &subModel,
+  int     instance,
+  bool    isMirrored)
 {
-  QString modelName = QDir::currentPath() + "/" + Paths::tmpDir + "/" + instance.modelName;
-
   QString white("15");
   QString blue("1");
-  
+
   /*
    * Create a "white" version of the submodel that callouts out our callout
    */
 
-  monoColorSubmodel(modelName,white);
-  modelName = makeMonoName(modelName,white);
-  
-  QFile inFile(modelName);
+  QString monoName = QDir::currentPath() + "/" + Paths::tmpDir + "/" + modelName;
+  monoName = makeMonoName(monoName,white);
+  monoColorSubmodel(modelName,monoName,white);
+
+  QFile inFile(monoName);
   if ( ! inFile.open(QFile::ReadOnly | QFile::Text)) {
-    QMessageBox::warning(NULL, 
+    QMessageBox::warning(NULL,
       QMessageBox::tr(LPUB),
       QMessageBox::tr("defaultPointerTip cannot read file %1:\n%2.")
-      .arg(modelName)
+      .arg(monoName)
       .arg(inFile.errorString()));
     return QPointF(0.5,0.5);
   }
 
   QTextStream in(&inFile);
   QStringList csiParts;
-  
+
   /*
    * Gather up the "white" parent model up to the callout
    */
 
-  for (int i = 0; i < instance.lineNumber; i++) {
+  int numLines = gui->subFileSize(modelName);
+  int instances = 0;
+  QStringList argv;
+  int i;
+  QFileInfo info(subModel);
+  QString monoSubModel = info.baseName() + "_" + white + "." + info.suffix();
+  for (i = 0; i < numLines; i++) {
     QString line = in.readLine(0);
-    QStringList argv;
-    Where where;
-    
-    split(line,argv);
+    if (i >= lineNumber) {
+
+      split(line,argv);
+      bool mirrored = gui->isMirrored(argv);
+      if (argv.size() == 15 &&
+          argv[0] == "1" &&
+          argv[14] == monoSubModel &&
+          mirrored == isMirrored) {
+        if (instances++ == instance) {
+          break;
+        }
+      }
+    }
 
     csiParts << line;
   }
-  
-  /*
-   * Convert the callout submodel to be blue
-   */
-  
-  QString addLine = in.readLine(0);
-  QStringList argv;
-  
-  split(addLine,argv);
+  if (i == numLines) {
+    return QPointF(0.5,0.5);
+  }
 
-  if (argv.size() == 15 && argv[0] == "1") {
-  
-    modelName = QDir::currentPath() + "/" + Paths::tmpDir + "/" + argv[14];
-    monoColorSubmodel(modelName,blue); // create a blue version of the callout
-    modelName = makeMonoName(modelName,blue);
-    QFileInfo info(modelName);
-    argv[1] = blue;
-    argv[14] = info.fileName();
-    csiParts << argv.join(" ");  // add blue submodel to csiParts
-    
-    while ( ! in.atEnd()) {
-      QString line = in.readLine(0);
-      QStringList argv;
-      split(line,argv);
-      if (argv.size() > 1 && argv[0] == "0" && (argv[1] == "STEP" || argv[1] == "ROTSTEP")) {
-        break;
-      }
-      csiParts << line;
-    }
-    
-    if (isMirrored) {
-  
-      SubmodelStack tos = meta.submodelStack[meta.submodelStack.size() - 1];
-    
-      if (meta.submodelStack.size() > 1) {
-        tos = meta.submodelStack[meta.submodelStack.size() - 2];
-        Where here(tos.modelName, tos.lineNumber+1);
-        addLine = gui->readLine(here);
-      } else {
-        addLine = "1 0 0 0 0 1 0 0 0 1 0 0 0 1 " + instance.modelName;
-      }
+  QString fileName = QDir::currentPath() + "/" + Paths::tmpDir + "/" + argv[14];
+  fileName = makeMonoName(fileName,blue);
+  QString tmodelName = info.fileName();
+  monoColorSubmodel(tmodelName,fileName,blue); // create a blue version of the callout
+  info.setFile(fileName);
+  argv[1] = blue;
+  argv[14] = info.fileName();
+  csiParts << argv.join(" ");  // add blue submodel to csiParts
+
+  QString addLine;
+
+  if (isMirrored) {
+
+    SubmodelStack tos = meta.submodelStack[meta.submodelStack.size() - 1];
+
+    if (meta.submodelStack.size() > 1) {
+      tos = meta.submodelStack[meta.submodelStack.size() - 2];
+      Where here(tos.modelName, tos.lineNumber+1);
+      addLine = gui->readLine(here);
     } else {
-      addLine = "1 0 0 0 0 1 0 0 0 1 0 0 0 1 " + instance.modelName;
+      addLine = "1 0 0 0 0 1 0 0 0 1 0 0 0 1 " + modelName;
     }
-    modelName = QDir::currentPath() + "/" + Paths::tmpDir + "/mono.png";
-  
-    int rc = renderer->renderCsi(addLine,csiParts,modelName,meta);
+  } else {
+    addLine = "1 0 0 0 0 1 0 0 0 1 0 0 0 1 " + modelName;
+  }
+  QString imageName = QDir::currentPath() + "/" + Paths::tmpDir + "/mono.png";
 
-    if (rc == 0) {
-      QPixmap pixmap;
-    
-      pixmap.load(modelName);
-    
-      QImage color = pixmap.toImage();
-      QImage alpha = pixmap.toImage();
-    
-      int width = color.width();
-      int height = color.height();
-      int left = 32000, top = -1, right = -1, bottom = -1;
-    
-      for (int y = 0; y < height; y++) {
-        for (int x = 0; x < width; x++)  {
-          QColor a = alpha.pixel(x,y);
-        
-          if (a.blue()) {
-            QColor c = color.pixel(x,y);
-        
-            int red = c.red(), green = c.green(), blue = c.blue();
-          
-            if (blue - (red + green)/2 > 64) {
-              if (top == -1) {
-                top = y;
-              }
-              if (left > x) {
-                left = x;
-              }
-              if (bottom < y) {
-                bottom = y;
-              }
-              if (right < x) {
-                right = x;
-              }
+  int rc = renderer->renderCsi(addLine,csiParts,imageName,meta);
+
+  if (rc == 0) {
+    QPixmap pixmap;
+
+    pixmap.load(imageName);
+
+    QImage color = pixmap.toImage();
+    QImage alpha = pixmap.toImage();
+
+    int width = color.width();
+    int height = color.height();
+    int left = 32000, top = -1, right = -1, bottom = -1;
+
+    for (int y = 0; y < height; y++) {
+      for (int x = 0; x < width; x++)  {
+        QColor a = alpha.pixel(x,y);
+
+        if (a.blue()) {
+          QColor c = color.pixel(x,y);
+
+          int red = c.red(), green = c.green(), blue = c.blue();
+
+          if (blue - (red + green)/2 > 64) {
+            if (top == -1) {
+              top = y;
+            }
+            if (left > x) {
+              left = x;
+            }
+            if (bottom < y) {
+              bottom = y;
+            }
+            if (right < x) {
+              right = x;
             }
           }
         }
       }
-    
-      left = (right+left)/2;
-      top  = (top+bottom)/2;
-      
-      if (left > width || top > height) {
-        left = width/2;
-        top  = height/2;
-      }
-    
-      return QPointF(float(left)/width, float(top)/height);
     }
+
+    left = (right+left)/2;
+    top  = (top+bottom)/2;
+
+    if (left > width || top > height) {
+      left = width/2;
+      top  = height/2;
+    }
+
+    return QPointF(float(left)/width, float(top)/height);
   }
   return QPointF(0.5,0.5);
 }
+

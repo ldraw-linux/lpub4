@@ -399,6 +399,7 @@ int Gui::drawPage(
             return rc;
           }
         } else {
+          callout->instances++;
           pliParts += calloutParts;
         }
 

@@ -419,6 +419,10 @@ public:
     bool older = ldrawFile.older(foo,lastModified);
     return older;
   }
+  bool isMirrored(QStringList &argv)
+  {
+    return ldrawFile.mirrored(argv);
+  }
   Where &topOfPage();
   Where &bottomOfPage();
 

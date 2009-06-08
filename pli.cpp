@@ -55,7 +55,7 @@ QCache<QString,QString> Pli::orientation;
     
 const Where &Pli::topOfStep()
 {
-  if (bom) {
+  if (bom || step == NULL || steps == NULL) {
     return gui->topOfPage();
   } else {
     if (step) {
@@ -67,7 +67,7 @@ const Where &Pli::topOfStep()
 }
 const Where &Pli::bottomOfStep()
 {
-  if (bom) {
+  if (bom || step == NULL || steps == NULL) {
     return gui->bottomOfPage();
   } else {
     if (step) {
@@ -123,8 +123,11 @@ QString Pli::partLine(QString &line, Where &here, Meta & /*meta*/)
 void Pli::setParts(
   QStringList &csiParts,
   Meta        &meta,
-  bool         bom)
+  bool         _bom)
 {
+  bom = _bom;
+  pliMeta = _bom ? meta.LPub.bom : meta.LPub.pli;
+
   const int numParts = csiParts.size();
   for (int i = 0; i < numParts; i++) {
     QString part = csiParts[i];
@@ -146,9 +149,9 @@ void Pli::setParts(
 
       if ( ! parts.contains(key)) {
         PliPart *part = new PliPart(type,color);
-        part->annotateMeta = bom ? meta.LPub.bom.annotate : meta.LPub.pli.annotate;
-        part->instanceMeta = bom ? meta.LPub.bom.instance : meta.LPub.pli.instance;
-        part->csiMargin    = bom ? meta.LPub.bom.part.margin : meta.LPub.pli.part.margin;
+        part->annotateMeta = pliMeta.annotate;
+        part->instanceMeta = pliMeta.instance;
+        part->csiMargin    = pliMeta.part.margin;
         parts.insert(key,part);
       }
 
@@ -199,7 +202,7 @@ bool Pli::initAnnotationString()
     annotationString[32+25]= "TO";  // orange
     titles << "^Technic Axle\\s+(\\d+)\\s*.*$";
     titles << "^Technic Axle Flexible\\s+(\\d+)\\s*$";
-    //titles << "^Technic Beam\\s+(\\d+)\\s*$";
+    titles << "^Technic Beam\\s+(\\d+)\\s*$";
     titles << "^Electric Cable NXT\\s+([0-9].*)$";
     titles << "^Electric Cable RCX\\s+([0-9].*)$";
   }
@@ -455,7 +458,7 @@ int Pli::placePli(
     int right = left + prevPart->width;
     int bot = prevPart->height;
 
-    float tmargin = prevPart->instanceMeta.margin.valuePixels(YY);
+    float tmargin = prevPart->csiMargin.valuePixels(YY);
     botMargin = qMax(botMargin,tmargin);
 
     // allocate new row
@@ -472,7 +475,7 @@ int Pli::placePli(
 
         if ( ! part->placed) {
 
-          float tmargin = part->instanceMeta.margin.valuePixels(YY);
+          float tmargin = part->csiMargin.valuePixels(YY);
           int splitMargin = qMax(prevPart->topMargin,tmargin);
 
           bot += splitMargin;
@@ -524,9 +527,8 @@ int Pli::placePli(
 
       PliPart *part = parts[keys[i]];
 
-      margin.first    = qMax(part->instanceMeta.margin.valuePixels(XX),
-                        part->csiMargin.valuePixels(XX));
-      float tmargin   = part->instanceMeta.margin.valuePixels(YY);
+      margin.first    = part->csiMargin.valuePixels(XX);
+      float tmargin   = part->csiMargin.valuePixels(YY);
       int splitMargin = qMax(prevPart->topMargin,tmargin);
 
       prevPart = parts[keys[i]];
@@ -678,7 +680,7 @@ void Pli::placeCols(
   borderData = pliMeta.border.valuePixels();
 
   float topMargin = qMax(borderData.margin[1]+borderData.thickness,parts[keys[0]]->topMargin);
-  float botMargin = qMax(borderData.margin[1]+borderData.thickness,parts[keys[0]]->instanceMeta.margin.valuePixels(YY));
+  float botMargin = qMax(borderData.margin[1]+borderData.thickness,parts[keys[0]]->csiMargin.valuePixels(YY));
 
   int height = 0;
   int width;
@@ -836,7 +838,7 @@ int Pli::sortPli()
 
         font = pliMeta.annotate.font.valueFoo();
         color = pliMeta.annotate.color.value();
-         part->annotateText = 
+        part->annotateText =
           new AnnotateTextItem(this,part,descr,font,color,parentRelativeType);
 
         part->annotateText->size(part->annotWidth,part->annotHeight);
@@ -845,33 +847,24 @@ int Pli::sortPli()
           part->width = part->annotWidth;
         }
 
-        if (part->annotateMeta.margin.valuePixels(YY) > part->csiMargin.valuePixels(YY)) {
-          part->partTopMargin = part->annotateMeta.margin.valuePixels(YY);
-        } else {
-          part->partTopMargin = part->csiMargin.valuePixels(YY);
-        }
+        part->partTopMargin = part->annotateMeta.margin.valuePixels(YY);
 
-        for (int h = 0; h < part->annotHeight + part->partTopMargin; h++) {
+        int hMax = part->annotHeight + part->annotateMeta.margin.value(YY);
+        for (int h = 0; h < hMax; h++) {
           part->leftEdge  << part->width - part->annotWidth;
           part->rightEdge << part->width;
         }
-
-        part->topMargin = part->annotateMeta.margin.valuePixels(YY);
       } else {
         part->annotateText = NULL;
         part->annotWidth  = 0;
         part->annotHeight = 0;
         part->partTopMargin = 0;
-        part->topMargin = part->csiMargin.valuePixels(YY);
       }
+      part->topMargin = part->csiMargin.valuePixels(YY);
       getLeftEdge(image,part->leftEdge);
       getRightEdge(image,part->rightEdge);
 
-      if (part->instanceMeta.margin.valuePixels(YY) > part->csiMargin.valuePixels(YY)) {
-        part->partBotMargin = part->instanceMeta.margin.valuePixels(YY);
-      } else {
-        part->partBotMargin = part->csiMargin.valuePixels(YY);
-      }
+      part->partBotMargin = part->instanceMeta.margin.valuePixels(YY);
 
       /* Lets see if we can slide the text up in the bottom left corner of
        * part image */
@@ -885,7 +878,8 @@ int Pli::sortPli()
         }
       }
 
-      for (int h = overlap; h < textHeight + part->partBotMargin; h++) {
+      int hMax = textHeight + part->instanceMeta.margin.valuePixels(YY);
+      for (int h = overlap; h < hMax; h++) {
         part->leftEdge << 0;
         part->rightEdge << textWidth;
       }
@@ -948,13 +942,6 @@ int Pli::sizePli(Meta *_meta, PlacementType _parentRelativeType, bool _perStep)
   }
 
   meta = _meta;
-
-  if (bom) {
-    pliMeta = meta->LPub.bom;
-    
-  } else {
-    pliMeta = meta->LPub.pli;
-  }
 
   rc = sortPli();
   if (rc != 0) {
@@ -1418,12 +1405,12 @@ void PliBackgroundItem::contextMenuEvent(
                                                
     PlacementData placementData = pli->placement.value();
 
-    QString name = "Move Parts List";
+    QString name = bom ? "Move Bill Of Materials" : "Move Parts List";
     QAction *placementAction  = menu.addAction(name);
     placementAction->setWhatsThis(
       commonMenus.naturalLanguagePlacementWhatsThis(PartsListType,placementData,name));
 
-    QString pl = "Parts List ";
+    QString pl = bom ? "Bill of Materials " : "Parts List ";
     QAction *backgroundAction = commonMenus.backgroundMenu(menu,pl);
     QAction *borderAction     = commonMenus.borderMenu(menu,pl);
     QAction *marginAction     = commonMenus.marginMenu(menu,pl);
