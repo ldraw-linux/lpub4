@@ -133,8 +133,10 @@ void Gui::printToFile()
     pageWidth = centimeters2inches(pageWidth);
     pageHeight = centimeters2inches(pageHeight);
   }
+
   pageWidth *= resolution();
   pageHeight *= resolution();
+
   if (resolutionType() == DPCM) {
     pageWidth = centimeters2inches(pageWidth);
     pageHeight = centimeters2inches(pageHeight);
@@ -176,6 +178,7 @@ void Gui::printToFile()
 
   QGraphicsScene scene;
   LGraphicsView  view(&scene);
+
   QRectF boundingRect(0.0,0.0,pageWidth,pageHeight);
   QRect  bounding(0,0,pageWidth,pageHeight);
   view.setMinimumSize(pageWidth,pageHeight);

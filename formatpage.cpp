@@ -52,7 +52,7 @@
 
 void Gui::clearPage(
   LGraphicsView  *view,
-  QGraphicsScene * /* scene - unused */)
+  QGraphicsScene *scene)
 {
   page.freePage();
   page.pli.clear();
@@ -61,6 +61,7 @@ void Gui::clearPage(
     delete view->pageBackgroundItem;
     view->pageBackgroundItem = NULL;
   }
+  scene->clear();
 }
 
 /*********************************************
@@ -181,10 +182,27 @@ int Gui::addGraphicsPageItems(
 
   Placement plPage;
   plPage.relativeType = PageType;
-  int pW = page->meta.LPub.page.size.valuePixels(0);
-  int pH = page->meta.LPub.page.size.valuePixels(1);
+
+  int pW, pH;
+
+  if (printing) {
+    if (view->maximumWidth() < page->meta.LPub.page.size.valuePixels(0)) {
+      pW = view->maximumWidth();
+    } else {
+      pW = page->meta.LPub.page.size.valuePixels(0);
+    }
+    if (view->maximumHeight() < page->meta.LPub.page.size.valuePixels(1)) {
+      pH = view->maximumHeight();
+    } else {
+      pH = page->meta.LPub.page.size.valuePixels(1);
+    }
+  } else {
+    pW = page->meta.LPub.page.size.valuePixels(0);
+    pH = page->meta.LPub.page.size.valuePixels(1);
+  }
+
   plPage.setSize(pW,pH);
-  plPage.margin   = page->meta.LPub.page.margin;
+  plPage.margin  = page->meta.LPub.page.margin;
   plPage.loc[XX] = 0;
   plPage.loc[YY] = 0;
 

@@ -546,8 +546,10 @@ void LDrawFile::countInstances(const QString &mcFileName, bool isMirrored)
         }
       } else if (tokens.size() >= 2 && tokens[0] == "0" && 
                 (tokens[1] == "STEP" || tokens[1] == "ROTSTEP")) {
-        f->_numSteps += isMirrored && f->_mirrorInstances == 0 ||
-                      ! isMirrored && f->_instances == 0;
+        if (partsAdded) {
+          f->_numSteps += isMirrored && f->_mirrorInstances == 0 ||
+                        ! isMirrored && f->_instances == 0;
+        }
         partsAdded = false;
       } else if (tokens.size() == 15 && tokens[0] == "1") {
         countInstances(tokens[14],mirrored(tokens));
