@@ -22,6 +22,7 @@
 #include <QRegExp>
 #include <math.h>
 #include "render.h"
+#include "ldrawfiles.h"
 
 #include "lpub.h"
 
@@ -188,18 +189,14 @@ int Render::rotateParts(
   split(addLine,tokens);
 
   if (addLine.size() && tokens.size() == 15 && tokens[0] == "1") {
-	
-	  double alm[3][3];
-	  bool   mirror = false;
-	
-	  for (int token = 5; token < 14; token++) {
-	    double value = tokens[token].toFloat();
-	    if (value < 0) {
-	      mirror = true;
-	    }
-	    alm[(token-5) / 3][(token-5) % 3] = value;
-	  }
-	  if (mirror) {
+    if (LDrawFile::mirrored(tokens)) {
+
+      double alm[3][3];
+
+      for (int token = 5; token < 14; token++) {
+        double value = tokens[token].toFloat();
+        alm[(token-5) / 3][(token-5) % 3] = value;
+      }
       matrixMult(rm,alm);
 	  }
   }

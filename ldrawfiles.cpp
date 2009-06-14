@@ -508,8 +508,15 @@ bool LDrawFile::mirrored(
   float g = tokens[11].toFloat();
   float h = tokens[12].toFloat();
   float i = tokens[13].toFloat();
+
+  float a1 = a*(e*i - f*h);
+  float a2 = b*(d*i - f*g);
+  float a3 = c*(d*h - e*g);
+
+  float det = (a1 - a2 + a3);
   
-  return a*e*i - a*f*h - b*d*i + b*f*g + c*d*h - c*e*g < 0;
+  return det < 0;
+  //return a*(e*i - f*h) - b*(d*i - f*g) + c*(d*h - e*g) < 0;
 }
 
 void LDrawFile::countInstances(const QString &mcFileName, bool isMirrored)
@@ -552,8 +559,10 @@ void LDrawFile::countInstances(const QString &mcFileName, bool isMirrored)
         }
         partsAdded = false;
       } else if (tokens.size() == 15 && tokens[0] == "1") {
-        countInstances(tokens[14],mirrored(tokens));
-        partsAdded = true;
+        if (contains(tokens[14])) {
+          countInstances(tokens[14],mirrored(tokens));
+          partsAdded = true;
+        }
       }
     }
     f->_numSteps += partsAdded &&

@@ -26,7 +26,6 @@ public:
     static void mkdirs();
     static QString lpubDir;
     static QString tmpDir;
-    static QString outputDir;
     static QString assemDir;
     static QString partsDir;
 };

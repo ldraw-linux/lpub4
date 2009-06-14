@@ -115,7 +115,7 @@ class LDrawFile {
     bool modified(const QString &fileName);
     bool older(const QStringList &submodelStack, 
                const QDateTime &datetime);
-    bool mirrored(const QStringList &tokens);
+    static bool mirrored(const QStringList &tokens);
     void unrendered();
     void setRendered(const QString &fileName, bool mirrored);
     bool rendered(const QString &fileName, bool mirrored);

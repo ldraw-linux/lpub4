@@ -25,7 +25,6 @@ Paths paths;
 
 QString Paths::lpubDir   = "LPub";
 QString Paths::tmpDir    = "LPub/tmp";
-QString Paths::outputDir = "LPub/output";
 QString Paths::assemDir  = "LPub/assem";
 QString Paths::partsDir  = "LPub/parts";
 
@@ -34,7 +33,6 @@ void Paths::mkdirs()
   QDir dir;
   dir.mkdir(lpubDir);
   dir.mkdir(tmpDir);
-  dir.mkdir(outputDir);
   dir.mkdir(assemDir);
   dir.mkdir(partsDir);
 }
