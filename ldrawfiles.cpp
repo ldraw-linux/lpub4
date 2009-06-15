@@ -561,8 +561,8 @@ void LDrawFile::countInstances(const QString &mcFileName, bool isMirrored)
       } else if (tokens.size() == 15 && tokens[0] == "1") {
         if (contains(tokens[14])) {
           countInstances(tokens[14],mirrored(tokens));
-          partsAdded = true;
         }
+        partsAdded = true;
       }
     }
     f->_numSteps += partsAdded &&
