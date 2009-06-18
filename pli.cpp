@@ -461,11 +461,57 @@ int Pli::placePli(
     float tmargin = prevPart->csiMargin.valuePixels(YY);
     botMargin = qMax(botMargin,tmargin);
 
+    // leftEdge is the number of pixels between the left edge of the image
+    // and the leftmost pixel in the image
+
+    // rightEdge is the number of pixels between the left edge of the image
+    // and the rightmost pixel in the image
+
+    // lets see if any unplaced part fits under the right side
+    // of the first part of the column
+
+    bool fits = false;
+    for (i = 0; i < keys.size() && ! fits; i++) {
+      part = parts[keys[i]];
+
+      if ( ! part->placed) {
+        int xMargin = qMax(prevPart->csiMargin.valuePixels(XX),
+                           part->csiMargin.valuePixels(XX));
+        int yMargin = qMax(prevPart->csiMargin.valuePixels(YY),
+                           part->csiMargin.valuePixels(YY));
+
+        // Do they overlap?
+
+        int top;
+        for (top = 0; top < part->height; top++) {
+          int ltop  = prevPart->height - part->height - yMargin + top;
+          if (ltop >= 0 && ltop < prevPart->height) {
+            if (prevPart->rightEdge[ltop] + xMargin >
+                prevPart->width - part->width + part->leftEdge[top]) {
+              break;
+            }
+          }
+        }
+        if (top == part->height) {
+          fits = true;
+          break;
+        }
+      }
+    }
+    if (fits) {
+      part->left = prevPart->left + prevPart->width - part->width;
+      part->bot  = 0;
+      part->placed = true;
+      part->col = cols;
+      nPlaced++;
+    }
+
     // allocate new row
 
     while (nPlaced < parts.size()) {
 
       int overlap = 0;
+
       bool overlapped = false;
 
       // new possible upstairs neighbors
@@ -477,8 +523,6 @@ int Pli::placePli(
 
           float tmargin = part->csiMargin.valuePixels(YY);
           int splitMargin = qMax(prevPart->topMargin,tmargin);
-
-          bot += splitMargin;
 
           // dropping part down into prev part (top part is right edge, bottom left)
 
@@ -514,6 +558,7 @@ int Pli::placePli(
           // overlap = 0;
 
           if (bot + part->height + splitMargin - overlap <= yConstraint) {
+            bot += splitMargin;
             break;
           } else {
             overlapped = false;
@@ -528,8 +573,7 @@ int Pli::placePli(
       PliPart *part = parts[keys[i]];
 
       margin.first    = part->csiMargin.valuePixels(XX);
-      float tmargin   = part->csiMargin.valuePixels(YY);
-      int splitMargin = qMax(prevPart->topMargin,tmargin);
+      int splitMargin = qMax(prevPart->topMargin,part->csiMargin.valuePixels(YY));
 
       prevPart = parts[keys[i]];
 
@@ -700,7 +744,7 @@ void Pli::placeCols(
 	  width += part->width;
 
 	  if (part->height > height) {
-        height = part->height;
+      height = part->height;
 	  }
 
 	  if (i < keys.size() - 1) {
@@ -1209,7 +1253,6 @@ void Pli::positionChildren(
       continue;
     }
     float x,y;
-    float center = (part->width - part->pixmapWidth)/2;
 
     x = part->left;
     y = height - part->bot;
@@ -1223,7 +1266,7 @@ void Pli::positionChildren(
 
     part->pixmap->setParentItem(background);
     part->pixmap->setPos(
-      (x + center)/scaleX,
+      x/scaleX,
       (y - part->height + part->annotHeight + part->partTopMargin)/scaleY);
     part->pixmap->setTransformationMode(Qt::SmoothTransformation);
 

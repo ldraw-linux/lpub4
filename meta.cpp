@@ -1905,7 +1905,7 @@ PliMeta::PliMeta() : BranchMeta()
   annotate.margin.setValuesInches(0.0f,0.0f);
   margin.setValuesInches(DEFAULT_MARGIN,DEFAULT_MARGIN);
   pack.setValue(true);
-  sort.setValue(true);
+  sort.setValue(false);
 }
 
 void PliMeta::init(BranchMeta *parent, QString name)

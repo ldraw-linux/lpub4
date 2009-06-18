@@ -738,6 +738,28 @@ int Gui::drawPage(
         case EndOfFileRc:
         case RotStepRc:
         case StepRc:
+          if ( ! partsAdded && bfxLoad) {  // special case of no parts added, but BFX load
+            if (step == NULL) {
+              if (range == NULL) {
+                range = newRange(steps,calledOut);
+                steps->append(range);
+              }
+              step = new Step(topOfStep,
+                              range,
+                              stepNum,
+                              curMeta,
+                              calledOut,
+                              multiStep);
+              range->append(step);
+            }
+
+            int rc = step->createCsi(
+              isMirrored ? addLine : "1 color 0 0 0 1 0 0 0 1 0 0 0 1 foo.ldr",
+              csiParts,
+              &step->csiPixmap,
+              steps->meta);
+            partsAdded = true; // OK, so this is a lie, but it works
+          }
           if (partsAdded) {
             if (firstStep) {
               steps->stepGroupMeta = curMeta;
@@ -1150,6 +1172,7 @@ int Gui::findPage(
             if (pageNum < displayPageNum) {
               csiParts = bfx[meta.bfx.value()];
             }
+            partsAdded = true;
           break;
 
           case MLCadGroupRc:
