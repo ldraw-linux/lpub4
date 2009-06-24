@@ -410,7 +410,7 @@ public:
   QString readLine(const Where &here);
   bool isSubmodel(const QString &modelName)
   {
-    return ldrawFile.contains(modelName);
+    return ldrawFile.isSubmodel(modelName);
   }
 
   bool isMpd() { return ldrawFile.isMpd(); }
@@ -422,6 +422,10 @@ public:
   bool isMirrored(QStringList &argv)
   {
     return ldrawFile.mirrored(argv);
+  }
+  bool isUnofficialPart(const QString &name)
+  {
+    return ldrawFile.isUnofficialPart(name);
   }
   Where &topOfPage();
   Where &bottomOfPage();

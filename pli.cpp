@@ -813,7 +813,7 @@ int Pli::sortPli()
 
     part = parts[key];
 
-    if (PartsList::isKnownPart(part->type)) {
+    if (PartsList::isKnownPart(part->type) || gui->isUnofficialPart(part->type)) {
 
       if (part->color == "16") {
         part->color = "0";

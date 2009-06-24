@@ -344,7 +344,7 @@ int Gui::drawPage(
 
       /* if it is a sub-model, then process it */
 
-      if (ldrawFile.contains(type) && callout) {
+      if (ldrawFile.isSubmodel(type) && callout) {
 
         /* we are a callout, so gather all the steps within the callout */
         /* start with new meta, but no rotation step */
@@ -753,7 +753,7 @@ int Gui::drawPage(
               range->append(step);
             }
 
-            int rc = step->createCsi(
+            (void) step->createCsi(
               isMirrored ? addLine : "1 color 0 0 0 1 0 0 0 1 0 0 0 1 foo.ldr",
               csiParts,
               &step->csiPixmap,
@@ -945,6 +945,8 @@ int Gui::findPage(
   
   ldrawFile.setRendered(current.modelName, isMirrored);
 
+  RotStepMeta saveRotStep = meta.rotStep;
+
   for ( ;
        current.lineNumber < numLines;
        current.lineNumber++) {
@@ -976,7 +978,7 @@ int Gui::findPage(
           QString    type = token[token.size()-1];
           
           isMirrored = ldrawFile.mirrored(token);
-          bool contains   = ldrawFile.contains(type);
+          bool contains   = ldrawFile.isSubmodel(type);
           bool rendered   = ldrawFile.rendered(type,isMirrored);
                     
           if (contains) {
@@ -1028,6 +1030,7 @@ int Gui::findPage(
                   page.meta = saveMeta;
                 }
                 page.meta.pop();
+                page.meta.rotStep = saveRotStep;
 
                 QStringList pliParts;
                 
@@ -1070,6 +1073,7 @@ int Gui::findPage(
                 saveCurrent    = current;
               }
               if ( ! stepGroup) {
+                saveRotStep = meta.rotStep;
                 if (pageNum == displayPageNum) {
                   csiParts.clear();
                   stepPageNum = saveStepPageNum;
@@ -1079,6 +1083,7 @@ int Gui::findPage(
                     page.meta = saveMeta;
                   }
                   page.meta.pop();
+                  page.meta.rotStep = saveRotStep;
                   QStringList pliParts;
                                     
                   (void) drawPage(view,
@@ -1300,7 +1305,7 @@ int Gui::getBOMParts(
             }
           }
           if ( ! removed) {
-            if (ldrawFile.contains(type)) {
+            if (ldrawFile.isSubmodel(type)) {
 
               Where current2(type,0);
 
@@ -1572,7 +1577,7 @@ void Gui::skipHeader(Where &current)
 void Gui::include(Meta &meta)
 {
   QString fileName = meta.LPub.include.value();
-  if (ldrawFile.contains(fileName)) {
+  if (ldrawFile.isSubmodel(fileName)) {
     int numLines = ldrawFile.size(fileName);
 
     Where current(fileName,0);

@@ -50,13 +50,16 @@ class LDrawSubFile {
     bool        _rendered;
     bool        _mirrorRendered;
     bool        _changedSinceLastWrite;
+    bool        _unofficialPart;
 
     LDrawSubFile()
     {
+      _unofficialPart = false;
     }
     LDrawSubFile(
       const QStringList &contents,
-            QDateTime   &datetime);
+            QDateTime   &datetime,
+            bool         unofficialPart);
     ~LDrawSubFile()
     {
       _contents.clear();
@@ -84,7 +87,8 @@ class LDrawFile {
 
     void insert(const QString     &fileName, 
                       QStringList &contents, 
-                      QDateTime   &datetime);
+                      QDateTime   &datetime,
+                      bool         unofficialPart);
 
     int  size(const QString &fileName);
     void empty();
@@ -108,9 +112,11 @@ class LDrawFile {
 
     bool isMpd();
     QString topLevelFile();
+    bool isUnofficialPart(const QString &name);
     int numSteps(const QString &fileName);
     QDateTime lastModified(const QString &fileName);
     bool contains(const QString &file);
+    bool isSubmodel(const QString &file);
     bool modified();
     bool modified(const QString &fileName);
     bool older(const QStringList &submodelStack, 

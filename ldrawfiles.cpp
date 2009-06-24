@@ -36,7 +36,8 @@
 
 LDrawSubFile::LDrawSubFile(
   const QStringList &contents,
-  QDateTime   &datetime)
+  QDateTime   &datetime,
+  bool         unofficialPart)
 {
   _contents << contents;
   _datetime = datetime;
@@ -47,6 +48,7 @@ LDrawSubFile::LDrawSubFile(
   _rendered = false;
   _mirrorRendered = false;
   _changedSinceLastWrite = true;
+  _unofficialPart = unofficialPart;
 }
 
 void LDrawFile::empty()
@@ -60,7 +62,8 @@ void LDrawFile::empty()
 
 void LDrawFile::insert(const QString     &mcFileName, 
                       QStringList &contents, 
-                      QDateTime   &datetime)
+                      QDateTime   &datetime,
+                      bool         unofficialPart)
 {
   QString    fileName = mcFileName.toLower();
   QMap<QString, LDrawSubFile>::iterator i = _subFiles.find(fileName);
@@ -68,7 +71,7 @@ void LDrawFile::insert(const QString     &mcFileName,
   if (i != _subFiles.end()) {
     _subFiles.erase(i);
   }
-  LDrawSubFile subFile(contents,datetime);
+  LDrawSubFile subFile(contents,datetime,unofficialPart);
   _subFiles.insert(fileName,subFile);
   _subFileOrder << fileName;
 }
@@ -93,6 +96,16 @@ int LDrawFile::size(const QString &mcFileName)
 bool LDrawFile::isMpd()
 {
   return _mpd;
+}
+bool LDrawFile::isUnofficialPart(const QString &name)
+{
+  QString fileName = name.toLower();
+  QMap<QString, LDrawSubFile>::iterator i = _subFiles.find(fileName);
+  if (i != _subFiles.end()) {
+    bool _unofficialPart = i.value()._unofficialPart;
+    return _unofficialPart;
+  }
+  return false;
 }
 
 /* return the name of the top level file */
@@ -134,6 +147,16 @@ bool LDrawFile::contains(const QString &file)
     if (_subFileOrder[i].toLower() == file.toLower()) {
       return true;
     }
+  }
+  return false;
+}
+
+bool LDrawFile::isSubmodel(const QString &file)
+{
+  QString fileName = file.toLower();
+  QMap<QString, LDrawSubFile>::iterator i = _subFiles.find(fileName);
+  if (i != _subFiles.end()) {
+    return ! i.value()._unofficialPart;
   }
   return false;
 }
@@ -397,17 +420,21 @@ void LDrawFile::loadMPDFile(const QString &fileName, QDateTime &datetime)
     QString     mpdName;
     QRegExp sofRE("^\\s*0\\s+FILE\\s+(.*)$");
     QRegExp eofRE("^\\s*0\\s+NOFILE\\s*$");
+    QRegExp upRE1( "^\\s*0\\s+LDRAW_ORG");
+    QRegExp upRE2( "^\\s*0\\s+!LDRAW_ORG");
+    bool    unofficialPart = false;
 
     while ( ! in.atEnd()) {
 
       const QString line = in.readLine(0);
+
       bool sof = line.contains(sofRE);
       bool eof = line.contains(eofRE);
 
       if (sof || eof) {
         if ( ! mpdName.isEmpty()) {
-          insert(mpdName,contents,datetime);
-          //writeToTmp(mpdName,contents);
+          insert(mpdName,contents,datetime,unofficialPart);
+          unofficialPart = false;
         }
         contents.clear();
         if (sof) {
@@ -416,13 +443,15 @@ void LDrawFile::loadMPDFile(const QString &fileName, QDateTime &datetime)
           mpdName.clear();
         }
       } else if ( ! mpdName.isEmpty() && line != "") {
+        if (line.contains(upRE1)||line.contains(upRE2)) {
+          unofficialPart = true;
+        }
         contents << line;
       }
     }
 
     if ( ! mpdName.isEmpty() && ! contents.isEmpty()) {
-      insert(mpdName,contents,datetime);
-      //writeToTmp(mpdName,contents);
+      insert(mpdName,contents,datetime,unofficialPart);
     }
     _mpd = true;
 }
@@ -456,7 +485,7 @@ void LDrawFile::loadLDRFile(const QString &path, const QString &fileName)
 
       QDateTime datetime = QFileInfo(fullName).lastModified();
     
-      insert(fileName,contents,datetime);
+      insert(fileName,contents,datetime,false);
       //writeToTmp(fileName,contents);
 
       /* read it a second time to find submodels */
