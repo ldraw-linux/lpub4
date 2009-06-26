@@ -1318,12 +1318,13 @@ void MetaItem::insertText()
   scanPastGlobal(topOfStep);
   appendMeta(topOfStep,meta);
 }
+
 void MetaItem::insertBOM()
 {
   QString meta = QString("0 !LPUB INSERT BOM");
-  Where topOfStep = gui->topOfPages[gui->displayPageNum-1];
+  Where topOfStep = gui->topOfPages[gui->displayPageNum];
   scanPastGlobal(topOfStep);
-  appendMeta(topOfStep,meta);
+  insertMeta(topOfStep,meta);
 }
 
 void MetaItem::deleteBOM()

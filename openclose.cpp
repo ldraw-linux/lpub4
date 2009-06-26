@@ -42,8 +42,10 @@ void Gui::open()
       modelDir,
       tr("LDraw Files (*.DAT;*.LDR;*.MPD;*.dat;*.ldr;*.mpd)"));
 
+    QFileInfo info(fileName);
+
     if (!fileName.isEmpty()) {
-      settings.setValue("modelDir",modelDir);
+      settings.setValue("modelDir",info.path());
       openFile(fileName);
       displayPage();
       enableActions();
@@ -108,6 +110,8 @@ void Gui::saveAs()
     return;
   }
   saveFile(fileName); 
+  closeFile();
+  openFile(fileName);
 #ifdef WATCHER
   if (curFile != "") {
     if (isMpd()) {
