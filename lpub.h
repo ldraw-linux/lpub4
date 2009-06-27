@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2007-2008 Kevin Clague. All rights reserved.
+** Copyright (C) 2007-2009 Kevin Clague. All rights reserved.
 **
 ** This file may be used under the terms of the GNU General Public
 ** License version 2.0 as published by the Free Software Foundation
@@ -604,6 +604,7 @@ private slots:
 
     void openRecentFile();
     void about();
+    void meta();
 
     void redo();
     void undo();
@@ -761,6 +762,7 @@ private:
   // help
 
   QAction  *aboutAct;
+  QAction  *metaAct;
   QAction  *separatorAct;
 
   enum { MaxRecentFiles = 8 };

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2007-2008 Kevin Clague. All rights reserved.
+** Copyright (C) 2007-2009 Kevin Clague. All rights reserved.
 **
 ** This file may be used under the terms of the GNU General Public
 ** License version 2.0 as published by the Free Software Foundation
@@ -21,6 +21,7 @@
 #include <QTextEdit>
 #include <QCloseEvent>
 #include <QUndoStack>
+#include <QTextStream>
 
 #include "lpub.h"
 #include "editwindow.h"
@@ -491,6 +492,40 @@ void Gui::about()
                "kevin.clague@gmail.com"));
 }
 
+void Gui::meta()
+{
+  Meta meta;
+  QStringList doc;
+
+  QString fileName = QFileDialog::getSaveFileName(
+    this,
+    tr("Metacommands Save File Name"),
+    QDir::currentPath() + "/metacommands.txt",
+    tr("txt (*.txt)"));
+
+  if (fileName == "") {
+    return;
+  }
+  meta.doc(doc);
+
+  QFile file(fileName);
+  if (!file.open(QFile::WriteOnly | QFile::Text)) {
+    QMessageBox::warning(NULL,
+    QMessageBox::tr(LPUB),
+    QMessageBox::tr("Cannot write file %1:\n%2.")
+    .arg(fileName)
+    .arg(file.errorString()));
+    return;
+  }
+
+  QTextStream out(&file);
+
+  for (int i = 0; i < doc.size(); i++) {
+    out << doc[i] << endl;
+  }
+  file.close();
+}
+
 void Gui::createActions()
 {
     openAct = new QAction(QIcon(":/images/open.png"), tr("&Open..."), this);
@@ -713,6 +748,10 @@ void Gui::createActions()
     aboutAct = new QAction(tr("&About"), this);
     aboutAct->setStatusTip(tr("Show the application's About box"));
     connect(aboutAct, SIGNAL(triggered()), this, SLOT(about()));
+
+    metaAct = new QAction(tr("&Save LPub Metacommands to File"), this);
+    metaAct->setStatusTip(tr("Save a list of the known LPub meta commands to a file"));
+    connect(metaAct, SIGNAL(triggered()), this, SLOT(meta()));
 }
 
 void Gui::enableActions()
@@ -813,6 +852,7 @@ void Gui::createMenus()
 
     helpMenu = menuBar()->addMenu(tr("&Help"));
     helpMenu->addAction(aboutAct);
+    helpMenu->addAction(metaAct);
 }
 
 void Gui::createToolBars()
