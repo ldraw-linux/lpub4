@@ -715,7 +715,7 @@ void MetaItem::convertToIgnore(Meta *meta)
   Where here = calledOut+1;
   beginMacro("ignoreSubmodel");
   insertMeta(here,      "0 !LPUB PART END");
-  insertMeta(calledOut, "0 !LPUB PART BEGIN IGNORE");
+  insertMeta(calledOut, "0 !LPUB PART BEGIN IGN");
   endMacro();
 }
 

@@ -104,6 +104,7 @@ void Gui::displayPage()
 {
   if (macroNesting == 0) {
     clearPage(KpageView,KpageScene);
+    page.coverPage = false;
     drawPage(KpageView,KpageScene,false);
     enableActions2();
   }
@@ -770,7 +771,6 @@ void Gui::enableActions()
     multiStepSetupAct->setEnabled(true);
     projectSetupAct->setEnabled(true);
     addPictureAct->setEnabled(true);
-    addBomAct->setEnabled(true);
 }
 
 void Gui::enableActions2()
@@ -781,6 +781,7 @@ void Gui::enableActions2()
     insertNumberedPageAct->setEnabled(mi.okToInsertNumberedPage());
     appendNumberedPageAct->setEnabled(mi.okToAppendNumberedPage());
     deletePageAct->setEnabled(page.list.size() == 0);
+    addBomAct->setEnabled(page.coverPage);
     addTextAct->setEnabled(false);
 }
 
