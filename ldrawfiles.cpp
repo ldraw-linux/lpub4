@@ -420,8 +420,8 @@ void LDrawFile::loadMPDFile(const QString &fileName, QDateTime &datetime)
     QString     mpdName;
     QRegExp sofRE("^\\s*0\\s+FILE\\s+(.*)$");
     QRegExp eofRE("^\\s*0\\s+NOFILE\\s*$");
-    QRegExp upRE1( "^\\s*0\\s+LDRAW_ORG");
-    QRegExp upRE2( "^\\s*0\\s+!LDRAW_ORG");
+    QRegExp upRE1( "^\\s*0\\s+(LDRAW_ORG|Unofficial Part)");
+    QRegExp upRE2( "^\\s*0\\s+!(LDRAW_ORG|Unofficial Part)");
     bool    unofficialPart = false;
 
     while ( ! in.atEnd()) {
@@ -523,7 +523,10 @@ bool LDrawFile::saveFile(const QString &fileName)
  
 bool LDrawFile::mirrored(
   const QStringList &tokens)
-{  
+{
+  if (tokens.size() != 15) {
+    return false;
+  }
   /* 5  6  7
      8  9 10
     11 12 13 */

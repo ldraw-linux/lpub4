@@ -337,9 +337,11 @@ int Gui::drawPage(
             pliParts << Pli::partLine(line,current,steps->meta);
           }
         }
+#if 0
         if (bfxStore1) {
-          bfxParts << colorType;
+          //bfxParts << colorType;
         }
+#endif
       }
 
       /* if it is a sub-model, then process it */
@@ -916,6 +918,7 @@ int Gui::findPage(
   bool bfxStore1  = false;
   bool bfxStore2  = false;
   QStringList bfxParts;
+  QStringList saveBfxParts;
   int  partsAdded = 0;
   int  stepNumber = 1;
   Rc   rc;
@@ -964,7 +967,7 @@ int Gui::findPage(
       case '1':
         if ( ! partIgnore) {
 
-          csiParts << line;
+          // csiParts << line;
 
           if (firstStepPageNum == -1) {
             firstStepPageNum = pageNum;
@@ -1021,6 +1024,8 @@ int Gui::findPage(
                 saveStepNumber = stepNumber;
                 saveMeta       = meta;
                 saveBfx        = bfx;
+                saveBfxParts   = bfxParts;
+                bfxParts.clear();
               } else if (pageNum == displayPageNum) {
                 csiParts.clear();
                 stepPageNum = saveStepPageNum;
@@ -1046,7 +1051,7 @@ int Gui::findPage(
                                 saveBfx,
                                 printing,
                                 bfxStore2,
-                                bfxParts);
+                                saveBfxParts);
                                 
                 saveCurrent.modelName.clear();
                 saveCsiParts.clear();
@@ -1068,7 +1073,9 @@ int Gui::findPage(
                   saveStepNumber = stepNumber;
                   saveMeta       = meta;
                   saveBfx        = bfx;
+                  saveBfxParts   = bfxParts;
                   saveStepPageNum = stepPageNum;
+                  bfxParts.clear();
                 }
                 saveCurrent    = current;
               }
@@ -1098,7 +1105,7 @@ int Gui::findPage(
                                   saveBfx,
                                   printing,
                                   bfxStore2,
-                                  bfxParts);
+                                  saveBfxParts);
 
                   saveCurrent.modelName.clear();
                   saveCsiParts.clear();

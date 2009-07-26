@@ -1831,6 +1831,7 @@ public:
 
 /*------------------------*/
 
+#if 0
 class LSynthMeta : public BranchMeta
 {
 public:
@@ -1844,6 +1845,7 @@ public:
   {
   }
 };
+#endif
 
 /*------------------------*/
 
@@ -1891,7 +1893,7 @@ public:
   RotStepMeta   rotStep;
   BuffExchgMeta bfx;
   MLCadMeta     MLCad;
-  LSynthMeta    LSynth;
+  //LSynthMeta    LSynth;
 
   QList<SubmodelStack>  submodelStack;
 
@@ -1911,7 +1913,7 @@ public:
     step    = rhs.step;
     clear   = rhs.clear;
     rotStep = rhs.rotStep;
-    LSynth  = rhs.LSynth;
+    //LSynth  = rhs.LSynth;
     submodelStack = rhs.submodelStack;
   }
 

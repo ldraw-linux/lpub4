@@ -2058,13 +2058,14 @@ QPointF MetaItem::defaultPointerTip(
     if (i >= lineNumber) {
 
       split(line,argv);
-      bool mirrored = gui->isMirrored(argv);
-      if (argv.size() == 15 &&
-          argv[0] == "1" &&
-          argv[14] == monoSubModel &&
-          mirrored == isMirrored) {
-        if (instances++ == instance) {
-          break;
+      if (argv.size() == 15) {
+        bool mirrored = gui->isMirrored(argv);
+        if (argv[0] == "1" &&
+            argv[14] == monoSubModel &&
+            mirrored == isMirrored) {
+          if (instances++ == instance) {
+            break;
+          }
         }
       }
     }
