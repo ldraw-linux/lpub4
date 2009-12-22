@@ -40,7 +40,8 @@ MultiStepRangesBackgroundItem::MultiStepRangesBackgroundItem(
   Meta *_meta)
 {
   meta = _meta;
-  page = dynamic_cast<Page *>(_steps);
+  //page = dynamic_cast<Page *>(_steps);
+  page = _steps;
   setRect(rect);
   setPen(Qt::NoPen);
   setBrush(Qt::NoBrush);
@@ -91,8 +92,9 @@ MultiStepRangeBackgroundItem::MultiStepRangeBackgroundItem(
   QGraphicsItem *parent)
 {
   meta = _meta;
-  page = dynamic_cast<Page *>(_steps);
-  
+  //page = dynamic_cast<Page *>(_steps);
+  page = _steps;
+
   MultiStepMeta *multiStep = &_meta->LPub.multiStep;
   background        = NULL;
   border            = NULL;
@@ -103,8 +105,7 @@ MultiStepRangeBackgroundItem::MultiStepRangeBackgroundItem(
   subModelFont      = &multiStep->subModelFont;
   subModelFontColor = &multiStep->subModelFontColor;
   perStep           = &multiStep->pli.perStep;
-  relativeType      = page->relativeType;
-
+  relativeType      = _steps->relativeType;
   int tx = _offset_x+_range->loc[XX];
   int ty = _offset_y+_range->loc[YY];
   setRect(tx,ty, _steps->size[XX], _steps->size[YY]);

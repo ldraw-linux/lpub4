@@ -36,7 +36,7 @@ class Steps;
 
 class MultiStepRangesBackgroundItem : public QGraphicsRectItem, public MetaItem
 {
-  Page   *page;
+  Steps  *page;
   Meta   *meta;
   bool    positionChanged;
   QPointF position;
@@ -70,7 +70,7 @@ public:
     FreeFormMeta   *freeform;
     FontListMeta   *subModelFont;
     StringListMeta *subModelFontColor;
-    Page           *page;
+    Steps          *page;
 
     MultiStepRangeBackgroundItem(
       Steps         *_steps,

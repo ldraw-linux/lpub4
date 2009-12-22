@@ -1027,6 +1027,7 @@ int Gui::findPage(
                 saveBfxParts   = bfxParts;
                 bfxParts.clear();
               } else if (pageNum == displayPageNum) {
+                saveRotStep = meta.rotStep;
                 csiParts.clear();
                 stepPageNum = saveStepPageNum;
                 if (pageNum == 1) {
@@ -1062,8 +1063,9 @@ int Gui::findPage(
             }
           break;
 
-          case StepRc:
           case RotStepRc:
+            { volatile int foo = 1; }
+          case StepRc:
             if (partsAdded) {
               stepNumber += ! coverPage && ! stepPage;
               stepPageNum += ! coverPage && ! stepGroup;

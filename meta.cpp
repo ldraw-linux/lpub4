@@ -2184,15 +2184,18 @@ Rc MLCadMeta::parse(QStringList &argv, int index,Where &here)
 
 /* ------------------ */ 
 
-#if 0
 void LSynthMeta::init(BranchMeta *parent, QString name)
 {
   AbstractMeta::init(parent, name);
   begin      .init(this, "BEGIN",       SynthBeginRc);
   end        .init(this, "END",         SynthEndRc);
+  show       .init(this, "SHOW");
+  hide       .init(this, "HIDE");
+  inside     .init(this, "INSIDE");
+  outside    .init(this, "OUTSIDE");
+  cross      .init(this, "CROSS");
   synthesized.init(this, "SYNTHESIZED");
 }
-#endif
 
 /* ------------------ */ 
 
@@ -2216,7 +2219,7 @@ void Meta::init(BranchMeta * /* unused */, QString /* unused */)
   rotStep.init(this,"ROTSTEP");
   bfx    .init(this,"BUFEXCHG");
   MLCad  .init(this,"MLCAD");
-  //LSynth .init(this,"SYNTH");
+  LSynth .init(this,"SYNTH");
 
   if (tokenMap.size() == 0) {
     tokenMap["TOP_LEFT"]     = TopLeft;

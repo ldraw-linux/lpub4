@@ -122,12 +122,15 @@ void Gui::printToFile()
   // Convert closest page size to pixels for bounding rect
 
   if (orientation == QPrinter::Portrait) {
-    pageWidth = paperSizes[bestSize].width/10.0;  // in centimeters
-    pageHeight = paperSizes[bestSize].height/10.0; // in centimeters
+    pageWidth = paperSizes[bestSize].width;
+    pageHeight = paperSizes[bestSize].height;
   } else {
-    pageWidth = paperSizes[bestSize].height/10.0;  // in centimeters
-    pageHeight = paperSizes[bestSize].width/10.0; // in centimeters
+    pageWidth = paperSizes[bestSize].height;
+    pageHeight = paperSizes[bestSize].width;
   }
+
+  pageWidth  /= 10.0;  // from milimeter to centimeters
+  pageHeight /= 10.0;
 
   if (resolutionType() == DPI) {
     pageWidth = centimeters2inches(pageWidth);
