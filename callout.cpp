@@ -215,7 +215,8 @@ void Callout::addGraphicsItems(
   PlacementData placementData = placement.value();
   
   if (placementData.relativeTo == PageType ||
-      placementData.relativeTo == StepGroupType) {
+      placementData.relativeTo == StepGroupType ||
+      placementData.relativeTo == CalloutType) {
     offsetX = 0;
     offsetY = 0;
   }

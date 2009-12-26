@@ -207,6 +207,7 @@ class Placement {
       float offsets[2],
       qreal topLeft[2],
       qreal size[2]);
+
 };
 
 class PlacementPixmap : public Placement {

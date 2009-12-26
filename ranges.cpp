@@ -297,8 +297,47 @@ void Steps::sizeit(AllocEnc allocEnc, int x, int y)
       }
     }
   }
-  
+
+  /*
+   * So now that we know our size, we can consider the callout
+   * that are placed relative to us
+   */
+
   setBoundingSize();
+
+  if (relativeType == CalloutType) {
+    for (int i = 0; i < list.size(); i++) {
+      if (list[i]->relativeType == RangeType) {
+        Range *range = dynamic_cast<Range *>(list[i]);
+        if (range) {
+          for (int j = 0; j < range->list.size(); j++) {
+            Step *step = dynamic_cast<Step *>(range->list[j]);
+            if (step) {
+              for (int k = 0; k < step->list.size(); k++) {
+                Callout *callout = dynamic_cast<Callout *>(step->list[k]);
+                if (callout) {
+                  if (callout->placement.value().relativeTo == CalloutType) {
+                    // We need to place this callout relative to the
+                    // current bounding box, and eventually figure out a
+                    // new bounding box.
+                    int margins[2] = { step->margin.valuePixels(XX) +
+                                       range->margin.valuePixels(XX) +
+                                       callout->margin.valuePixels(XX),
+                                       step->margin.valuePixels(YY) +
+                                       range->margin.valuePixels(YY) +
+                                       callout->margin.valuePixels(YY) };
+                    placeRelative(callout,margins);
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    size[0] = boundingSize[0];
+    size[1] = boundingSize[1];
+  }
 }
 
 void Steps::sizeitFreeform(

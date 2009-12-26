@@ -2242,6 +2242,7 @@ void Meta::init(BranchMeta * /* unused */, QString /* unused */)
     tokenMap["STEP_NUMBER"]  = StepNumberType;
     tokenMap["PLI"]          = PartsListType;
     tokenMap["PAGE_NUMBER"]  = PageNumberType;
+    tokenMap["CALLOUT"]      = CalloutType;
 
     tokenMap["AREA"]         = ConstrainData::PliConstrainArea;
     tokenMap["SQUARE"]       = ConstrainData::PliConstrainSquare;

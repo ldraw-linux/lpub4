@@ -935,14 +935,17 @@ void Step::addGraphicsItems(
   for (int i = 0; i < list.size(); i++) {
     Callout *callout = list[i];
     PlacementData placementData = callout->placement.value();
-                 
+
     QRect rect(csiItem->loc[XX],
                csiItem->loc[YY],
                csiItem->size[XX],
                csiItem->size[YY]);
 
-    callout->addGraphicsItems(offsetX,offsetY,rect,parent);
-    
+    if (placementData.relativeTo == CalloutType) {
+      callout->addGraphicsItems(offsetX-loc[XX],offsetY-loc[YY],rect,parent);
+    } else {
+      callout->addGraphicsItems(offsetX,offsetY,rect,parent);
+    }  
     for (int i = 0; i < callout->pointerList.size(); i++) {
       Pointer *pointer = callout->pointerList[i];
       callout->parentStep = this;
