@@ -558,6 +558,11 @@ void CalloutPointerItem::calculatePointerMeta()
     }
   }
 
+  if (callout->placement.value().relativeTo == CalloutType) {
+    points[Tip] -= QPoint(callout->parentStep->loc[XX],
+                          callout->parentStep->loc[YY]);
+  }
+
   pointerData.x = (points[Tip].x() - callout->parentStep->csiItem->loc[XX])/callout->parentStep->csiItem->size[XX];
   pointerData.y = (points[Tip].y() - callout->parentStep->csiItem->loc[YY])/callout->parentStep->csiItem->size[YY];
 
