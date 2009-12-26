@@ -81,15 +81,20 @@ CalloutPointerItem::CalloutPointerItem(
   borderThickness = border.thickness;
 
   placement = pointerData.placement;
-  // Placement &csiPlacement = callout->parentStep->csiPlacement;
 
   int cX = callout->parentStep->csiItem->loc[XX];
   int cY = callout->parentStep->csiItem->loc[YY];
   int dX = pointerData.x*callout->parentStep->csiItem->size[XX];
   int dY = pointerData.y*callout->parentStep->csiItem->size[YY];
 
-  points[Tip] = QPoint(cX + dX - callout->loc[XX], cY + dY - callout->loc[YY]);
-  
+  if (callout->placement.value().relativeTo == CalloutType) {
+    cX += callout->parentStep->loc[XX];
+    cY += callout->parentStep->loc[YY];
+    points[Tip] = QPoint(cX + dX - callout->loc[XX], cY + dY - callout->loc[YY]);
+  } else {
+    points[Tip] = QPoint(cX + dX - callout->loc[XX], cY + dY - callout->loc[YY]);
+  }
+
   /*
    * What does it take to convert csiItem->loc[] and size[] to the position of
    * the tip in these cases:

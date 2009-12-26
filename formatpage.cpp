@@ -430,33 +430,24 @@ int Gui::addGraphicsPageItems(
           
           plPage.relativeTo(step);      // place everything
                     
+          // center the csi's bounding box relative to the page
+
           plPage.placeRelativeBounding(step->csiItem);
 
-          for (int j = 0; j < steps->list.size(); j++) {
-            if (steps->list[j]->relativeType == RangeType) {
-              Range *range = dynamic_cast<Range *>(steps->list[j]);
-              for (int i = 0; i < range->list.size(); i++) {
-                if (range->list[i]->relativeType == StepType) {
-                  Step *step = dynamic_cast<Step *>(range->list[i]);
-            
-                  /* callouts */
+          // place callouts relative to the csi bounding box
 
-                  for (int i = 0; i < step->list.size(); i++) {
-                    if (step->list[i]->relativeType == CalloutType) {
-                      Callout *callout = dynamic_cast<Callout *>(step->list[i]);
+          for (int i = 0; i < step->list.size(); i++) {
+            if (step->list[i]->relativeType == CalloutType) {
+              Callout *callout = dynamic_cast<Callout *>(step->list[i]);
 
-                      PlacementData placementData = callout->placement.value();
+              PlacementData placementData = callout->placement.value();
 
-                      if (placementData.relativeTo == CsiType) {
-                        step->csiItem->placeRelativeBounding(callout);
-                      }
-                    } // if callout
-                  } // callouts
-                } // if step
-              } // foreach step
-            } // if range
-          } // foreach range
-          
+              if (placementData.relativeTo == CsiType) {
+                step->csiItem->placeRelativeBounding(callout);
+              }
+            } // if callout
+          } // callouts
+
           if (step->pli.placement.value().relativeTo == CsiType) {
             step->csiItem->placeRelative(&step->pli);
           }
@@ -493,9 +484,10 @@ int Gui::addGraphicsPageItems(
                              step->csiItem->size[XX],
                              step->csiItem->size[YY]);
                              
+            callout->addGraphicsItems(0,0,csiRect,pageBg);
+
             // foreach pointer
               
-            callout->addGraphicsItems(0,0,csiRect,pageBg);
             for (int i = 0; i < callout->pointerList.size(); i++) {
               Pointer *pointer = callout->pointerList[i];
               callout->addGraphicsPointerItem(pointer,callout->background);

@@ -337,11 +337,13 @@ int Gui::drawPage(
             pliParts << Pli::partLine(line,current,steps->meta);
           }
         }
-#if 0
-        if (bfxStore1) {
-          //bfxParts << colorType;
+      // bfxStore1 goes true when we've seen BFX STORE the first time
+      // in a sequence of steps.  This used to be commented out which
+      // means it didn't work in some cases, but we need it in step
+      // group cases, so.... bfxStore1 && multiStep (was just bfxStore1)
+        if (bfxStore1 && multiStep) {
+          bfxParts << colorType;
         }
-#endif
       }
 
       /* if it is a sub-model, then process it */
@@ -980,13 +982,15 @@ int Gui::findPage(
           
           QString    type = token[token.size()-1];
           
-          isMirrored = ldrawFile.mirrored(token);
+          // isMirrored = ldrawFile.mirrored(token);
           bool contains   = ldrawFile.isSubmodel(type);
           bool rendered   = ldrawFile.rendered(type,isMirrored);
                     
           if (contains) {
             if ( ! rendered && ! bfxStore2) {
-              
+
+              isMirrored = ldrawFile.mirrored(token);
+
               // can't be a callout
               SubmodelStack tos(current.modelName,current.lineNumber,stepNumber);
               meta.submodelStack << tos;
@@ -1064,7 +1068,6 @@ int Gui::findPage(
           break;
 
           case RotStepRc:
-            { volatile int foo = 1; }
           case StepRc:
             if (partsAdded) {
               stepNumber += ! coverPage && ! stepPage;

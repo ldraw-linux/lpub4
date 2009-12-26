@@ -187,6 +187,18 @@ int Placement::relativeToSg(
   }
 }
 
+/*
+ * This recursive function is the center piece of the whole concept of
+ * placing things relative to things.  At the topmost level, this is of
+ * type page, and them can be of types page number, step number, csi,
+ * pli callout, or step group.
+ *
+ * Later as we recurse them could be step group or csi. If this->relativeType
+ * is step group then callouts could be placed relative to us.  If
+ * this->relativeType is csi, then step number, PLIs, or callouts could
+ * be placed relative to us.
+ */
+
 void Placement::placeRelative(
   Placement *them)
 {
