@@ -176,22 +176,15 @@ int Gui::addGraphicsPageItems(
 {
   Page *page = dynamic_cast<Page *>(steps);
 
-  PageBackgroundItem *pageBg = new PageBackgroundItem(page);
-
-  view->pageBackgroundItem = pageBg;
-
-  Placement plPage;
-  plPage.relativeType = PageType;
-
   int pW, pH;
 
   if (printing) {
-    if (view->maximumWidth() < page->meta.LPub.page.size.valuePixels(0)) {
+    if (view->maximumWidth() > page->meta.LPub.page.size.valuePixels(0)) {
       pW = view->maximumWidth();
     } else {
       pW = page->meta.LPub.page.size.valuePixels(0);
     }
-    if (view->maximumHeight() < page->meta.LPub.page.size.valuePixels(1)) {
+    if (view->maximumHeight() > page->meta.LPub.page.size.valuePixels(1)) {
       pH = view->maximumHeight();
     } else {
       pH = page->meta.LPub.page.size.valuePixels(1);
@@ -200,6 +193,13 @@ int Gui::addGraphicsPageItems(
     pW = page->meta.LPub.page.size.valuePixels(0);
     pH = page->meta.LPub.page.size.valuePixels(1);
   }
+
+  PageBackgroundItem *pageBg = new PageBackgroundItem(page, pW, pH);
+
+  view->pageBackgroundItem = pageBg;
+
+  Placement plPage;
+  plPage.relativeType = PageType;
 
   plPage.setSize(pW,pH);
   plPage.margin  = page->meta.LPub.page.margin;
