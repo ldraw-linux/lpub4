@@ -46,8 +46,7 @@ MultiStepRangesBackgroundItem::MultiStepRangesBackgroundItem(
   setPen(Qt::NoPen);
   setBrush(Qt::NoBrush);
   setParentItem(parent);
-  QString toolTip("Step Group - popup menu");
-  setToolTip(toolTip);
+  setToolTip("Step Group - popup menu");
   setFlag(QGraphicsItem::ItemIsSelectable,true);
   setFlag(QGraphicsItem::ItemIsMovable,true);
   setZValue(-2);
@@ -245,15 +244,17 @@ DividerItem::DividerItem(
                         left,
                         offsetY
                        +steps->size[YY]
+                       -2*sepData.margin[YY]
                        -2*borderData.thickness);
     } else {
-      int top = offsetY + sepData.margin[YY] + sepData.thickness/2;
+      int top = offsetY+sepData.margin[YY]+sepData.thickness/2;
   
       lineItem->setLine(offsetX,
                         top,
                         offsetX
                        +steps->size[XX]
-                       -2*sepData.margin[XX],
+                       -2*sepData.margin[XX]
+                       -2*borderData.thickness,
                         top);
     }
     QPen pen(LDrawColor::color(sepData.color));
