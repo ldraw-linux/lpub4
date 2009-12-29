@@ -984,7 +984,7 @@ int Gui::findPage(
           
           // isMirrored = ldrawFile.mirrored(token);
           bool contains   = ldrawFile.isSubmodel(type);
-          bool rendered   = ldrawFile.rendered(type,isMirrored);
+          bool rendered   = ldrawFile.rendered(type,ldrawFile.mirrored(token));
                     
           if (contains) {
             if ( ! rendered && ! bfxStore2) {
