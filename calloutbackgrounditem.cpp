@@ -52,7 +52,7 @@ CalloutBackgroundItem::CalloutBackgroundItem(
   csiRect     = _csiRect;
 
   QPixmap *pixmap = new QPixmap(_calloutRect.width(),_calloutRect.height());
-  QString toolTip(_path);
+  QString toolTip("Callout " + _path + "popup menu");
   setBackground(pixmap,
                 CalloutType,
                 parentRelativeType,
