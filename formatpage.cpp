@@ -165,6 +165,20 @@ void SubmodelInstanceCount::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
   }
 }
 
+/*********************************************************************************
+ * addGraphicsPageItems - this function is given the page contents in tree
+ * data structure form, with all the CSI and PLI images rendered.  This function
+ * then creates Qt graphics view items for each of the components of the page.
+ * Sinple things like page number, page background, inserts and the like are
+ * handled here.  For things like callouts and step groups, there is a bunch
+ * of packing and placing things relative to things that must go on, these
+ * operations are handled elsewhere (step.cpp, steps.cpp, callout.cpp, placement.cpp
+ * etc.)
+ *
+ * This function is used for on screen display, printing to PDF and exporting
+ * to images per page.
+ ********************************************************************************/
+
 int Gui::addGraphicsPageItems(
   Steps          *steps,
   bool            coverPage,
@@ -175,6 +189,18 @@ int Gui::addGraphicsPageItems(
   bool            printing)
 {
   Page *page = dynamic_cast<Page *>(steps);
+
+  /* There are issues with printing to PDF and its fixed page sizes, and
+   * LPub's aribitrary page size controls.  So when printing, we have to
+   * pick a PDF page size that is closest but not smaller than the size
+   * defined by the user, and then fill that page's background to the
+   * edges.  The code below gets most of this done (the print caller
+   * maps LPub page size to PDF page size and sets view size, so we
+   * work with that here.
+   *
+   * There still seem to be cases where we get little gaps on either the
+   * right or bottom edge, and I just don't know what the problem is.
+   */
 
   int pW, pH;
 
@@ -204,6 +230,8 @@ int Gui::addGraphicsPageItems(
   view->pageBackgroundItem = pageBg;
   pageBg->setPos(0,0);
 
+  // Set up the placement aspects of the page in the Qt space
+
   Placement plPage;
   plPage.relativeType = PageType;
 
@@ -211,6 +239,8 @@ int Gui::addGraphicsPageItems(
   plPage.margin  = page->meta.LPub.page.margin;
   plPage.loc[XX] = 0;
   plPage.loc[YY] = 0;
+
+  // Display a page number?
 
   if (page->meta.LPub.page.dpn.value() && ! coverPage) {
 
@@ -402,6 +432,8 @@ int Gui::addGraphicsPageItems(
     }
   }
   
+  // If the page contains a single step then process it here
+
   if (page->relativeType == SingleStepType) {
     if (page->list.size()) {
       Range *range = dynamic_cast<Range *>(page->list[0]);
@@ -412,6 +444,9 @@ int Gui::addGraphicsPageItems(
           if ( ! step->onlyChild()) {
             step->stepNumber.sizeit();
           }
+
+          // add the PLI graphically to the scene
+
           step->pli.addPli(step->submodelLevel, pageBg);
           
           /* Size the callouts */   
@@ -419,6 +454,8 @@ int Gui::addGraphicsPageItems(
             step->list[i]->sizeIt();
           }
           
+          // add the assembly image to the scene
+
           step->csiItem = new CsiItem(step,
                                  &page->meta, 
                                   step->csiPixmap,
@@ -434,6 +471,8 @@ int Gui::addGraphicsPageItems(
           step->csiItem->boundingSize[XX] = step->csiItem->size[XX];
           step->csiItem->boundingSize[YY] = step->csiItem->size[YY];
           
+          // Place the step relative to the page.
+
           plPage.relativeTo(step);      // place everything
                     
           // center the csi's bounding box relative to the page
@@ -458,9 +497,11 @@ int Gui::addGraphicsPageItems(
             step->csiItem->placeRelative(&step->pli);
           }
 
+          // place the CSI relative to the entire step's box
           step->csiItem->setPos(step->csiItem->loc[XX],
                                 step->csiItem->loc[YY]);
 
+          // place the PLI relative to the entire step's box
           step->pli.setPos(step->pli.loc[XX],
                            step->pli.loc[YY]);
     
@@ -490,10 +531,13 @@ int Gui::addGraphicsPageItems(
                              step->csiItem->size[XX],
                              step->csiItem->size[YY]);
                              
+            // add the callout's graphics items to the scene
+
             callout->addGraphicsItems(0,0,csiRect,pageBg);
 
             // foreach pointer
-              
+            //   add the pointer to the graphics scene
+
             for (int i = 0; i < callout->pointerList.size(); i++) {
               Pointer *pointer = callout->pointerList[i];
               callout->addGraphicsPointerItem(pointer,callout->background);
@@ -504,20 +548,29 @@ int Gui::addGraphicsPageItems(
     }
   } else {
   
+    // We've got a page that contains step groups, so add it
+
     PlacementData data = page->meta.LPub.multiStep.placement.value();
     page->placement.setValue(data);
+
+    // place all the steps in the group relative to each other, including
+    // any callouts placed relative to steps
+
     page->sizeIt();             // multi-step
 
     plPage.relativeToSg(page);  // place callouts relative to PAGE
     plPage.placeRelative(page); // place multi-step relative to the page    
 
-    page->relativeToSg(page);   // place callouts relative to MULTI_STEP
+    page->relativeToSg(page);   // compute bounding box of step group and callouts
+                                // placed relative to it.
     
     plPage.placeRelativeBounding(page); // center multi-step in page's bounding box
     
     page->relativeToSg(page);           // place callouts relative to MULTI_STEP
 
     page->addGraphicsItems(0,0,pageBg);
+
+    // Place the Bill of materials on the page along with step group?????
 
     if (page->pli.tsize()) {
       if (page->pli.bom) {
