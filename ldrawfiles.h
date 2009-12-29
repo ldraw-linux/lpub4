@@ -69,10 +69,9 @@ class LDrawSubFile {
 class LDrawFile {
   private:
     QMap<QString, LDrawSubFile> _subFiles;
-    QStringList                  _emptyList;
-    QString                      _emptyString;
-    bool                                _mpd;
-
+    QStringList                 _emptyList;
+    QString                     _emptyString;
+    bool                        _mpd;
   public:
     LDrawFile();
     ~LDrawFile()
