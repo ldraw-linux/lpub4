@@ -75,8 +75,8 @@ const int PlacementDialog::relativeToOks[NumRelatives] =
   /* Csi  */      Page,
   /* MultiStep */ Page | Pli,
   /* StepNum */   Page | Csi | Pli,
-  /* Pli */       Page | Csi | Sn,
-  /* Callout */   Page | Csi | Sn | Pli | Callout,
+  /* Pli */       Page | Csi | Ms | Sn,
+  /* Callout */   Page | Csi | Ms | Sn | Pli | Callout,
   /* PageNum */   Page,
   /* SingleStep */Page | Csi,
   /* SubmodelIns*/Page |                 Pn
