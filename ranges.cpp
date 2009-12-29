@@ -306,6 +306,7 @@ void Steps::sizeit(AllocEnc allocEnc, int x, int y)
   setBoundingSize();
 
   if (relativeType == CalloutType) {
+    int newLoc[2] = { 0, 0 };
     for (int i = 0; i < list.size(); i++) {
       if (list[i]->relativeType == RangeType) {
         Range *range = dynamic_cast<Range *>(list[i]);
@@ -313,7 +314,8 @@ void Steps::sizeit(AllocEnc allocEnc, int x, int y)
           for (int j = 0; j < range->list.size(); j++) {
             Step *step = dynamic_cast<Step *>(range->list[j]);
             if (step) {
-              for (int k = 0; k < step->list.size(); k++) {
+              int nCallouts = step->list.size();
+              for (int k = 0; k < nCallouts; k++) {
                 Callout *callout = dynamic_cast<Callout *>(step->list[k]);
                 if (callout) {
                   if (callout->placement.value().relativeTo == CalloutType) {
@@ -327,6 +329,38 @@ void Steps::sizeit(AllocEnc allocEnc, int x, int y)
                                        range->margin.valuePixels(YY) +
                                        callout->margin.valuePixels(YY) };
                     placeRelative(callout,margins);
+                    if (callout->loc[XX] < newLoc[XX]) {
+                      newLoc[XX] = callout->loc[XX] - callout->margin.valuePixels(XX);
+                    }
+                    if (callout->loc[YY] < newLoc[YY]) {
+                      newLoc[YY] = callout->loc[YY] - callout->margin.valuePixels(YY);
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    if (newLoc[XX] < 0 || newLoc[YY] < 0) {
+      for (int i = 0; i < list.size(); i++) {
+        if (list[i]->relativeType == RangeType) {
+          Range *range = dynamic_cast<Range *>(list[i]);
+          if (range) {
+            range->loc[XX] -= newLoc[XX];
+            range->loc[YY] -= newLoc[YY];
+            for (int j = 0; j < range->list.size(); j++) {
+              Step *step = dynamic_cast<Step *>(range->list[j]);
+              if (step) {
+                int nCallouts = step->list.size();
+                for (int k = 0; k < nCallouts; k++) {
+                  Callout *callout = dynamic_cast<Callout *>(step->list[k]);
+                  if (callout) {
+                    if (callout->placement.value().relativeTo == CalloutType) {
+                      callout->loc[XX] -= newLoc[XX];
+                      callout->loc[YY] -= newLoc[YY];
+                    }
                   }
                 }
               }
