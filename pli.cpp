@@ -1545,12 +1545,15 @@ void PliBackgroundItem::resize(QPointF grabbed)
   // recalculate corners Y
   
   point = grabbed;
-  grabHeight = grabbed.y()-pos().y();
+
+  // Figure out desired height of PLI
   
-  if (pli && pli->parentRelativeType == CalloutType && pli->step->callout()->parentStep) {
-    Step *step = pli->step->callout()->parentStep;
-    grabHeight -= step->parent->loc[YY];
-    grabHeight -= step->parent->parent->loc[YY];
+  if (pli && pli->parentRelativeType == CalloutType) {
+    QPointF absPos = pos();
+    absPos = mapToScene(absPos);
+    grabHeight = grabbed.y() - absPos.y();
+  } else {
+    grabHeight = grabbed.y() - pos().y();
   }
     
   ConstrainData constrainData;
