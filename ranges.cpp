@@ -33,7 +33,6 @@
 #include "step.h"
 #include "meta.h"
 #include "callout.h"
-#include "calloutbackgrounditem.h"
 #include "lpub.h"
 #include "dividerdialog.h"
 

@@ -34,7 +34,6 @@
 #include "ranges.h"
 #include "ranges_element.h"
 #include "callout.h"
-#include "calloutbackgrounditem.h"
 #include "csiitem.h"
 #include "metaitem.h"
 #include "commonmenus.h"
