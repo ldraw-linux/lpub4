@@ -681,7 +681,13 @@ int Gui::drawPage(
             parseError("CALLOUT END without a CALLOUT BEGIN",current);
           } else {
             callout->parentStep = step;
-            callout->parentRelativeType = step->relativeType;
+            if (multiStep) {
+              callout->parentRelativeType = StepGroupType;
+            } else if (calledOut) {
+              callout->parentRelativeType = CalloutType;
+            } else {
+              callout->parentRelativeType = step->relativeType;
+            }
             callout->pli.clear();
             callout->placement = curMeta.LPub.callout.placement;
             callout->setBottomOfCallout(current);

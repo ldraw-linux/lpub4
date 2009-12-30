@@ -97,7 +97,8 @@ const QString relativeNames[NumRelatives] =
 {
   "Page",        "Assem",   "Step Group",  "Step Number",
   "Parts List",  "Callout", "Page Number",
-  "Single Step", "Submodel Instance Count", "Range",   "Step",        "Reserve"
+  "Single Step", "Submodel Instance Count", "Range",   "Step",        "Reserve",
+  "BOM", "Cover Page"
 };
 
 QString PlacementDialog::relativeToName(
@@ -160,7 +161,23 @@ PlacementDialog::PlacementDialog(
           oks = Csi | Pli;
         break;
         case CalloutType:
-          oks = Page | Csi | Pli | Sn | Callout;
+          oks = Csi | Pli | Sn | Callout;
+        break;
+        default:
+          oks = Csi | Pli | Sn;
+        break;
+      }
+    break;
+    case StepType:
+      switch (placedType) {
+        case PartsListType:
+          oks = Page | Csi | Sn;
+        break;
+        case StepNumberType:
+          oks = Page | Csi | Pli;
+        break;
+        case CalloutType:
+          oks = Page | Csi | Sn | Pli;
         break;
         default:
           oks = Csi | Pli | Sn;
