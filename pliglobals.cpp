@@ -41,7 +41,7 @@ public:
   MetaGui *scale;
   bool     bom;
 
-  GlobalPliPrivate(QString &_topLevelFile, Meta &_meta, bool &_bom = false)
+  GlobalPliPrivate(QString &_topLevelFile, Meta &_meta, bool _bom = false)
   {
     topLevelFile = _topLevelFile;
     meta = _meta;

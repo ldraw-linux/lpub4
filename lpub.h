@@ -589,7 +589,7 @@ private:
     QGraphicsScene *scene,
     bool            printing);
 
-  int Gui::getBOMParts(
+  int getBOMParts(
     Where           current,
     QStringList &csiParts);
 

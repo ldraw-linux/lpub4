@@ -137,7 +137,7 @@ private:
 
 protected:
   void contextMenuEvent(QGraphicsSceneContextMenuEvent *event);
-  void CalloutPointerItem::mousePressEvent(QGraphicsSceneMouseEvent *event);
+  void mousePressEvent(QGraphicsSceneMouseEvent *event);
 };
 
 #endif
