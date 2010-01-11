@@ -956,7 +956,7 @@ int Gui::findPage(
   
   ldrawFile.setRendered(current.modelName, isMirrored);
 
-  RotStepMeta saveRotStep = meta.rotStep;
+  RotStepMeta saveRotStep; // FIXME saveRotStep = meta.rotStep;
 
   for ( ;
        current.lineNumber < numLines;
@@ -1001,6 +1001,8 @@ int Gui::findPage(
               SubmodelStack tos(current.modelName,current.lineNumber,stepNumber);
               meta.submodelStack << tos;
               Where current2(type,0);
+              RotStepMeta nullRotStepMeta;
+              meta.rotStep = nullRotStepMeta; // rotsteps don't affect submodels
 
               findPage(view,scene,pageNum,line,current2,isMirrored,meta,printing);
               saveStepPageNum = stepPageNum;
