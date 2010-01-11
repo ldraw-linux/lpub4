@@ -326,8 +326,8 @@ void CsiItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
 void CsiItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
   if (isSelected() && (flags() & QGraphicsItem::ItemIsMovable)) {
-    QPoint delta(pos().x() - position.x() + 0.5,
-                 pos().y() - position.y() + 0.5);
+    QPoint delta(int(pos().x() - position.x() + 0.5),
+                 int(pos().y() - position.y() + 0.5));
 
     if (delta.x() || delta.y()) {
       for (int i = 0; i < step->list.size(); i++) {
@@ -356,7 +356,8 @@ void CsiItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
       calcOffsets(placementData,placementData.offsets,topLeft,size);
       step->csiPlacement.placement.setValue(placementData);
 
-      QPoint deltaI(pos().x() - position.x(),pos().y() - position.y());
+      QPoint deltaI(int(pos().x() - position.x()),
+                    int(pos().y() - position.y()));
 
       if (step) {
         for (int i = 0; i < step->list.size(); i++) {
@@ -383,7 +384,8 @@ void CsiItem::change()
       calcOffsets(placementData,placementData.offsets,topLeft,size);
       meta->LPub.assem.placement.setValue(placementData);
 
-      QPoint deltaI(pos().x() - position.x(),pos().y() - position.y());
+      QPoint deltaI(int(pos().x() - position.x()),
+                    int(pos().y() - position.y()));
       for (int i = 0; i < step->list.size(); i++) {
         Callout *callout = step->list[i];
         callout->updatePointers(deltaI);
