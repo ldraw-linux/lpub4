@@ -86,6 +86,7 @@ void Callout::appendPointer(const Where &here, CalloutMeta &attrib)
 void Callout::sizeIt()
 {
   AllocEnc allocEnc = meta.LPub.callout.alloc.value();
+
   if (allocEnc == Vertical) {
     Steps::sizeit(allocEnc,XX,YY);
   } else {
@@ -94,12 +95,12 @@ void Callout::sizeIt()
 
   BorderData borderData = meta.LPub.callout.border.valuePixels();
 
-  size[XX] += borderData.margin[XX];
-  size[YY] += borderData.margin[YY];
+  size[XX] += int(borderData.margin[XX]);
+  size[YY] += int(borderData.margin[YY]);
 
   size[XX] += borderData.thickness;
   size[YY] += borderData.thickness;
-  
+
   /* If we've got multiple instances of a submodel, we need to add
      the usage count in the lower right corner.  for assem, pli, and
      step number, determine if bottom right corner overlaps with the
@@ -115,46 +116,59 @@ void Callout::sizeIt()
     instanceCount.font = meta.LPub.callout.instance.font.valueFoo();
     instanceCount.sizeit();
     
+    bool fit = true;
+
+            /* Describe the instance count rectangle */
+
+            int  instanceTop, instanceLeft, instanceWidth, instanceHeight;
+
+            instanceWidth  = instanceCount.size[XX] + instanceCount.margin.valuePixels(XX);
+            instanceHeight = instanceCount.size[YY] + instanceCount.margin.valuePixels(YY);
+            instanceLeft = size[XX] - instanceWidth;
+            instanceTop  = size[YY] - instanceHeight;
+
     for (int j = 0; j < list.size(); j++) {
       if (list[j] && list[j]->relativeType == RangeType) {
         Range *range = dynamic_cast<Range *>(list[j]);
         for (int i = 0; i < range->list.size(); i++) {
           if (range->list[i]->relativeType == StepType) {
             Step *step = dynamic_cast<Step *>(range->list[i]);
-            
-            /* Describe the instance count rectangle */
-            
-            int  instanceTop, instanceLeft, instanceWidth, instanceHeight;
-              
-            instanceWidth  = instanceCount.size[XX] + instanceCount.margin.valuePixels(XX);
-            instanceHeight = instanceCount.size[YY] + instanceCount.margin.valuePixels(YY);
-            instanceLeft = size[XX] - instanceWidth;
-            instanceTop  = size[YY] - instanceHeight;
 
-            /* if there is something yo work with */
+            /* if there is something to work with */
             
             int  right;
             int  bottom;
-            bool          fit = true;
             
             // Overlap count with CSI?
               
-            right  = step->csiPlacement.loc[XX] + step->csiPlacement.size[XX];
-            bottom = step->csiPlacement.loc[YY] + step->csiPlacement.size[YY];
-              
+            right  = step->loc[XX];
+            right += step->csiPlacement.loc[XX] + step->csiPlacement.size[XX];
+            right += range->loc[XX];
+            bottom  = step->loc[YY];
+            bottom += step->csiPlacement.loc[YY] + step->csiPlacement.size[YY];
+            bottom += range->loc[YY];
+
             if (right > instanceLeft && bottom > instanceTop) {
               fit = false;
             } else {      
-              right  = step->pli.loc[XX] + step->pli.size[XX];
-              bottom = step->pli.loc[YY] + step->pli.size[YY];
+              right  = step->loc[XX];
+              right += step->pli.loc[XX] + step->pli.size[XX];
+              right += range->loc[XX];
+              bottom  = step->loc[YY];
+              bottom += step->pli.loc[YY] + step->pli.size[YY];
+              bottom += range->loc[YY];
 
               // Overlap with PLI?
                 
               if (right > instanceLeft && bottom > instanceTop) {
                 fit = false;
               } else {
-                right  = step->stepNumber.loc[XX] + step->stepNumber.size[XX];
-                bottom = step->stepNumber.loc[YY] + step->stepNumber.size[YY];
+                right  = step->loc[XX];
+                right += step->stepNumber.loc[XX] + step->stepNumber.size[XX];
+                right += range->loc[XX];
+                bottom  = step->loc[YY];
+                bottom += step->stepNumber.loc[YY] + step->stepNumber.size[YY];
+                bottom += range->loc[YY];
 
                 // Overlap with Step Number?
                   
@@ -163,8 +177,10 @@ void Callout::sizeIt()
                   for (int i = 0; i < step->list.size(); i++) {
                     Callout *callout = step->list[i];
                     if (callout) {
-                      right = callout->loc[XX] + callout->size[XX];
-                      bottom = callout->loc[YY] + callout->size[YY];
+                      right  = step->loc[XX];
+                      right += callout->loc[XX] + callout->size[XX];
+                      bottom  = step->loc[XX];
+                      bottom += callout->loc[YY] + callout->size[YY];
                       if (right > instanceLeft && bottom > instanceTop) {
                         fit = false;
                         break;
@@ -174,29 +190,29 @@ void Callout::sizeIt()
                 }
               }
             }
-            if (fit) {
-              instanceCount.loc[XX] = instanceLeft + instanceCount.margin.valuePixels(XX);
-              instanceCount.loc[YY] = instanceTop + instanceCount.margin.valuePixels(YY);
-            } else {
-              // enlarge the callout to make room
-                    
-              int a = instanceWidth  * size[YY];
-              int b = instanceHeight * size[XX];
-              
-              if (a < b) {
-                instanceCount.loc[XX] = size[XX] + instanceCount.margin.valuePixels(XX);
-                instanceCount.loc[YY] = instanceTop + instanceCount.margin.valuePixels(YY);
-                size[XX] += instanceWidth;
-              } else {
-                instanceCount.loc[XX] = instanceLeft + instanceCount.margin.valuePixels(XX);
-                instanceCount.loc[YY] = size[YY] + instanceCount.margin.valuePixels(YY);
-                size[YY] += instanceHeight;
-              }
-            }
           } // if step
         } // foreach step
       } // if range
     } // foreach range
+    if (fit) {
+      instanceCount.loc[XX] = instanceLeft + instanceCount.margin.valuePixels(XX);
+      instanceCount.loc[YY] = instanceTop + instanceCount.margin.valuePixels(YY);
+    } else {
+      // enlarge the callout to make room
+
+      int a = instanceWidth  * size[YY];
+      int b = instanceHeight * size[XX];
+
+      if (a < b) {
+        instanceCount.loc[XX] = size[XX];
+        instanceCount.loc[YY] = instanceTop;
+        size[XX] += instanceCount.size[XX];
+      } else {
+        instanceCount.loc[XX] = instanceLeft;
+        instanceCount.loc[YY] = size[YY];
+        size[YY] += instanceCount.size[YY];
+      }
+    }
   }
 
   size[XX] += borderData.margin[XX];
