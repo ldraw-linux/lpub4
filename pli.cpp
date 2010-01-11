@@ -110,7 +110,8 @@ float PliPart::maxMargin()
   float margin1 = qMax(instanceMeta.margin.valuePixels(XX),
                        csiMargin.valuePixels(XX));
   if (annotWidth) {
-    margin1 = qMax(margin1,annotateMeta.margin.valuePixels(XX));
+    float margin2 = annotateMeta.margin.valuePixels(XX);
+    margin1 = qMax(margin1,margin2);
   }
   return margin1;
 }
@@ -396,8 +397,8 @@ int Pli::placePli(
   int left = 0;
   int nPlaced = 0;
   int tallest = 0;
-  float topMargin = borderData.margin[1]+borderData.thickness;
-  float botMargin = topMargin;
+  int topMargin = borderData.margin[1]+borderData.thickness;
+  int botMargin = topMargin;
 
   cols = 0;
 
@@ -458,8 +459,7 @@ int Pli::placePli(
     int right = left + prevPart->width;
     int bot = prevPart->height;
 
-    float tmargin = prevPart->csiMargin.valuePixels(YY);
-    botMargin = qMax(botMargin,tmargin);
+    botMargin = qMax(botMargin,prevPart->csiMargin.valuePixels(YY));
 
     // leftEdge is the number of pixels between the left edge of the image
     // and the leftmost pixel in the image
@@ -521,8 +521,7 @@ int Pli::placePli(
 
         if ( ! part->placed) {
 
-          float tmargin = part->csiMargin.valuePixels(YY);
-          int splitMargin = qMax(prevPart->topMargin,tmargin);
+          int splitMargin = qMax(prevPart->topMargin,part->csiMargin.valuePixels(YY));
 
           // dropping part down into prev part (top part is right edge, bottom left)
 
@@ -723,8 +722,10 @@ void Pli::placeCols(
   BorderData borderData;
   borderData = pliMeta.border.valuePixels();
 
-  float topMargin = qMax(borderData.margin[1]+borderData.thickness,parts[keys[0]]->topMargin);
-  float botMargin = qMax(borderData.margin[1]+borderData.thickness,parts[keys[0]]->csiMargin.valuePixels(YY));
+  float topMargin = parts[keys[0]]->topMargin;
+  topMargin = qMax(borderData.margin[1]+borderData.thickness,topMargin);
+  float botMargin = parts[keys[0]]->csiMargin.valuePixels(YY);
+  botMargin = qMax(borderData.margin[1]+borderData.thickness,botMargin);
 
   int height = 0;
   int width;

@@ -472,7 +472,7 @@ public:
   {
     _value[pushed] = value;
   }
-  virtual float valuePixels();
+  virtual int valuePixels();
   UnitMeta() : FloatMeta()
   {
     _value[0] = 0;
@@ -529,7 +529,7 @@ public:
     _value[pushed][1] = v2;
   }
   
-  virtual float valuePixels(int which);
+  virtual int valuePixels(int which);
 
   UnitsMeta() : FloatPairMeta()
   {

@@ -85,9 +85,9 @@ class PliPart {
     int           annotHeight;
     int           annotWidth;
 
-    float         topMargin;
-    float         partTopMargin;
-    float         partBotMargin;
+    int           topMargin;
+    int           partTopMargin;
+    int           partBotMargin;
 
     QList<int>    leftEdge;
     QList<int>    rightEdge;

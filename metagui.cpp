@@ -630,13 +630,13 @@ void NumberGui::browseColor(bool clicked)
 
 void NumberGui::value0Changed(QString const &string)
 {
-  meta->margin.setValue(string.toFloat(),0);
+  meta->margin.setValue(0,string.toFloat());
   marginsModified = true;
 }
 
 void NumberGui::value1Changed(QString const &string)
 {
-  meta->margin.setValue(string.toFloat(),1);
+  meta->margin.setValue(1,string.toFloat());
   marginsModified = true;
 }
 

@@ -309,20 +309,20 @@ QString UnitMeta::format(bool local, bool global)
   return LeafMeta::format(local,global,foo);
 }
 
-float UnitMeta::valuePixels()
+int UnitMeta::valuePixels()
 {
   float t = _value[pushed];
-  return t*resolution();
+  return int(t*resolution());
 }
 
 
 /* ------------------ */
-float UnitsMeta::valuePixels(int which)
+int UnitsMeta::valuePixels(int which)
 {
   float t = _value[pushed][which];
   float r = resolution();
 
-  return t*r;
+  return int(t*r);
 }
 
 QString UnitsMeta::format(bool local, bool global)
