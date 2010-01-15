@@ -636,7 +636,7 @@ void NumberGui::value0Changed(QString const &string)
 
 void NumberGui::value1Changed(QString const &string)
 {
-  meta->margin.setValue(1,string.toFloat());
+  meta->margin.setValue(1, string.toFloat());
   marginsModified = true;
 }
 
@@ -925,7 +925,7 @@ BorderGui::BorderGui(
   spin = new QSpinBox(parent);
   spin->setRange(0,100);
   spin->setSingleStep(5);
-  spin->setValue(border.radius);
+  spin->setValue(int(border.radius));
   grid->addWidget(spin,2,1);
   connect(spin,SIGNAL(valueChanged(int)),
           this,SLOT(  radiusChange(int)));

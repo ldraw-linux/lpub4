@@ -142,7 +142,7 @@ void BackgroundItem::setBackground(
   painter.setRenderHints(QPainter::Antialiasing,true);
 
   if (borderData.type == BorderData::BdrRound) {
-    painter.drawRoundRect(prect,rx,ry);
+    painter.drawRoundRect(prect,int(rx),int(ry));
   } else {
     painter.drawRect(prect);
   }

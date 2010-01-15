@@ -98,8 +98,8 @@ void Callout::sizeIt()
   size[XX] += int(borderData.margin[XX]);
   size[YY] += int(borderData.margin[YY]);
 
-  size[XX] += borderData.thickness;
-  size[YY] += borderData.thickness;
+  size[XX] += int(borderData.thickness);
+  size[YY] += int(borderData.thickness);
 
   /* If we've got multiple instances of a submodel, we need to add
      the usage count in the lower right corner.  for assem, pli, and

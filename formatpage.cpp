@@ -331,8 +331,8 @@ int Gui::addGraphicsPageItems(
        */
         
       if (instanceCount) {
-        instanceCount->setSize(instanceCount->document()->size().width(),
-                               instanceCount->document()->size().height());
+        instanceCount->setSize(int(instanceCount->document()->size().width()),
+                               int(instanceCount->document()->size().height()));
         instanceCount->loc[XX] = 0;
         instanceCount->loc[YY] = 0;
         instanceCount->tbl[0] = 0;
@@ -595,8 +595,8 @@ int Gui::addGraphicsPageItems(
   view->setSceneRect(pageBg->sceneBoundingRect());
 
   if ( ! printing) {
-    view->horizontalScrollBar()->setRange(0,page->meta.LPub.page.size.valuePixels(0));
-    view->verticalScrollBar()->setRange(0,page->meta.LPub.page.size.valuePixels(1));
+    view->horizontalScrollBar()->setRange(0,int(page->meta.LPub.page.size.valuePixels(0)));
+    view->verticalScrollBar()->setRange(0,int(page->meta.LPub.page.size.valuePixels(1)));
   }
 
   if (printing) {
