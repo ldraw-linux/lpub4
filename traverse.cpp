@@ -905,7 +905,6 @@ int Gui::drawPage(
       return InvalidLDrawLineRc;
     }
   }
-  steps->meta.rotStep.clear();
   return 0;
 }
 
@@ -956,7 +955,7 @@ int Gui::findPage(
   
   ldrawFile.setRendered(current.modelName, isMirrored);
 
-  RotStepMeta saveRotStep; // FIXME saveRotStep = meta.rotStep;
+  RotStepMeta saveRotStep = meta.rotStep;
 
   for ( ;
        current.lineNumber < numLines;
@@ -1001,8 +1000,7 @@ int Gui::findPage(
               SubmodelStack tos(current.modelName,current.lineNumber,stepNumber);
               meta.submodelStack << tos;
               Where current2(type,0);
-              RotStepMeta nullRotStepMeta;
-              meta.rotStep = nullRotStepMeta; // rotsteps don't affect submodels
+              meta.rotStep.clear(); // rotsteps don't affect submodels
 
               findPage(view,scene,pageNum,line,current2,isMirrored,meta,printing);
               saveStepPageNum = stepPageNum;
@@ -1038,8 +1036,8 @@ int Gui::findPage(
                 saveBfx        = bfx;
                 saveBfxParts   = bfxParts;
                 bfxParts.clear();
-              } else if (pageNum == displayPageNum) {
                 saveRotStep = meta.rotStep;
+              } else if (pageNum == displayPageNum) {
                 csiParts.clear();
                 stepPageNum = saveStepPageNum;
                 if (pageNum == 1) {
@@ -1091,9 +1089,9 @@ int Gui::findPage(
                   bfxParts.clear();
                 }
                 saveCurrent    = current;
+                saveRotStep = meta.rotStep;
               }
               if ( ! stepGroup) {
-                saveRotStep = meta.rotStep;
                 if (pageNum == displayPageNum) {
                   csiParts.clear();
                   stepPageNum = saveStepPageNum;
