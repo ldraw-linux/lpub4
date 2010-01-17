@@ -210,11 +210,11 @@ DividerItem::DividerItem(
             offsetY,
            2*sepData.margin[XX]
            +sepData.thickness,
-            steps->size[YY]);
+            range->size[YY]);
   } else {
     setRect(offsetX,
             offsetY,
-            steps->size[XX],
+            range->size[XX],
            2*sepData.margin[YY]
            +sepData.thickness);
   }
@@ -243,18 +243,14 @@ DividerItem::DividerItem(
                         offsetY,
                         left,
                         offsetY
-                       +steps->size[YY]
-                       -2*sepData.margin[YY]
-                       -2*borderData.thickness);
+                       +range->size[YY]);
     } else {
       int top = offsetY+sepData.margin[YY]+sepData.thickness/2;
   
       lineItem->setLine(offsetX,
                         top,
                         offsetX
-                       +steps->size[XX]
-                       -2*sepData.margin[XX]
-                       -2*borderData.thickness,
+                       +range->size[XX],
                         top);
     }
     QPen pen(LDrawColor::color(sepData.color));
