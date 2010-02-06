@@ -795,6 +795,7 @@ void Gui::createMenus()
     QMenu *exportMenu = fileMenu->addMenu("Export As...");
     exportMenu->addAction(exportPngAct);
     exportMenu->addAction(exportJpgAct);
+    exportMenu->addAction(exportBmpAct);
 
 #ifndef __APPLE__
     exportMenu->addAction(exportBmpAct);

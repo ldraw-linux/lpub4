@@ -204,7 +204,7 @@ int Gui::addGraphicsPageItems(
 
   int pW, pH;
 
-  if (printing) {
+ if (printing) {
     if (view->maximumWidth() < page->meta.LPub.page.size.valuePixels(0)) {
       pW = view->maximumWidth();
     } else {
@@ -220,13 +220,13 @@ int Gui::addGraphicsPageItems(
     pH = page->meta.LPub.page.size.valuePixels(1);
   }
 
-  PageBackgroundItem *pageBg;
+   // pW = page->meta.LPub.page.size.valuePixels(0);
+   // pH = page->meta.LPub.page.size.valuePixels(1);
 
-  if (printing) {
-    pageBg = new PageBackgroundItem(page, pW+100, pH+100);
-  } else {
-    pageBg = new PageBackgroundItem(page, pW, pH);
-  }
+
+  PageBackgroundItem *pageBg;
+  pageBg = new PageBackgroundItem(page, pW, pH);
+
   view->pageBackgroundItem = pageBg;
   pageBg->setPos(0,0);
 

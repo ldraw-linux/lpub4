@@ -630,6 +630,8 @@ private slots:
     void zoomIn(LGraphicsView *view);
     void zoomOut(LGraphicsView *view);
 
+	void GetPixelDimensions(float &, float &);
+	void GetPagePixelDimensions(float &, float &, QPrinter::PaperSize &, QPrinter::Orientation &);
     void printToFile();
     void exportAs(QString &);
     void exportAsPng();

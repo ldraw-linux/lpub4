@@ -60,7 +60,7 @@ void BackgroundItem::setBackground(
   int bt = borderData.thickness;
 
   QColor penColor,brushColor;  
-  QRectF prect(bt/2,bt/2,pixmap->width()-1-bt,pixmap->height()-1-bt);
+  QRectF prect(bt/2,bt/2,pixmap->width()-bt,pixmap->height()-bt); // was -1-bt
 
   pixmap->setAlphaChannel(*pixmap);
   pixmap->fill(Qt::transparent);

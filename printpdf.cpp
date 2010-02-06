@@ -101,65 +101,84 @@ int Gui::bestPaperSizeOrientation(
   return bestSize;
 }
 
+void Gui::GetPixelDimensions(float &pixelWidth, float &pixelHeight)
+{
+	float pageWidthIn, pageHeightIn;
+
+	// only concerned with inches because resolution() reports DPI	
+	if (page.meta.LPub.resolution.type() == DPI) {
+		pageWidthIn = page.meta.LPub.page.size.value(0);
+		pageHeightIn = page.meta.LPub.page.size.value(1);
+	} else {
+		pageWidthIn = centimeters2inches(page.meta.LPub.page.size.value(0));
+		pageHeightIn = centimeters2inches(page.meta.LPub.page.size.value(1));
+	}
+		
+	// pixel dimension are inches * pixels per inch
+	pixelWidth = int((pageWidthIn * resolution()) + 0.5);
+	pixelHeight = int((pageHeightIn * resolution()) + 0.5);
+}
+
+
+void Gui::GetPagePixelDimensions(float &pagePixelWidth, float &pagePixelHeight, QPrinter::PaperSize &paperSize, QPrinter::Orientation &orientation)
+{
+	float pageWidthMm, pageHeightMm;
+	float pageWidthCm, pageHeightCm;
+	float pageWidthIn, pageHeightIn;
+	
+	if (page.meta.LPub.resolution.type() == DPI) {
+		pageWidthIn = page.meta.LPub.page.size.value(0);
+		pageHeightIn = page.meta.LPub.page.size.value(1);
+		pageWidthCm = inches2centimeters(pageWidthIn);
+		pageHeightCm = inches2centimeters(pageHeightIn);
+	} else {
+		pageWidthCm = page.meta.LPub.page.size.value(0);
+		pageHeightCm = page.meta.LPub.page.size.value(1);
+		pageWidthIn = centimeters2inches(pageWidthCm);
+		pageHeightIn = centimeters2inches(pageHeightCm);
+	}
+	
+	pageWidthMm = int((pageWidthCm * 10.0) + 0.5);
+	pageHeightMm = int((pageHeightCm * 10.0) + 0.5);
+	
+	int sizeIndex = bestPaperSizeOrientation(pageWidthMm, pageHeightMm, paperSize, orientation);
+
+	if (orientation == QPrinter::Portrait) {
+		pageWidthCm = paperSizes[sizeIndex].width / 10.0;
+		pageHeightCm = paperSizes[sizeIndex].height / 10.0;
+	} else {
+		pageWidthCm = paperSizes[sizeIndex].height / 10.0;
+		pageHeightCm = paperSizes[sizeIndex].width / 10.0;
+	}
+	
+	pageWidthIn = centimeters2inches(pageWidthCm);
+	pageHeightIn = centimeters2inches(pageHeightCm);
+	
+	// important: note that pixel dimensions converted back from mm paper sizes may
+	// not match GetPixelDimensions. For example, Letter mm dimensions do not *exactly* equal 8.5 x 11
+	
+	pagePixelWidth = int((pageWidthIn * resolution()) + 0.5);
+	pagePixelHeight = int((pageHeightIn * resolution()) + 0.5);	
+}
+
 void Gui::printToFile()
 {
-  float pageWidth = page.meta.LPub.page.size.value(0);
-  float pageHeight = page.meta.LPub.page.size.value(1);
-
-  if (page.meta.LPub.resolution.type() == DPI) {
-    // convert to MM
-    pageWidth = int(inches2centimeters(pageWidth));
-    pageHeight = int(inches2centimeters(pageHeight));
-  }
-  pageWidth  *= 10;  // convert to mm
-  pageHeight *= 10;
-
-  QPrinter::PaperSize paperSize = QPrinter::PaperSize();
-  QPrinter::Orientation orientation = QPrinter::Orientation();
-  int bestSize;
-  bestSize = bestPaperSizeOrientation(pageWidth,pageHeight,paperSize,orientation);
-
-  // Convert closest page size to pixels for bounding rect
-
-  if (orientation == QPrinter::Portrait) {
-    pageWidth = paperSizes[bestSize].width;
-    pageHeight = paperSizes[bestSize].height;
-  } else {
-    pageWidth = paperSizes[bestSize].height;
-    pageHeight = paperSizes[bestSize].width;
-  }
-
-  pageWidth  /= 10.0;  // from milimeter to centimeters
-  pageHeight /= 10.0;
-
-  if (resolutionType() == DPI) {
-    pageWidth = centimeters2inches(pageWidth);
-    pageHeight = centimeters2inches(pageHeight);
-  }
-
-  pageWidth *= resolution();
-  pageHeight *= resolution();
-
-  if (resolutionType() == DPCM) {
-    pageWidth = centimeters2inches(pageWidth);
-    pageHeight = centimeters2inches(pageHeight);
-  }
-
+  // determine location for output file
   QFileInfo fileInfo(curFile);
-  QString   baseName = fileInfo.baseName();
-
+  QString baseName = fileInfo.baseName();
   QString fileName = QFileDialog::getSaveFileName(
-    this,
-	  tr("Print File Name"),
-	  QDir::currentPath() + "/" + baseName,
-	  tr("PDF (*.pdf)\nPDF (*.PDF)"));
-
+      this,
+      tr("Print File Name"),
+      QDir::currentPath() + "/" + baseName,
+      tr("PDF (*.pdf)\nPDF (*.PDF)"));
   if (fileName == "") {
     return;
   }
-
+  
+  // want info about output file now, not model file
   fileInfo.setFile(fileName);
-
+  
+  // append proper PDF file extension if needed
   QString suffix = fileInfo.suffix();
   if (suffix == "") {
     fileName += ".pdf";
@@ -167,48 +186,61 @@ void Gui::printToFile()
     fileName = fileInfo.path() + "/" + fileInfo.completeBaseName() + ".pdf";
   }
 
+  // determine size of output pages, in pixels
+  QPrinter::PaperSize paperSize = QPrinter::PaperSize();
+  QPrinter::Orientation orientation = QPrinter::Orientation();
+  float pageWidthPx, pageHeightPx;
+  GetPagePixelDimensions(pageWidthPx, pageHeightPx, paperSize, orientation);
+
+  // create a PDF printer
   QPrinter printer(QPrinter::ScreenResolution);
+  //printer.setResolution(resolution());
   printer.setOutputFileName(fileName);
   printer.setOrientation(orientation);
   printer.setPaperSize(paperSize);
   printer.setPageMargins(0,0,0,0,QPrinter::Inch);
   printer.setFullPage(true);
-
+  
+  // paint to the printer the scene we view
   QPainter painter;
   painter.begin(&printer);
-
-  int savePageNumber = displayPageNum;
-
   QGraphicsScene scene;
-  LGraphicsView  view(&scene);
-
-  QRectF boundingRect(0.0,0.0,pageWidth,pageHeight);
-  QRect  bounding(0,0,pageWidth,pageHeight);
-  view.setMinimumSize(pageWidth,pageHeight);
-  view.setMaximumSize(pageWidth,pageHeight);
+  LGraphicsView view(&scene);
+  
+  // set up the view
+  QRectF boundingRect(0.0, 0.0, pageWidthPx, pageHeightPx);
+  QRect bounding(0, 0, pageWidthPx, pageHeightPx);
+  view.scale(1.0,1.0);
+  view.setMinimumSize(pageWidthPx,pageHeightPx);
+  view.setMaximumSize(pageWidthPx,pageHeightPx);
   view.setGeometry(bounding);
   view.setSceneRect(boundingRect);
-  view.setRenderHints(QPainter::Antialiasing | 
-					  QPainter::TextAntialiasing |
-					  QPainter::SmoothPixmapTransform);
-
-  view.scale(1.0,1.0);
+  view.setRenderHints(
+      QPainter::Antialiasing | 
+      QPainter::TextAntialiasing |
+      QPainter::SmoothPixmapTransform);
   view.centerOn(boundingRect.center());
   clearPage(&view,&scene);
   
+  int savePageNumber = displayPageNum;
   for (displayPageNum = 1; displayPageNum <= maxPages; displayPageNum++) {
 
-    qApp->processEvents();
-	
-    drawPage(&view,&scene,true);
-    view.render(&painter);
+    //qApp->processEvents();
+	  
+	  // render this page
+    drawPage(&view,&scene,false);
+    scene.render(&painter);
     clearPage(&view,&scene);
-
-    if (maxPages - displayPageNum > 0) {
+    
+    // prepare to print another page
+    if(displayPageNum < maxPages) {
       printer.newPage();
     }
   }
+  
   painter.end();
+  
+  // return to whatever page we were viewing before output
   displayPageNum = savePageNumber;
   drawPage(KpageView,KpageScene,false);
 }
@@ -233,103 +265,66 @@ void Gui::exportAsBmp()
 
 void Gui::exportAs(QString &suffix)
 {
-  float pageWidth = page.meta.LPub.page.size.value(0);
-  float pageHeight = page.meta.LPub.page.size.value(1);
-  if (page.meta.LPub.resolution.type() == DPI) {
-    // convert to MM
-    pageWidth = int(inches2centimeters(pageWidth)*10);
-    pageHeight = int(inches2centimeters(pageHeight)*10);
-  }
-
-  QPrinter::PaperSize paperSize = QPrinter::PaperSize();
-  QPrinter::Orientation orientation = QPrinter::Orientation();
-  int bestSize;
-  bestSize = bestPaperSizeOrientation(pageWidth,pageHeight,paperSize,orientation);
-
-  // Convert closest page size to pixels for bounding rect
-
-  if (orientation == QPrinter::Portrait) {
-    pageWidth = paperSizes[bestSize].width/10.0;  // in centimeters
-    pageHeight = paperSizes[bestSize].height/10.0; // in centimeters
-  } else {
-    pageWidth = paperSizes[bestSize].height/10.0;  // in centimeters
-    pageHeight = paperSizes[bestSize].width/10.0; // in centimeters
-  }
-
-  if (resolutionType() == DPI) {
-    pageWidth = centimeters2inches(pageWidth);
-    pageHeight = centimeters2inches(pageHeight);
-  }
-  pageWidth *= resolution();
-  pageHeight *= resolution();
-  if (resolutionType() == DPCM) {
-    pageWidth = centimeters2inches(pageWidth);
-    pageHeight = centimeters2inches(pageHeight);
-  }
-
-  QGraphicsScene scene;
-  LGraphicsView  view(&scene);
-
-  int savePageNumber = displayPageNum;
-
+  // determine location to output images
   QFileInfo fileInfo(curFile);
-  QString   baseName = fileInfo.baseName();
-
-  //clearPage(KpageView,KpageScene);
-
-  // Strangeness needing to warm up the process?
-
-  QImage image(pageWidth,pageHeight,QImage::Format_ARGB32);
-
-  for (displayPageNum = 1;
-       displayPageNum <= maxPages && displayPageNum < 6;
-       displayPageNum++) {
-
-    qApp->processEvents();
-
-    QRect  bounding(0,0,pageWidth,pageHeight);
-    view.setGeometry(bounding);
-    view.setRenderHints(QPainter::Antialiasing |
-              QPainter::TextAntialiasing |
-              QPainter::SmoothPixmapTransform);
-    view.scale(1.0,1.0);
-    QRectF boundingRect(0.0,0.0,pageWidth,pageHeight);
-    view.centerOn(boundingRect.center());
-    drawPage(&view,&scene,true);
-
-    QPainter painter;
-    painter.begin(&image);
-    view.render(&painter);
-    QString pn = QString("%1") .arg(displayPageNum);
-    image.save(baseName + "_page_" +pn + suffix);
-    painter.end();
-
-    clearPage(&view,&scene);
+  //QDir initialDirectory = fileInfo.dir();
+  QString baseName = fileInfo.baseName();
+  QString directoryName = QFileDialog::getExistingDirectory(
+      this,
+      tr("Save images to folder"), // needs translation! also, include suffix in here
+      QDir::currentPath(),
+      QFileDialog::ShowDirsOnly);
+  if (directoryName == "") {
+    return;
   }
+  
+  // determine size of output image, in pixels
+  float pageWidthPx, pageHeightPx;
+  GetPixelDimensions(pageWidthPx, pageHeightPx);
+  
+  // paint to the image the scene we view
+  QImage image(pageWidthPx, pageHeightPx, QImage::Format_ARGB32);
+  QPainter painter;
+  painter.begin(&image);
+  QGraphicsScene scene;
+  LGraphicsView view(&scene);
 
+  // set up the view  
+  QRectF boundingRect(0.0,0.0,pageWidthPx,pageHeightPx);
+  QRect  bounding(0,0,pageWidthPx,pageHeightPx);
+  view.scale(1.0,1.0);
+  view.setMinimumSize(pageWidthPx, pageHeightPx);
+  view.setMaximumSize(pageWidthPx, pageHeightPx);
+  view.setGeometry(bounding);
+  view.setSceneRect(boundingRect);
+  view.setRenderHints(
+      QPainter::Antialiasing |
+      QPainter::TextAntialiasing |
+      QPainter::SmoothPixmapTransform);
+  view.centerOn(boundingRect.center());
+// view.fitInView(boundingRect);
+  clearPage(&view, &scene);
+  
+  int savePageNumber = displayPageNum;  
   for (displayPageNum = 1; displayPageNum <= maxPages; displayPageNum++) {
+    
+    //qApp->processEvents();
+    
+    // render this page
+    // scene.render instead of view.render resolves "warm up" issue
+    drawPage(&view,&scene,false);
+    scene.render(&painter);
+    clearPage(&view, &scene);    
 
-    qApp->processEvents();
-
-    QRect  bounding(0,0,pageWidth,pageHeight);
-    view.setGeometry(bounding);
-    view.setRenderHints(QPainter::Antialiasing |
-              QPainter::TextAntialiasing |
-              QPainter::SmoothPixmapTransform);
-    view.scale(1.0,1.0);
-    QRectF boundingRect(0.0,0.0,pageWidth,pageHeight);
-    view.centerOn(boundingRect.center());
-    drawPage(&view,&scene,true);
-
-    QPainter painter;
-    painter.begin(&image);
-    view.render(&painter);
+    // save the image to the selected directory
+    // internationalization of "_page_"?
     QString pn = QString("%1") .arg(displayPageNum);
-    image.save(baseName + "_page_" +pn + suffix);
-    painter.end();
-
-    clearPage(&view,&scene);
+    image.save(directoryName + "/" + baseName + "_page_" + pn + suffix);
   }
+  
+  painter.end();
+  
+  // return to whatever page we were viewing before output
   displayPageNum = savePageNumber;
   drawPage(KpageView,KpageScene,false);
 }
