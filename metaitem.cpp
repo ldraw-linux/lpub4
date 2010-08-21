@@ -913,7 +913,8 @@ void MetaItem::changePlacementOffset(
     if (type == StepGroupType) {
       scanForward(defaultWhere,StepGroupBeginMask);
     } else if (type == CalloutType) {
-      scanForward(defaultWhere,StepMask);
+      scanForward(defaultWhere,CalloutEndMask);
+      --defaultWhere;
     }
     appendMeta(defaultWhere,newMetaString);
   } else {

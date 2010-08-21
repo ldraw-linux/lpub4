@@ -1597,7 +1597,7 @@ void PliBeginMeta::init(BranchMeta *parent, QString name)
 {
   AbstractMeta::init(parent, name);
   ignore.init(this, "IGN",    PliBeginIgnRc);
-  sub.init   (this, "(SUB)");
+  sub.init   (this, "SUB");
 }
 
 /* ------------------ */ 
@@ -1664,7 +1664,7 @@ void PartMeta::init(BranchMeta *parent, QString name)
 Rc SubMeta::parse(QStringList &argv, int index,Where &here)
 {
   Rc rc = FailureRc;
-  int argc = argv.size() - ++index;
+  int argc = argv.size() - index;
 
   if (argc == 1) {
     _value.part = argv[index];
@@ -1681,6 +1681,7 @@ Rc SubMeta::parse(QStringList &argv, int index,Where &here)
   }
   return rc;
 }
+
 QString SubMeta::format(bool local, bool global)
 {
   QString foo;
@@ -1932,14 +1933,6 @@ void PliMeta::init(BranchMeta *parent, QString name)
 
 /* ------------------ */ 
 
-void BomBeginMeta::init(BranchMeta *parent, QString name)
-{
-  AbstractMeta::init(parent, name);
-  ignore.init(this,"IGN",BomBeginIgnRc);
-}
-
-/* ------------------ */ 
-
 BomMeta::BomMeta() : PliMeta()
 {
   placement.setValue(CenterCenter,PageType);
@@ -1995,10 +1988,12 @@ void BomMeta::init(BranchMeta *parent, QString name)
   subModelColor.init(this,"SUBMODEL_BACKGROUND_COLOR");
   part         .init(this,"PART");
   begin        .init(this,"BEGIN");
+  begin.ignore.rc = BomBeginIgnRc;
   end          .init(this,"END",BomEndRc);
 }
 
 /* ------------------ */ 
+
 CalloutMeta::CalloutMeta() : BranchMeta()
 {
   stepNum.color.setValue("black");

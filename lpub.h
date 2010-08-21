@@ -399,11 +399,11 @@ public:
   
   FitMode fitMode;         // how to fit the scene into the view
 
-  int     subFileSize(const QString &modelName)
+  int subFileSize(const QString &modelName)
   {
     return ldrawFile.size(modelName);
   }
-  int  numSteps(const QString &modelName)
+  int numSteps(const QString &modelName)
   {
     return ldrawFile.numSteps(modelName);
   }
@@ -590,7 +590,8 @@ private:
     bool            printing);
 
   int getBOMParts(
-    Where           current,
+    Where        current,
+    QString     &addLine,
     QStringList &csiParts);
 
   void writeToTmp(const QString &fileName, const QStringList &);

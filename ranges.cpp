@@ -59,7 +59,11 @@ Steps::~Steps()
 
 QString Steps::modelName()
 {
-  return list[0]->topOfRange().modelName;
+  if (list.size()) {
+    return list[0]->topOfRange().modelName;
+  } else {
+    return "Problems";
+  }
 }
 
 QString Steps::path()
@@ -497,19 +501,15 @@ void Steps::addGraphicsItems(
     if (list[i]->relativeType == RangeType) {
       Range *range = dynamic_cast<Range *>(list[i]);
       if (range) {
-        QGraphicsItem *rb;
-
-        if (relativeType == CalloutType) {
-          rb = parent;
-        } else {
-          rb = new MultiStepRangeBackgroundItem(this,range,&meta,
+        if (relativeType == StepGroupType) {
+          new MultiStepRangeBackgroundItem(this,range,&meta,
                     offsetX + loc[XX],
                     offsetY + loc[YY],
                     parent);
         }
         
         range->addGraphicsItems(
-          offsetX + loc[XX], offsetY + loc[YY], &meta, relativeType, rb);
+          offsetX + loc[XX], offsetY + loc[YY], &meta, relativeType, parent);
 
         if (list.size() > 1 && i < list.size() - 1) {
           // add divider here
@@ -540,7 +540,7 @@ Boundary Steps::boundary(AbstractStepsElement *me)
     return StartAndEndOfSteps;
   } else {
     if (list[0] == me) {
-      return StartAndEndOfSteps;
+      return StartOfSteps;
     }
     if (list[list.size()-1] == me) {
       return EndOfSteps;

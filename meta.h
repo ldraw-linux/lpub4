@@ -1475,7 +1475,7 @@ class PartBeginMeta : public BranchMeta
 {
 public:
   RcMeta          ignore;
-  PartBeginMeta() 
+  PartBeginMeta()
   {
   }
   PartBeginMeta(const PartBeginMeta &rhs) : BranchMeta(rhs)
@@ -1507,21 +1507,6 @@ public:
 };
 
 /*------------------------*/
-
-class BomBeginMeta : public BranchMeta
-{
-public:
-  RcMeta        ignore;
-  BomBeginMeta() 
-  {
-  }
-  BomBeginMeta(const BomBeginMeta &rhs) : BranchMeta(rhs)
-  {
-  }
-
-  virtual ~BomBeginMeta() {}
-  virtual void init(BranchMeta *parent, QString name);
-};
 
 /* This class is to parse MLCad's rotation step */
 

@@ -292,6 +292,14 @@ int Gui::drawPage(
       QString color = tokens[1];
       QString type  = tokens[tokens.size()-1];
 
+      if (color == "16") {
+        QStringList addTokens;
+        split(addLine,addTokens);
+        tokens[1] = addTokens[1];
+        line = tokens.join(" ");
+        color = tokens[1];
+      }
+
       csiParts << line;
       partsAdded = true;
 
@@ -330,6 +338,7 @@ int Gui::drawPage(
                 break;
               }
             }
+
             if ( ! removed) {
               pliParts << Pli::partLine(line,current,steps->meta);
             }
@@ -463,7 +472,8 @@ int Gui::drawPage(
         case ClearRc:
           pliParts.clear();
           csiParts.clear();
-          steps->freeSteps();
+          //steps->freeSteps();  // had to remove this because it blows steps following clear
+                                 // in step group.
         break;
 
         /* Buffer exchange */
@@ -970,8 +980,18 @@ int Gui::findPage(
       line = line.mid(8).trimmed();
     }
 
+    QStringList tokens, addTokens;
+
     switch (line.toAscii()[0]) {
       case '1':
+        split(line,tokens);
+
+        if (tokens[1] == "16") {
+          split(addLine,addTokens);
+          tokens[1] = addTokens[1];
+          line = tokens.join(" ");
+        }
+
         if ( ! partIgnore) {
 
           // csiParts << line;
@@ -992,7 +1012,7 @@ int Gui::findPage(
           bool rendered   = ldrawFile.rendered(type,ldrawFile.mirrored(token));
                     
           if (contains) {
-            if ( ! rendered && ! bfxStore2) {
+            if ( ! rendered && (! bfxStore2 || ! bfxParts.contains(token[1]+type))) {
 
               isMirrored = ldrawFile.mirrored(token);
 
@@ -1180,7 +1200,10 @@ int Gui::findPage(
           // to be processed here
 
           case ClearRc:
-            csiParts.empty();
+            if (pageNum < displayPageNum) {
+              csiParts.clear();
+              saveCsiParts.clear();
+            }
           break;
 
           /* Buffer exchange */
@@ -1248,10 +1271,10 @@ int Gui::findPage(
                       saveCsiParts,
                       pliParts,
                       isMirrored,
-                      bfx,
+                      saveBfx,
                       printing,
                       bfxStore2,
-                      bfxParts);
+                      saveBfxParts);
     }
     ++pageNum;
     topOfPages.append(current);
@@ -1261,7 +1284,8 @@ int Gui::findPage(
 }
 
 int Gui::getBOMParts(
-  Where           current,
+  Where        current,
+  QString     &addLine,
   QStringList &pliParts)
 {
   bool partIgnore = false;
@@ -1300,15 +1324,21 @@ int Gui::getBOMParts(
       case '1':
         if ( ! partIgnore && ! pliIgnore && ! synthBegin) {
 
-          QStringList token;
+          QStringList token,addToken;
 
           split(line,token);
 
           QString    type = token[token.size()-1];
 
-            /*
-             * Automatically ignore parts added twice due to buffer exchange
-             */
+          if (token[1] == "16") {
+            split(addLine,addToken);
+            token[1] = addToken[1];
+            line = token.join(" ");
+          }
+
+          /*
+           * Automatically ignore parts added twice due to buffer exchange
+           */
           bool removed = false;
           QString colorPart = token[1] + type;
 
@@ -1327,7 +1357,7 @@ int Gui::getBOMParts(
 
               Where current2(type,0);
 
-              getBOMParts(current2,pliParts);
+              getBOMParts(current2,line,pliParts);
             } else {
 
               pliParts << Pli::partLine(line,current,meta);

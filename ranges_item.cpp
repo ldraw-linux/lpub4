@@ -91,7 +91,6 @@ MultiStepRangeBackgroundItem::MultiStepRangeBackgroundItem(
   QGraphicsItem *parent)
 {
   meta = _meta;
-  //page = dynamic_cast<Page *>(_steps);
   page = _steps;
 
   MultiStepMeta *multiStep = &_meta->LPub.multiStep;
@@ -113,6 +112,7 @@ MultiStepRangeBackgroundItem::MultiStepRangeBackgroundItem(
   setBrush(QBrush(Qt::NoBrush));
   setToolTip("Step Group - popup menu");
   setParentItem(parent);
+  setZValue(-2);
 }
 
 void MultiStepRangeBackgroundItem::contextMenuEvent(

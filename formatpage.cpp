@@ -419,7 +419,8 @@ int Gui::addGraphicsPageItems(
           {
             Where current(ldrawFile.topLevelFile(),0);
             QStringList bomParts;
-            getBOMParts(current,bomParts);
+            QString addLine;
+            getBOMParts(current,addLine,bomParts);
             page->pli.pliMeta = page->meta.LPub.bom;
             page->pli.setParts(bomParts,page->meta,true);
             bomParts.clear();
