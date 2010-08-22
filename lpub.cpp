@@ -487,7 +487,8 @@ void Gui::closeEvent(QCloseEvent *event)
 void Gui::about()
 {
    QMessageBox::about(this, tr("About LPub"),
-            tr("<b>LPub 4.0.0.5</b> is a WYSIWYG tool for creating\n"
+            tr("<b>LPub 4.0.0.5</b> is a proud member of the LDraw\n"
+               "family of tools.  LPub is a WYSIWYG tool for creating\n"
                "LEGO(c) style building instructions\n"
                "Copyright 2000-2010 Kevin Clague\n"
                "kevin.clague@gmail.com"));
