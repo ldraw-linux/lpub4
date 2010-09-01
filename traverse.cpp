@@ -1224,7 +1224,7 @@ int Gui::findPage(
           case MLCadGroupRc:
             if (pageNum < displayPageNum) {
               csiParts << line;
-              partsAdded++;
+              partsAdded = true;
             }
           break;
 
@@ -1249,6 +1249,10 @@ int Gui::findPage(
           
           case IncludeRc:
             include(meta);
+          break;
+
+          case NoStepRc:
+            partsAdded = false;
           break;
           
           default:

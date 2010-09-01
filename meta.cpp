@@ -2136,6 +2136,43 @@ LPubMeta::LPubMeta() : BranchMeta()
   // stepNumber - default 
 }
 
+/* ------------------ */
+
+void NoStepMeta::init(
+  BranchMeta *parent,
+  const QString name,
+  Rc _rc)
+{
+  AbstractMeta::init(parent,name);
+  rc = _rc;
+}
+Rc NoStepMeta::parse(QStringList &argv, int index,Where &here)
+{
+  if (index == argv.size()) {
+    return rc;
+  } else {
+
+    if (reportErrors) {
+      QMessageBox::warning(NULL,
+        QMessageBox::tr("LPub"),
+        QMessageBox::tr("Unexpected token \"%1\" %2") .arg(argv[index]) .arg(argv.join(" ")));
+    }
+
+    return FailureRc;
+  }
+}
+QString NoStepMeta::format(bool local, bool global)
+{
+  return LeafMeta::format(local,global,"");
+}
+
+void NoStepMeta::doc(QStringList &out, QString preamble)
+{
+  out << preamble;
+}
+
+/* ------------------ */
+
 void LPubMeta::init(BranchMeta *parent, QString name)
 {
   AbstractMeta::init(parent, name);
@@ -2152,6 +2189,7 @@ void LPubMeta::init(BranchMeta *parent, QString name)
   resolution             .init(this,"RESOLUTION");
   insert                 .init(this,"INSERT");
   include                .init(this,"INCLUDE", IncludeRc);
+  nostep                 .init(this,"NOSTEP",NoStepRc);
 }
 
 /* ------------------ */ 

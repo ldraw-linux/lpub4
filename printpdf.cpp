@@ -226,9 +226,10 @@ void Gui::printToFile()
   for (displayPageNum = 1; displayPageNum <= maxPages; displayPageNum++) {
 
     //qApp->processEvents();
-	  
-	  // render this page
-    drawPage(&view,&scene,false);
+
+    // render this page
+    drawPage(&view,&scene,true);
+    scene.setSceneRect(0.0,0.0,pageWidthPx,pageHeightPx);
     scene.render(&painter);
     clearPage(&view,&scene);
     
@@ -313,6 +314,7 @@ void Gui::exportAs(QString &suffix)
     // render this page
     // scene.render instead of view.render resolves "warm up" issue
     drawPage(&view,&scene,false);
+    scene.setSceneRect(0.0,0.0,pageWidthPx,pageHeightPx);
     scene.render(&painter);
     clearPage(&view, &scene);    
 

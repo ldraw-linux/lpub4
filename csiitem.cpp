@@ -224,6 +224,8 @@ void CsiItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
     break;
   }
 
+  QAction *noStepAction = menu.addAction("Don't Show This Step");
+
   QAction *selectedAction = menu.exec(event->screenPos());
 
   if ( ! selectedAction ) {
@@ -311,6 +313,8 @@ void CsiItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
                   topOfStep, 
                   bottomOfStep, 
                   margins);
+  } else if (selectedAction == noStepAction) {
+    insertMeta(bottomOfStep,"0 !LPUB NOSTEP");
   }
 }
 

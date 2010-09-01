@@ -106,6 +106,8 @@ enum Rc {
          
          IncludeRc,
 
+         NoStepRc,
+
          EndOfFileRc,
 };
 
@@ -1773,6 +1775,21 @@ public:
   virtual void    doc(QStringList &out, QString preamble);
 };
 
+class NoStepMeta : RcMeta {
+private:
+public:
+  NoStepMeta()
+  {
+  }
+  virtual ~NoStepMeta() {}
+  virtual void init(BranchMeta *parent,
+                    const QString name,
+                    Rc _rc=OkRc);
+  virtual Rc parse(QStringList &argv, int index, Where &here);
+          QString format(bool,bool);
+  virtual void    doc(QStringList &out, QString preamble);
+};
+
 class LPubMeta : public BranchMeta
 {
 public:
@@ -1789,6 +1806,7 @@ public:
   PartIgnMeta    partSub;
   InsertMeta     insert;
   StringMeta     include;
+  NoStepMeta     nostep;
   LPubMeta();
   virtual ~LPubMeta() {};
   virtual void init(BranchMeta *parent, QString name);
