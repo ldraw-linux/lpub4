@@ -120,12 +120,12 @@ void Callout::sizeIt()
 
             /* Describe the instance count rectangle */
 
-            int  instanceTop, instanceLeft, instanceWidth, instanceHeight;
+    int  instanceTop, instanceLeft, instanceWidth, instanceHeight;
 
-            instanceWidth  = instanceCount.size[XX] + instanceCount.margin.valuePixels(XX);
-            instanceHeight = instanceCount.size[YY] + instanceCount.margin.valuePixels(YY);
-            instanceLeft = size[XX] - instanceWidth;
-            instanceTop  = size[YY] - instanceHeight;
+    instanceWidth  = instanceCount.size[XX] + instanceCount.margin.valuePixels(XX);
+    instanceHeight = instanceCount.size[YY] + instanceCount.margin.valuePixels(YY);
+    instanceLeft = size[XX] - instanceWidth;
+    instanceTop  = size[YY] - instanceHeight;
 
     for (int j = 0; j < list.size(); j++) {
       if (list[j] && list[j]->relativeType == RangeType) {
