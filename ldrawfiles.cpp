@@ -558,6 +558,9 @@ void LDrawFile::countInstances(const QString &mcFileName, bool isMirrored)
   
   QMap<QString, LDrawSubFile>::iterator f = _subFiles.find(fileName);
   if (f != _subFiles.end()) {
+    if (f->_beenCounted) {
+      return;
+    }
     int j = f->_contents.size();
     f->_numSteps = 0;
     for (int i = 0; i < j; i++) {
@@ -606,6 +609,7 @@ void LDrawFile::countInstances(const QString &mcFileName, bool isMirrored)
       ++f->_instances;
     }
   }
+  f->_beenCounted = true;
 }
 
 void LDrawFile::countInstances()
@@ -615,6 +619,7 @@ void LDrawFile::countInstances()
     QMap<QString, LDrawSubFile>::iterator it = _subFiles.find(fileName);
     it->_instances = 0;
     it->_mirrorInstances = 0;
+    it->_beenCounted = false;
   }
   countInstances(topLevelFile(),false);
 }

@@ -45,6 +45,7 @@ class LDrawSubFile {
     bool        _modified;
     QDateTime   _datetime;
     int         _numSteps;
+    bool        _beenCounted;
     int         _instances;
     int         _mirrorInstances;
     bool        _rendered;
