@@ -397,7 +397,7 @@ int Pli::placePli(
   int left = 0;
   int nPlaced = 0;
   int tallest = 0;
-  int topMargin = borderData.margin[1]+borderData.thickness;
+  int topMargin = int(borderData.margin[1]+borderData.thickness);
   int botMargin = topMargin;
 
   cols = 0;
@@ -685,7 +685,7 @@ int Pli::placePli(
   for (int col = 0; col < totalCols; col++) {
     lastMargin = margins[col].second;
     if (col == 0) {
-      int bmargin = borderData.thickness + borderData.margin[0];
+      int bmargin = int(borderData.thickness + borderData.margin[0]);
       margin = qMax(bmargin,margins[col].first);
     } else {
       margin = qMax(margins[col].first,margins[col].second);
@@ -698,7 +698,7 @@ int Pli::placePli(
     width += margin;
   }
   if (lastMargin < borderData.margin[0]+borderData.thickness) {
-    lastMargin = borderData.margin[0]+borderData.thickness;
+    lastMargin = int(borderData.margin[0]+borderData.thickness);
   }
   width += lastMargin;
 
@@ -734,15 +734,15 @@ void Pli::placeCols(
 
   float borderMargin = borderData.thickness + borderData.margin[XX];
 
-  width = qMax(borderMargin, part->maxMargin()); 
+  width = int(qMax(borderMargin, part->maxMargin()));
 
   for (int i = 0; i < keys.size(); i++) {
     part = parts[keys[i]];
     part->left = width;
-    part->bot  = botMargin;
-	  part->col = i;
+    part->bot  = int(botMargin);
+    part->col = i;
 
-	  width += part->width;
+    width += part->width;
 
 	  if (part->height > height) {
       height = part->height;
@@ -750,14 +750,14 @@ void Pli::placeCols(
 
 	  if (i < keys.size() - 1) {
 	    PliPart *nextPart = parts[keys[i+1]];
-      width += qMax(part->maxMargin(),nextPart->maxMargin());
+      width += int(qMax(part->maxMargin(),nextPart->maxMargin()));
 	  }
   }
   part = parts[keys[keys.size()-1]];
-  width += qMax(part->maxMargin(),borderMargin);
+  width += int(qMax(part->maxMargin(),borderMargin));
   
   size[0] = width;
-  size[1] = topMargin + height + botMargin;
+  size[1] = int(topMargin + height + botMargin);
 }
 
 void Pli::getLeftEdge(
@@ -896,7 +896,7 @@ int Pli::sortPli()
 
         part->partTopMargin = part->annotateMeta.margin.valuePixels(YY);
 
-        int hMax = part->annotHeight + part->annotateMeta.margin.value(YY);
+        int hMax = int(part->annotHeight + part->annotateMeta.margin.value(YY));
         for (int h = 0; h < hMax; h++) {
           part->leftEdge  << part->width - part->annotWidth;
           part->rightEdge << part->width;
@@ -1050,7 +1050,7 @@ int Pli::resizePli(
     int rc;
     rc = placePli(sortedKeys,
                   10000000,
-                  constrainData.constraint,
+                  int(constrainData.constraint),
                   packSubs,
                   sortType,
                   cols,
@@ -1066,7 +1066,7 @@ int Pli::resizePli(
 	    pliHeight = Placement::size[1];
 	    cols = parts.size();
 	  } else { 
-      int bomCols = constrainData.constraint;
+      int bomCols = int(constrainData.constraint);
 
       int maxHeight = 0;
       for (int i = 0; i < parts.size(); i++) {
@@ -1146,7 +1146,7 @@ int Pli::resizePli(
 
     // step by 1/10 of inch or centimeter
 
-    int step = toPixels(0.1,DPI);
+    int step = int(toPixels(0.1,DPI));
 
     for ( ; height > 0; height -= step) {
 
@@ -1198,7 +1198,7 @@ int Pli::resizePli(
     int cols;
     int min_delta = height;
     int good_height = height;
-    int step = toPixels(0.1,DPI);
+    int step = int(toPixels(0.1,DPI));
 
     for ( ; height > 0; height -= step) {
 
@@ -1554,9 +1554,9 @@ void PliBackgroundItem::resize(QPointF grabbed)
   if (pli && pli->parentRelativeType == CalloutType) {
     QPointF absPos = pos();
     absPos = mapToScene(absPos);
-    grabHeight = grabbed.y() - absPos.y();
+    grabHeight = int(grabbed.y() - absPos.y());
   } else {
-    grabHeight = grabbed.y() - pos().y();
+    grabHeight = int(grabbed.y() - pos().y());
   }
     
   ConstrainData constrainData;
@@ -1570,9 +1570,9 @@ void PliBackgroundItem::resize(QPointF grabbed)
   qreal scaleX = width/size[0];
   qreal scaleY = height/size[1];
 
-  pli->positionChildren(height,scaleX,scaleY);
+  pli->positionChildren(int(height),scaleX,scaleY);
   
-  point = QPoint(pos().x()+width/2,pos().y()+height);
+  point = QPoint(int(pos().x()+width/2),int(pos().y()+height));
   grabber->setPos(point.x()-grabSize()/2,point.y()-grabSize()/2);
 
   resetTransform();

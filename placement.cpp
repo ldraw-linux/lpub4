@@ -400,8 +400,8 @@ void Placement::placeRelative(
       break;
     }
   }
-  them->loc[XX] += size[XX] * them->placement.value().offsets[XX];
-  them->loc[YY] += size[YY] * them->placement.value().offsets[YY];
+  them->loc[XX] += size[XX] * int(them->placement.value().offsets[XX]);
+  them->loc[YY] += size[YY] * int(them->placement.value().offsets[YY]);
 }
 
 void Placement::justifyX(

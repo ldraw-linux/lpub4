@@ -197,8 +197,8 @@ void CalloutBackgroundItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
   // when sliding the callout up, we get negative Y
   // when sliding left of callout base we get negativeX?
   if ((flags() & QGraphicsItem::ItemIsMovable) && isSelected()) {
-    QPoint delta(position.x() - pos().x() + 0.5,
-                 position.y() - pos().y() + 0.5);
+    QPoint delta(int(position.x() - pos().x() + 0.5),
+                 int(position.y() - pos().y() + 0.5));
 
     if (delta.x() || delta.y()) {
       callout->drawTips(delta);
@@ -217,7 +217,7 @@ void CalloutBackgroundItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 
     if (delta.x() || delta.y()) {
 
-      QPoint deltaI(delta.x()+0.5,delta.y()+0.5);
+      QPoint deltaI(int(delta.x()+0.5),int(delta.y()+0.5));
       for (int i = 0; i < callout->graphicsPointerList.size(); i++) {
         CalloutPointerItem *pointer = callout->graphicsPointerList[i];
         pointer->updatePointer(deltaI);

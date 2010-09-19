@@ -57,7 +57,7 @@ void BackgroundItem::setBackground(
   BorderData     borderData     = _border.valuePixels();
   BackgroundData backgroundData = _background.value();
 
-  int bt = borderData.thickness;
+  int bt = int(borderData.thickness);
 
   QColor penColor,brushColor;  
   QRectF prect(bt/2,bt/2,pixmap->width()-bt,pixmap->height()-bt); // was -1-bt

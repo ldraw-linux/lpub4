@@ -215,11 +215,11 @@ void Callout::sizeIt()
     }
   }
 
-  size[XX] += borderData.margin[XX];
-  size[YY] += borderData.margin[YY];
+  size[XX] += int(borderData.margin[XX]);
+  size[YY] += int(borderData.margin[YY]);
 
-  size[XX] += borderData.thickness;
-  size[YY] += borderData.thickness;
+  size[XX] += int(borderData.thickness);
+  size[YY] += int(borderData.thickness);
 }
 
 void Callout::addGraphicsItems(
@@ -259,13 +259,13 @@ void Callout::addGraphicsItems(
 
   BorderData borderData = meta.LPub.callout.border.valuePixels();
 
-  loc[XX] = borderData.margin[0];
-  loc[YY] = borderData.margin[1];
+  loc[XX] = int(borderData.margin[0]);
+  loc[YY] = int(borderData.margin[1]);
  
   if (meta.LPub.callout.alloc.value() == Vertical) {
-    addGraphicsItems(Vertical,0,borderData.thickness,background);
+    addGraphicsItems(Vertical,0,int(borderData.thickness),background);
   } else {
-    addGraphicsItems(Horizontal,borderData.thickness,0,background);
+    addGraphicsItems(Horizontal,int(borderData.thickness),0,background);
   }
   loc[XX] = saveX;
   loc[YY] = saveY;
@@ -320,8 +320,8 @@ void Callout::sizeitFreeform(
 {
   Steps::sizeitFreeform(xx,yy);
 
-  size[XX] += 2*meta.LPub.callout.border.valuePixels().thickness;
-  size[YY] += 2*meta.LPub.callout.border.valuePixels().thickness;
+  size[XX] += 2*int(meta.LPub.callout.border.valuePixels().thickness);
+  size[YY] += 2*int(meta.LPub.callout.border.valuePixels().thickness);
 
   if (instanceCount.number > 1) {
     instanceCount.sizeit("%1x");
