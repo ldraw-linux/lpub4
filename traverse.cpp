@@ -934,6 +934,8 @@ int Gui::findPage(
   bool stepPage   = false;
   bool bfxStore1  = false;
   bool bfxStore2  = false;
+  bool stepGroupBfxStore2 = false;
+  
   QStringList bfxParts;
   QStringList saveBfxParts;
   int  partsAdded = 0;
@@ -1045,6 +1047,10 @@ int Gui::findPage(
           case StepGroupBeginRc:
             stepGroup = true;
             stepGroupCurrent = topOfStep;
+            // Steps within step group modify bfxStore2 as they progress
+            // so we must save bfxStore2 and use the saved copy when
+            // we call drawPage for a step group.
+            stepGroupBfxStore2 = bfxStore2;
           break;
           case StepGroupEndRc:
             if (stepGroup) {
@@ -1081,7 +1087,7 @@ int Gui::findPage(
                                 isMirrored,
                                 saveBfx,
                                 printing,
-                                bfxStore2,
+                                stepGroupBfxStore2,
                                 saveBfxParts);
                                 
                 saveCurrent.modelName.clear();
@@ -1149,6 +1155,7 @@ int Gui::findPage(
               meta.pop();
               coverPage = false;
               stepPage = false;
+
               bfxStore2 = bfxStore1;
               bfxStore1 = false;
               if ( ! bfxStore2) {
