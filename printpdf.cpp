@@ -28,35 +28,37 @@ struct paperSizes {
   float              width;
   float              height;
 } paperSizes[] = {
-  { QPrinter::A0,         841, 1189 },
-  { QPrinter::A1,         594,  841 },
-  { QPrinter::A2,         420,  594 },
-  { QPrinter::A3,         297,  420 },
-  { QPrinter::A4,         210,  297 },
-  { QPrinter::A5,         148,  210 },
-  { QPrinter::A6,         105,  148 },
-  { QPrinter::A7,          74,  105 },
-  { QPrinter::A8,          52,   74 },
-  { QPrinter::A9,          37,   52 },
-  { QPrinter::B0,        1030, 1456 },
-  { QPrinter::B1,         728, 1030 },
-  { QPrinter::B10,         32,   45 },
-  { QPrinter::B2,         515,  728 },
-  { QPrinter::B3,         364,  515 },
-  { QPrinter::B4,         257,  364 },
-  { QPrinter::B5,         182,  257 },
-  { QPrinter::B6,         128,  182 },
-  { QPrinter::B7,          91,  128 },
-  { QPrinter::B8,          64,   91 },
-  { QPrinter::B9,          45,   64 },
-  { QPrinter::C5E,        163,  229 },
-  { QPrinter::Comm10E,    105,  241 },
-  { QPrinter::DLE,        110,  220 },
-  { QPrinter::Executive,  191,  254 },
-  { QPrinter::Folio,      210,  330 },
-  { QPrinter::Legal,      216,  356 },
-  { QPrinter::Letter,     216,  279 },
-  { QPrinter::Tabloid,    279,  432 },
+  { QPrinter::A0,         841,   1189 },
+  { QPrinter::A1,         594,    841 },
+  { QPrinter::A2,         420,    594 },
+  { QPrinter::A3,         297,    420 },
+  { QPrinter::A4,         210,    297 },
+  { QPrinter::A5,         148,    210 },
+  { QPrinter::A6,         105,    148 },
+  { QPrinter::A7,          74,    105 },
+  { QPrinter::A8,          52,     74 },
+  { QPrinter::A9,          37,     52 },
+  { QPrinter::B0,        1030,   1456 },
+  { QPrinter::B1,         728,   1030 },
+  { QPrinter::B10,         32,     45 },
+  { QPrinter::B2,         515,    728 },
+  { QPrinter::B3,         364,    515 },
+  { QPrinter::B4,         257,    364 },
+  { QPrinter::B5,         182,    257 },
+  { QPrinter::B6,         128,    182 },
+  { QPrinter::B7,          91,    128 },
+  { QPrinter::B8,          64,     91 },
+  { QPrinter::B9,          45,     64 },
+  { QPrinter::B10,         31,     44 },
+  { QPrinter::C5E,        163,    229 },
+  { QPrinter::Comm10E,    105,    241 },
+  { QPrinter::DLE,        110,    220 },
+  { QPrinter::Executive,  190.5,  254 },
+  { QPrinter::Folio,      210,    330 },
+  { QPrinter::Ledger,     431.8,  279.4 },
+  { QPrinter::Legal,      215.9,  355.6 },
+  { QPrinter::Letter,     215.9,  279.4 },
+  { QPrinter::Tabloid,    279.4,  431.8 },
 };
 
 int Gui::bestPaperSizeOrientation(
@@ -138,8 +140,8 @@ void Gui::GetPagePixelDimensions(float &pagePixelWidth, float &pagePixelHeight, 
 		pageHeightIn = centimeters2inches(pageHeightCm);
 	}
 	
-	pageWidthMm = int((pageWidthCm * 10.0) + 0.5);
-	pageHeightMm = int((pageHeightCm * 10.0) + 0.5);
+  pageWidthMm = pageWidthCm * 10.0;
+  pageHeightMm = pageHeightCm * 10.0;
 	
 	int sizeIndex = bestPaperSizeOrientation(pageWidthMm, pageHeightMm, paperSize, orientation);
 
