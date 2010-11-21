@@ -1970,8 +1970,8 @@ void MetaItem::addCalloutMetas(
       }
     }
     if (together) {
-      appendMeta(lastInstance, "0 !LPUB CALLOUT END");
-      insertMeta(lastInstance,"0 !LPUB CALLOUT PLI PER_STEP LOCAL FALSE");
+      appendMeta(lastInstance,"0 !LPUB CALLOUT END");
+      appendMeta(lastInstance,"0 !LPUB CALLOUT PLI PER_STEP LOCAL FALSE");
       if (assembled) {
         QString begin = "0 !LPUB CALLOUT BEGIN ";
         if (rotated) {
