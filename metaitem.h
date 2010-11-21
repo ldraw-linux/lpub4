@@ -58,6 +58,7 @@ class MetaItem
 public:
   void setGlobalMeta(QString &topLevelFile, LeafMeta *leaf);
 
+  bool canConvertToCallout(    Meta *);
   void convertToCallout(       Meta *, const QString &, bool isMirrored, bool assembled = false);
   void addCalloutMetas(        Meta *, const QString &, bool isMirrored, bool assembled = false);
   int  nestCallouts(           Meta *, const QString &, bool isMirrored);

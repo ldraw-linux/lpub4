@@ -1724,6 +1724,36 @@ int MetaItem::nestCallouts(
   return 0;
 }
 
+bool MetaItem::canConvertToCallout(
+  Meta *meta)
+{
+  SubmodelStack tos = meta->submodelStack[meta->submodelStack.size() - 1];
+  Where walkBack(tos.modelName,tos.lineNumber);
+
+  for (; walkBack.lineNumber >= 0; walkBack--) {
+    QString line = gui->readLine(walkBack);
+
+    if (isHeader(line)) {
+      return true;
+    } else {
+      QStringList argv;
+      split(line,argv);
+      if (argv.size() == 5 && argv[0] == "0" &&
+         (argv[1] == "LPUB" || argv[1] == "!LPUB") &&
+          argv[2] == "CALLOUT" && argv[3] == "BEGIN") {
+        return false;
+      }
+      if (argv.size() >= 2 && argv[0] == "0") {
+        if (argv[1] == "STEP" || argv[1] == "ROTSTEP" ||
+            argv[1] == "LPUB" || argv[1] == "!LPUB") {
+          return true;
+        }
+      }
+    }
+  }
+  return true;
+}
+
 void MetaItem::convertToCallout(
   Meta *meta,
   const QString &modelName,

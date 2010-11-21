@@ -86,11 +86,15 @@ void PageBackgroundItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
       calloutAction->setWhatsThis("Convert to Callout:\n"
         "  A callout shows how to build these steps in a picture next\n"
         "  to where it is added to the set you are building");
-      assembledAction = menu.addAction("Add Assembled Image to Parent Page");
-      assembledAction->setWhatsThis("Add Assembled Image to Parent Page\n"
-        "  A callout like image is added to the page where this submodel\n"
-        "  is added to the set you are building");
-  
+
+      // FIXME: don't allow this it is already got an assembled.
+      if (canConvertToCallout(&page->meta)) {
+        assembledAction = menu.addAction("Add Assembled Image to Parent Page");
+        assembledAction->setWhatsThis("Add Assembled Image to Parent Page\n"
+          "  A callout like image is added to the page where this submodel\n"
+          "  is added to the set you are building");
+      }
+
       ignoreAction  = menu.addAction("Ignore this submodel");
       ignoreAction->setWhatsThis("Stops these steps from showing up in your instructions");
 
