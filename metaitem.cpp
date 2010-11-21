@@ -1951,7 +1951,8 @@ void MetaItem::addCalloutMetas(
       } else {
         appendMeta(thisInstance,"0 !LPUB CALLOUT POINTER CENTER 0 " + line);
         ++thisInstance.lineNumber;
-        appendMeta(thisInstance, "0 !LPUB CALLOUT END");
+        appendMeta(thisInstance,"0 !LPUB CALLOUT END");
+        appendMeta(thisInstance,"0 !LPUB CALLOUT PLI PER_STEP LOCAL FALSE");
         --thisInstance.lineNumber;
         if (assembled) {
           QString begin = "0 !LPUB CALLOUT BEGIN ";
@@ -1961,7 +1962,6 @@ void MetaItem::addCalloutMetas(
             begin += "ASSEMBLED";
           }
           insertMeta(thisInstance,begin);
-          insertMeta(thisInstance,"0 !LPUB CALLOUT PLI PER_STEP LOCAL FALSE");
           thisInstance.lineNumber += 5;
         } else {
           insertMeta(thisInstance,"0 !LPUB CALLOUT BEGIN");
@@ -1971,6 +1971,7 @@ void MetaItem::addCalloutMetas(
     }
     if (together) {
       appendMeta(lastInstance, "0 !LPUB CALLOUT END");
+      insertMeta(lastInstance,"0 !LPUB CALLOUT PLI PER_STEP LOCAL FALSE");
       if (assembled) {
         QString begin = "0 !LPUB CALLOUT BEGIN ";
         if (rotated) {
