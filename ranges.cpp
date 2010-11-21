@@ -326,11 +326,9 @@ void Steps::sizeit(AllocEnc allocEnc, int x, int y)
                     // current bounding box, and eventually figure out a
                     // new bounding box.
                     int margins[2] = { step->margin.valuePixels(XX) +
-                                       range->margin.valuePixels(XX) +
-                                       callout->margin.valuePixels(XX),
+                                       range->margin.valuePixels(XX),
                                        step->margin.valuePixels(YY) +
-                                       range->margin.valuePixels(YY) +
-                                       callout->margin.valuePixels(YY) };
+                                       range->margin.valuePixels(YY)};
                     placeRelative(callout,margins);
                     if (callout->loc[XX] < newLoc[XX]) {
                       newLoc[XX] = callout->loc[XX] - callout->margin.valuePixels(XX);

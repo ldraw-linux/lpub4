@@ -37,7 +37,8 @@
 LDrawSubFile::LDrawSubFile(
   const QStringList &contents,
   QDateTime   &datetime,
-  bool         unofficialPart)
+  bool         unofficialPart,
+  bool         generated)
 {
   _contents << contents;
   _datetime = datetime;
@@ -49,6 +50,7 @@ LDrawSubFile::LDrawSubFile(
   _mirrorRendered = false;
   _changedSinceLastWrite = true;
   _unofficialPart = unofficialPart;
+  _generated = generated;
 }
 
 void LDrawFile::empty()
@@ -63,7 +65,8 @@ void LDrawFile::empty()
 void LDrawFile::insert(const QString     &mcFileName, 
                       QStringList &contents, 
                       QDateTime   &datetime,
-                      bool         unofficialPart)
+                      bool         unofficialPart,
+                      bool         generated)
 {
   QString    fileName = mcFileName.toLower();
   QMap<QString, LDrawSubFile>::iterator i = _subFiles.find(fileName);
@@ -71,7 +74,7 @@ void LDrawFile::insert(const QString     &mcFileName,
   if (i != _subFiles.end()) {
     _subFiles.erase(i);
   }
-  LDrawSubFile subFile(contents,datetime,unofficialPart);
+  LDrawSubFile subFile(contents,datetime,unofficialPart,generated);
   _subFiles.insert(fileName,subFile);
   _subFileOrder << fileName;
 }
@@ -156,7 +159,7 @@ bool LDrawFile::isSubmodel(const QString &file)
   QString fileName = file.toLower();
   QMap<QString, LDrawSubFile>::iterator i = _subFiles.find(fileName);
   if (i != _subFiles.end()) {
-    return ! i.value()._unofficialPart;
+    return ! i.value()._unofficialPart && ! i.value()._generated;
   }
   return false;
 }
@@ -555,17 +558,24 @@ void LDrawFile::countInstances(const QString &mcFileName, bool isMirrored)
 {
   QString fileName = mcFileName.toLower();
   bool partsAdded = false;
+  bool buffExchg = false;
   
   QMap<QString, LDrawSubFile>::iterator f = _subFiles.find(fileName);
   if (f != _subFiles.end()) {
     if (f->_beenCounted) {
+      if (isMirrored) {
+        ++f->_mirrorInstances;
+      } else {
+        ++f->_instances;
+      }
       return;
     }
     int j = f->_contents.size();
     f->_numSteps = 0;
     for (int i = 0; i < j; i++) {
       QStringList tokens;
-      split(f->_contents[i],tokens);
+      QString line = f->_contents[i];
+      split(line,tokens);
       
       /* Sorry, but models that are callouts are not counted as instances */
       
@@ -574,6 +584,7 @@ void LDrawFile::countInstances(const QString &mcFileName, bool isMirrored)
           (tokens[1] == "LPUB" || tokens[1] == "!LPUB") && 
           tokens[2] == "CALLOUT" && 
           tokens[3] == "BEGIN") {
+        partsAdded = true;
 
         for (++i; i < j; i++) {
           split(f->_contents[i],tokens);
@@ -589,12 +600,16 @@ void LDrawFile::countInstances(const QString &mcFileName, bool isMirrored)
       } else if (tokens.size() >= 2 && tokens[0] == "0" && 
                 (tokens[1] == "STEP" || tokens[1] == "ROTSTEP")) {
         if (partsAdded) {
-          f->_numSteps += isMirrored && f->_mirrorInstances == 0 ||
-                        ! isMirrored && f->_instances == 0;
+          int incr = isMirrored && f->_mirrorInstances == 0 ||
+                     ! isMirrored && f->_instances == 0;
+          f->_numSteps += incr;
         }
         partsAdded = false;
+      } else if (tokens.size() == 4 && tokens[0] == "0"
+                                     && tokens[1] == "BUFEXCHG") {
+        buffExchg = tokens[3] == "STORE";
       } else if (tokens.size() == 15 && tokens[0] == "1") {
-        if (contains(tokens[14])) {
+        if (contains(tokens[14]) && ! buffExchg) {
           countInstances(tokens[14],mirrored(tokens));
         }
         partsAdded = true;
@@ -641,7 +656,7 @@ bool LDrawFile::saveMPDFile(const QString &fileName)
     for (int i = 0; i < _subFileOrder.size(); i++) {
       QString subFileName = _subFileOrder[i];
       QMap<QString, LDrawSubFile>::iterator f = _subFiles.find(subFileName);
-      if (f != _subFiles.end()) {
+      if (f != _subFiles.end() && ! f.value()._generated) {
         out << "0 FILE " << subFileName << endl;
         for (int j = 0; j < f.value()._contents.size(); j++) {
           out << f.value()._contents[j] << endl;
@@ -667,7 +682,7 @@ bool LDrawFile::saveLDRFile(const QString &fileName)
       file.setFileName(writeFileName);
 
       QMap<QString, LDrawSubFile>::iterator f = _subFiles.find(_subFileOrder[i]);
-      if (f != _subFiles.end()) {
+      if (f != _subFiles.end() && ! f.value()._generated) {
         if (f.value()._modified) {
           if (!file.open(QFile::WriteOnly | QFile::Text)) {
             QMessageBox::warning(NULL, 
@@ -844,4 +859,3 @@ bool isHeader(QString &line)
   
   return false;
 }
-   

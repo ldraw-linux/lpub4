@@ -116,12 +116,13 @@ int LDGLite::renderCsi(
         Meta        &meta)
 {
   int rc;
+  QStringList rotatedParts = csiParts;
 
   /* Create the CSI DAT file */
 
   QString ldrName = QDir::currentPath() + "/" + Paths::tmpDir + "/csi.ldr";
 
-  rc = rotateParts(addLine, meta.rotStep, csiParts, ldrName);
+  rc = rotateParts(addLine, meta.rotStep, rotatedParts, ldrName);
   if (rc < 0) {
     return rc;
   }
@@ -319,12 +320,13 @@ int LDView::renderCsi(
         Meta        &meta)
 {
   int rc;
+  QStringList rotatedParts = csiParts;
 
   /* Create the CSI DAT file */
 
   QString ldrName = QDir::currentPath() + "/" + Paths::tmpDir + "/csi.ldr";
 
-  rc = rotateParts(addLine,meta.rotStep, csiParts, ldrName);
+  rc = rotateParts(addLine,meta.rotStep, rotatedParts, ldrName);
 
   if (rc < 0) {
     return rc;

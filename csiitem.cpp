@@ -322,7 +322,7 @@ void CsiItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
   QGraphicsItem::mousePressEvent(event);
   positionChanged = false;
-  placeGrabbers();
+  //placeGrabbers();
   position = pos();
   gui->showLine(step->topOfStep());
 }
@@ -339,7 +339,7 @@ void CsiItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
         callout->drawTips(delta);
       }      
       positionChanged = true;
-      placeGrabbers();
+      //placeGrabbers();
     }
     QGraphicsPixmapItem::mouseMoveEvent(event);
   }

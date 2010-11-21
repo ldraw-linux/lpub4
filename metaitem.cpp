@@ -38,6 +38,7 @@
 #include <QDir>
 #include <QTextStream>
 #include <QFileDialog>
+#include <QMessageBox>
 #include "metaitem.h"
 #include "lpub.h"
 #include "color.h"
@@ -719,6 +720,26 @@ void MetaItem::convertToIgnore(Meta *meta)
   endMacro();
 }
 
+void MetaItem::convertToPart(Meta *meta)
+{
+  gui->maxPages = -1;
+
+  SubmodelStack tos = meta->submodelStack[meta->submodelStack.size() - 1];
+  Where calledOut(tos.modelName,tos.lineNumber);
+  Where here = calledOut+1;
+  QString line = gui->readLine(calledOut);
+  QStringList tokens;
+  split(line,tokens);
+  if (tokens.size() == 15) {
+    beginMacro("submodelIsPart");
+    insertMeta(here,      "0 !LPUB PART END");
+    insertMeta(here,      "0 !LPUB PLI END");
+    insertMeta(calledOut, "0 !LPUB PART BEGIN IGN");
+    insertMeta(calledOut, "0 !LPUB PLI BEGIN SUB " + tokens[14] + " " + tokens[1]);
+    endMacro();
+  }
+}
+
 /*******************************************************************************
  *
  *
@@ -915,6 +936,8 @@ void MetaItem::changePlacementOffset(
     } else if (type == CalloutType) {
       scanForward(defaultWhere,CalloutEndMask);
       --defaultWhere;
+    } else if (defaultWhere.modelName == gui->topLevelFile()) {
+      scanPastGlobal(defaultWhere);
     }
     appendMeta(defaultWhere,newMetaString);
   } else {
@@ -992,17 +1015,34 @@ void MetaItem::changeFont(
   bool           local)
 {
   bool ok;
-  QFont _font;
-  QFontDatabase _fdb;
+  QString fontName = font->value();
+  QString fontName2;
+  QFont _font(fontName);
 
-  _font.fromString(font->value());
+  QFont newFont;
+#if 0
+  QFontDialog *dialog = new QFontDialog(_font, gui);
+  int rc;
 
-  _font = QFontDialog::getFont(&ok,_font);
+  rc = dialog->exec();
 
-  if (ok) {
-    font->setValue(_font.toString());
-    setMetaTopOf(topOfStep,bottomOfStep,font,append,local);
+  if (rc == QDialog::Rejected) {
+    return;
   }
+  newFont = dialog->selectedFont();
+  delete dialog;
+
+#else
+
+  newFont = QFontDialog::getFont(&ok, _font, gui);
+  if ( ! ok) {
+    return;
+  }
+#endif
+  fontName2 = newFont.toString();
+
+  font->setValue(fontName2);
+  setMetaTopOf(topOfStep,bottomOfStep,font,append,local);
 }
 
 void MetaItem::changeColor(
@@ -1217,13 +1257,17 @@ void MetaItem::changeAlloc(
 
 bool MetaItem::okToInsertCoverPage()
 {
-  return gui->displayPageNum <= gui->firstStepPageNum ||
-            gui->displayPageNum >    gui->lastStepPageNum;
+  bool frontCover = gui->displayPageNum <= gui->firstStepPageNum;
+  bool backCover  = gui->displayPageNum >    gui->lastStepPageNum;;
+
+  return frontCover || backCover;
 }
 bool MetaItem::okToAppendCoverPage()
 {
-  return gui->displayPageNum < gui->firstStepPageNum ||
-            gui->displayPageNum >= gui->lastStepPageNum;
+  bool frontCover = gui->displayPageNum < gui->firstStepPageNum;
+  bool backCover = gui->displayPageNum >= gui->lastStepPageNum;
+
+  return frontCover || backCover;
 }
 
 void MetaItem::insertCoverPage()
@@ -1239,8 +1283,10 @@ void MetaItem::appendCoverPage()
 
 bool MetaItem::okToInsertNumberedPage()
 {
-  return gui->displayPageNum >= gui->firstStepPageNum &&
-            gui->displayPageNum <=  gui->lastStepPageNum;
+  bool frontCover = gui->displayPageNum >= gui->firstStepPageNum;
+  bool backCover  = gui->displayPageNum <=  gui->lastStepPageNum;
+
+  return frontCover || backCover;
 }
 bool MetaItem::okToAppendNumberedPage()
 {
@@ -1272,13 +1318,14 @@ void MetaItem::insertPage(QString &meta)
 
 void MetaItem::appendPage(QString &meta)
 {
-  Where bottomOfStep= gui->topOfPages[gui->displayPageNum+1];
+  Where bottomOfStep = gui->topOfPages[gui->displayPageNum+1];
   if (bottomOfStep.lineNumber == gui->subFileSize(bottomOfStep.modelName)) {
     --bottomOfStep;
   }
 
   beginMacro("appendPage");
   appendMeta(bottomOfStep,"0 STEP");
+  bottomOfStep++;
   appendMeta(bottomOfStep,meta);
   endMacro();
 }
@@ -1314,7 +1361,7 @@ void MetaItem::insertPicture()
 
 void MetaItem::insertText()
 {
-  QString meta = QString("0 !LPUB INSERT TEXT \"%1\" \"%2\" \"%3\"") .arg("TEST") .arg("Arial,20,-1,75,0,0,0,0,0") .arg("Black");
+  QString meta = QString("0 !LPUB INSERT TEXT \"%1\" \"%2\" \"%3\"") .arg("TEST") .arg("Arial,33,-1,255,75,0,0,0,0,0") .arg("Black");
   Where topOfStep = gui->topOfPages[gui->displayPageNum-1];
   scanPastGlobal(topOfStep);
   appendMeta(topOfStep,meta);
@@ -1680,34 +1727,43 @@ int MetaItem::nestCallouts(
 void MetaItem::convertToCallout(
   Meta *meta,
   const QString &modelName,
-  bool  isMirrored)
+  bool  isMirrored,
+  bool  assembled)
 {
   gui->maxPages = -1;
 
   beginMacro("convertToCallout");
-  addCalloutMetas(meta,modelName,isMirrored);
-  nestCallouts(meta,modelName,isMirrored);
+  addCalloutMetas(meta,modelName,isMirrored,assembled);
+  if ( ! assembled) {
+    nestCallouts(meta,modelName,isMirrored);
+  }
   endMacro();
 }
 
 void MetaItem::addCalloutMetas(
   Meta *meta,
   const QString &modelName,
-  bool  isMirrored)
+  bool  /* isMirrored */,
+  bool  assembled)
 {
   /* Scan the file and remove any multi-step stuff from the file
      we're converting to callout*/
 
-  int  numLines  = gui->subFileSize(modelName);
-  Where walk(modelName,numLines-1);
-  QRegExp ms("^\\s*0\\s+\\!*LPUB\\s+MULTI_STEP\\s+");
+  int   numLines;
+  Where walk(modelName,0);
 
-  do {
-    QString line = gui->readLine(walk);
-    if (line.contains(ms)) {
-      deleteMeta(walk);
-    }
-  } while (--walk >= 0);
+  if (! assembled) {
+    numLines = gui->subFileSize(modelName);
+    walk.lineNumber = numLines - 1;
+    QRegExp ms("^\\s*0\\s+\\!*LPUB\\s+MULTI_STEP\\s+");
+
+    do {
+      QString line = gui->readLine(walk);
+      if (line.contains(ms)) {
+        deleteMeta(walk);
+      }
+    } while (--walk >= 0);
+  }
 
   /* submodelStack tells us where this submodel is referenced in the
      parent file */
@@ -1729,6 +1785,8 @@ void MetaItem::addCalloutMetas(
     
   QString firstLine;
   Where lastInstance, firstInstance;
+
+  /* FIXME: separate submodels of different color ? */
 
   Where walkBack = calledOut;
   for (; walkBack.lineNumber >= 0; walkBack--) {
@@ -1800,8 +1858,46 @@ void MetaItem::addCalloutMetas(
       }
     }
   }
-  
+
   if (instanceCount) {
+
+    bool together;
+    bool rotated;
+
+    if (assembled) {
+      if (instanceCount > 1) {
+        QMessageBox::StandardButton pushed;
+        pushed = QMessageBox::question(gui,gui->tr("Multiple Copies"),
+                                           gui->tr("There are multiple copies, do you want them as one callout?"),
+                                           QMessageBox::Yes|QMessageBox::No,
+                                           QMessageBox::Yes);
+        together = pushed == QMessageBox::Yes;
+      } else {
+        together = false;
+      }
+
+      rotated = false;
+      if ( ! together) {
+        QMessageBox::StandardButton pushed;
+        if (instanceCount == 1) {
+          pushed = QMessageBox::question(gui,gui->tr("Rotate Submodel"),
+                                             gui->tr("Do you want it rotated?"),
+                                             QMessageBox::Yes|QMessageBox::No,
+                                             QMessageBox::Yes);
+        } else {
+          pushed = QMessageBox::question(gui,gui->tr("Rotate Submodels"),
+                                             gui->tr("Do you want them rotated?"),
+                                             QMessageBox::Yes|QMessageBox::No,
+                                             QMessageBox::Yes);
+        }
+        rotated = pushed == QMessageBox::Yes;
+      }
+    } else {
+      together = true;
+      rotated = false;
+    }
+
+    Where thisInstance = firstInstance;
     for (int i = 0; i < instanceCount; i++) {
       /* defaultPointerTip is the trick - it calculates the pointer tip
          for a given instance of a callout.  It does this by rendering
@@ -1818,12 +1914,46 @@ void MetaItem::addCalloutMetas(
                                          gui->isMirrored(argv));
 
       QString line = QString("%1 %2") .arg(offset.x()) .arg(offset.y());
-      appendMeta(lastInstance,"0 !LPUB CALLOUT POINTER CENTER 0 " + line);
 
-      lastInstance.lineNumber++;
+      if (together) {
+        appendMeta(lastInstance,"0 !LPUB CALLOUT POINTER CENTER 0 " + line);
+        ++lastInstance.lineNumber;
+      } else {
+        appendMeta(thisInstance,"0 !LPUB CALLOUT POINTER CENTER 0 " + line);
+        ++thisInstance.lineNumber;
+        appendMeta(thisInstance, "0 !LPUB CALLOUT END");
+        --thisInstance.lineNumber;
+        if (assembled) {
+          QString begin = "0 !LPUB CALLOUT BEGIN ";
+          if (rotated) {
+            begin += "ROTATED";
+          } else {
+            begin += "ASSEMBLED";
+          }
+          insertMeta(thisInstance,begin);
+          insertMeta(thisInstance,"0 !LPUB CALLOUT PLI PER_STEP LOCAL FALSE");
+          thisInstance.lineNumber += 5;
+        } else {
+          insertMeta(thisInstance,"0 !LPUB CALLOUT BEGIN");
+          thisInstance.lineNumber += 4;
+        }
+      }
     }
-    appendMeta(lastInstance, "0 !LPUB CALLOUT END");
-    insertMeta(firstInstance,"0 !LPUB CALLOUT BEGIN");
+    if (together) {
+      appendMeta(lastInstance, "0 !LPUB CALLOUT END");
+      if (assembled) {
+        QString begin = "0 !LPUB CALLOUT BEGIN ";
+        if (rotated) {
+          begin += "ROTATED";
+        } else {
+          begin += "ASSEMBLED";
+        }
+        insertMeta(firstInstance,begin);
+        insertMeta(firstInstance,"0 !LPUB CALLOUT PLI PER_STEP LOCAL FALSE");
+      } else {
+        insertMeta(firstInstance,"0 !LPUB CALLOUT BEGIN");
+      }
+    }
   }
 }
 
@@ -1850,11 +1980,16 @@ void MetaItem::removeCallout(
     }
   } while (rc != EndOfFileRc);
 
-  QRegExp callout("^\\s*0\\s+\\!*LPUB\\s+CALLOUT");
-  QString line;
+  Where start = topOfCallout;
+  QString line = gui->readLine(start);
+  QRegExp assembled("\\s*0\\s+\\!*LPUB\\s+CALLOUT\\s+BEGIN\\s+(ASSEMBLED|ROTATED)");
+  if (line.contains(assembled)) {
+    --start;
+  }
 
+  QRegExp callout("^\\s*0\\s+\\!*LPUB\\s+CALLOUT");
   for (walk = bottomOfCallout;
-       walk >= topOfCallout.lineNumber;
+       walk >= start.lineNumber;
        walk--)
   {
     line = gui->readLine(walk);
@@ -1885,7 +2020,7 @@ void MetaItem::unnestCallouts(
 
     if (argv.size() >= 2 && argv[0] == "0") {
       if (argv[1] == "LPUB" || argv[1] == "!LPUB") {
-        if (argv.size() >= 3 && argv[2] == "CALLOUT"
+        if (argv.size() == 4 && argv[2] == "CALLOUT"
                              && argv[3] == "BEGIN") {
           callout = true;
           deleteMeta(walk);

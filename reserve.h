@@ -42,7 +42,7 @@ class Reserve : public AbstractRangeElement {
       Where    &_here,
       LPubMeta &meta)
     {
-      here = _here;
+      top  = _here;
 
       float space;
       space = meta.reserve.value();
@@ -50,7 +50,7 @@ class Reserve : public AbstractRangeElement {
       if (meta.multiStep.alloc.value() == Horizontal) {
         setSize(int(meta.page.size.valuePixels(0) * space + 0.5),0);
       } else {
-        setSize(0,int(meta.page.size.valuePixels(0) * space + 0.5));
+        setSize(0,int(meta.page.size.valuePixels(1) * space + 0.5));
       }
     }
 };

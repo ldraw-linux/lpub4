@@ -99,16 +99,18 @@ class Callout : public Steps {
             void sizeitFreeform(int xx, int yy);
 
     void addGraphicsItems(
-      int   offsetX, int offsetY, QRect &csiRect,QGraphicsItem *parent);
+      int   offsetX, int offsetY, QRect &csiRect,QGraphicsItem *parent, bool movable);
 
     virtual void addGraphicsItems( 
-      AllocEnc, int x, int y, QGraphicsItem *parent);
+      AllocEnc, int x, int y, QGraphicsItem *parent, bool movable);
 
     void addGraphicsPointerItem(
       Pointer *pointer,QGraphicsItem *parent);
 
     virtual void drawTips(QPoint &delta);
     virtual void updatePointers(QPoint &delta);
+
+    QString wholeSubmodel(Meta &meta,QString &modelName,QString &addLine,int depth);
 };
 
 class CalloutInstanceItem : public NumberPlacementItem

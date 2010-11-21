@@ -266,7 +266,7 @@ void PageNumberItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 
       placement.setValue(placementData);
 
-      changePlacementOffset(page->topOfSteps(),&placement,StepNumberType);
+      changePlacementOffset(page->bottomOfSteps(),&placement,StepNumberType);
     }
   }
 }

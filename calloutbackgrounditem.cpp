@@ -89,41 +89,51 @@ void CalloutBackgroundItem::contextMenuEvent(
   placementAction->setWhatsThis(
     commonMenus.naturalLanguagePlacementWhatsThis(CalloutType,placementData,name));
 
-  QAction *allocAction;
+  QAction *allocAction = NULL;
+  QAction *perStepAction = NULL;
 
-  if (callout->allocType() == Vertical) {
-    allocAction = menu.addAction("Display as Rows");
-    allocAction->setWhatsThis(
-      "Display as Rows:\n"
-      "  Change this whole set of steps from columns of steps\n"
-      "  to rows of steps");
-  } else {
-    allocAction = menu.addAction("Display as Columns");
-    allocAction->setWhatsThis(
-    "Display as Columns:\n"
-    "  Change this whole set of steps from rows of steps\n"
-    "  to columns of steps");
-  }
+  if (calloutMeta.begin.value() == CalloutBeginMeta::Unassembled) {
 
-  QAction *perStepAction;
-  if (callout->meta.LPub.callout.pli.perStep.value()) {
-    perStepAction = menu.addAction("No Parts List per Step");
-  } else {
-    perStepAction = menu.addAction("Parts List per Step");
+    if (callout->allocType() == Vertical) {
+      allocAction = menu.addAction("Display as Rows");
+      allocAction->setWhatsThis(
+        "Display as Rows:\n"
+        "  Change this whole set of steps from columns of steps\n"
+        "  to rows of steps");
+    } else {
+      allocAction = menu.addAction("Display as Columns");
+      allocAction->setWhatsThis(
+      "Display as Columns:\n"
+      "  Change this whole set of steps from rows of steps\n"
+      "  to columns of steps");
+    }
+
+    if (callout->meta.LPub.callout.pli.perStep.value()) {
+      perStepAction = menu.addAction("No Parts List per Step");
+    } else {
+      perStepAction = menu.addAction("Parts List per Step");
+    }
   }
 
   QAction *editBackgroundAction = commonMenus.backgroundMenu(menu,co);
   QAction *editBorderAction     = commonMenus.borderMenu(menu,co);
   QAction *marginAction         = commonMenus.marginMenu(menu,co);
 
-  QAction *unCalloutAction      = menu.addAction("Unpack Callout");
+  QAction *unCalloutAction;
+
+  if (calloutMeta.begin.value() == CalloutBeginMeta::Unassembled) {
+    unCalloutAction = menu.addAction("Unpack Callout");
+  } else {
+    unCalloutAction = menu.addAction("Remove Callout");
+  }
 
   QAction *addPointerAction = menu.addAction("Add Arrow");
   addPointerAction->setWhatsThis("Add arrow from this callout to the step where it is used");
 
   QAction *selectedAction = menu.exec(event->screenPos());
 
-  if (selectedAction == addPointerAction) {
+  if (selectedAction == NULL) {
+  } else if (selectedAction == addPointerAction) {
     Pointer *pointer = new Pointer(callout->topOfCallout(),calloutMeta);
     CalloutPointerItem *calloutPointer = 
       new CalloutPointerItem(callout,&callout->meta,pointer,this,view);

@@ -57,6 +57,7 @@ Highlighter::Highlighter(QTextDocument *parent)
        << "\\bPRINT[^\n]*"
        << "\\bSAVE[^\n]*"
        << "\\bSTEP[^\n]*\\b"
+       << "\\bWRITE[^\n]*\\b"
 
        << "\\bOfficial[^\n]*"
        << "\\bUnofficial[^\n]*" 
@@ -95,7 +96,7 @@ Highlighter::Highlighter(QTextDocument *parent)
     LPubMetaPatterns
       << "\\bLPUB\\b[^\n]*"
       << "\\b!LPUB\\b[^\n]*"
-	  << "\\bPLIST\\b[^\n]*";
+      << "\\bPLIST\\b[^\n]*";
 
     foreach (QString pattern, LPubMetaPatterns) {
         rule.pattern = QRegExp(pattern);

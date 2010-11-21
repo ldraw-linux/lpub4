@@ -427,6 +427,11 @@ public:
   {
     return ldrawFile.isUnofficialPart(name);
   }
+  void insertGeneratedModel(const QString &name,
+                                  QStringList &csiParts) {
+    QDateTime date;
+    ldrawFile.insert(name,csiParts,date,false,true);
+  }
   Where &topOfPage();
   Where &bottomOfPage();
 
@@ -452,6 +457,7 @@ public:
   void appendLine (const Where &here, const QString &line, QUndoCommand *parent = 0);
   void replaceLine(const Where &here, const QString &line, QUndoCommand *parent = 0);
   void deleteLine (const Where &here, QUndoCommand *parent = 0);
+  QString topLevelFile();
   void beginMacro (QString name);
   void endMacro   ();
 
@@ -631,8 +637,8 @@ private slots:
     void zoomIn(LGraphicsView *view);
     void zoomOut(LGraphicsView *view);
 
-	void GetPixelDimensions(float &, float &);
-	void GetPagePixelDimensions(float &, float &, QPrinter::PaperSize &, QPrinter::Orientation &);
+    void GetPixelDimensions(float &, float &);
+    void GetPagePixelDimensions(float &, float &, QPrinter::PaperSize &, QPrinter::Orientation &);
     void printToFile();
     void exportAs(QString &);
     void exportAsPng();

@@ -46,7 +46,9 @@ void PageBackgroundItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
   QAction *addNextAction = NULL;
   QAction *addPrevAction = NULL;
   QAction *calloutAction = NULL;
+  QAction *assembledAction = NULL;
   QAction *ignoreAction = NULL;
+  QAction *partAction = NULL;
   Step      *lastStep = NULL;
   Step      *firstStep = NULL;
 
@@ -83,10 +85,19 @@ void PageBackgroundItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
       calloutAction = menu.addAction("Convert to Callout");
       calloutAction->setWhatsThis("Convert to Callout:\n"
         "  A callout shows how to build these steps in a picture next\n"
-        "  to where it is added the the set you are building");
+        "  to where it is added to the set you are building");
+      assembledAction = menu.addAction("Add Assembled Image to Parent Page");
+      assembledAction->setWhatsThis("Add Assembled Image to Parent Page\n"
+        "  A callout like image is added to the page where this submodel\n"
+        "  is added to the set you are building");
   
       ignoreAction  = menu.addAction("Ignore this submodel");
       ignoreAction->setWhatsThis("Stops these steps from showing up in your instructions");
+
+      partAction = menu.addAction("Treat as Part");
+      partAction->setWhatsThis("Treating this submodel as a part means these steps go away, "
+                               "and the submodel is displayed as a part in the parent step's "
+                               "part list image.");
     }
 
     QAction *selectedAction     = menu.exec(event->screenPos());
@@ -96,9 +107,13 @@ void PageBackgroundItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
     }
 
     if (selectedAction == calloutAction) {
-      convertToCallout(&page->meta, page->bottom.modelName, page->isMirrored);
+      convertToCallout(&page->meta, page->bottom.modelName, page->isMirrored, false);
+    } else if (selectedAction == assembledAction) {
+      convertToCallout(&page->meta, page->bottom.modelName, page->isMirrored, true);
     } else if (selectedAction == ignoreAction) {
       convertToIgnore(&page->meta);
+    } else if (selectedAction == partAction) {
+      convertToPart(&page->meta);
 
     } else if (selectedAction == addNextAction) {
       addNextMultiStep(lastStep->topOfSteps(),lastStep->bottomOfSteps());

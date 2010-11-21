@@ -46,6 +46,7 @@
 #include <QFontDialog>
 #include <QColorDialog>
 #include <QFileDialog>
+#include <QString>
 
 #include "meta.h"
 #include "metatypes.h"
@@ -604,9 +605,11 @@ void NumberGui::browseFont(bool clicked)
 {
   clicked = clicked;
   QFont font;
-  font.fromString(meta->font.valueFoo());
+  QString fontName = meta->font.valueFoo();
+  font.fromString(fontName);
   bool ok;
   font = QFontDialog::getFont(&ok,font);
+  fontName = font.toString();
 
   if (ok) {
     meta->font.setValue(font.toString());
@@ -705,6 +708,8 @@ BackgroundGui::BackgroundGui(
   
   colorLabel = new QLabel(parent);
   colorLabel->setFrameStyle(QFrame::Sunken|QFrame::Panel);
+  colorLabel->setPalette(QPalette(color));
+  colorLabel->setAutoFillBackground(true);
   colorLabel->setPalette(QPalette(color));
   colorLabel->setAutoFillBackground(true);
   grid->addWidget(colorLabel,0,1);

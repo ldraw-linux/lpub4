@@ -58,8 +58,8 @@ class MetaItem
 public:
   void setGlobalMeta(QString &topLevelFile, LeafMeta *leaf);
 
-  void convertToCallout(       Meta *, const QString &, bool isMirrored);
-  void addCalloutMetas(        Meta *, const QString &, bool isMirrored);
+  void convertToCallout(       Meta *, const QString &, bool isMirrored, bool assembled = false);
+  void addCalloutMetas(        Meta *, const QString &, bool isMirrored, bool assembled = false);
   int  nestCallouts(           Meta *, const QString &, bool isMirrored);
   QString makeMonoName(const QString &fileName, QString &color);
   int monoColorSubmodel(QString &modelName,QString &outFileName, QString &color);
@@ -96,6 +96,7 @@ public:
   void stepGroupAddToNext(     const Where &);
 
   void convertToIgnore(        Meta *);
+  void convertToPart(          Meta *);
 
   void changePlacement( PlacementType parentType,
                         PlacementType placedType, 

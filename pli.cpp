@@ -1726,6 +1726,7 @@ void PGraphicsPixmapItem::contextMenuEvent(
   }
 
   if (selectedAction == marginAction) {
+
     changeMargins("Parts List Part Margins",
                   pli->topOfStep(),
                   pli->bottomOfStep(),

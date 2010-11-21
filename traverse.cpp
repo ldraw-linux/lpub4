@@ -295,7 +295,9 @@ int Gui::drawPage(
       if (color == "16") {
         QStringList addTokens;
         split(addLine,addTokens);
-        tokens[1] = addTokens[1];
+        if (addTokens.size() == 15) {
+          tokens[1] = addTokens[1];
+        }
         line = tokens.join(" ");
         color = tokens[1];
       }
@@ -359,17 +361,24 @@ int Gui::drawPage(
 
       if (ldrawFile.isSubmodel(type) && callout) {
 
+        CalloutBeginMeta::CalloutMode mode = callout->meta.LPub.callout.begin.value();
+
         /* we are a callout, so gather all the steps within the callout */
         /* start with new meta, but no rotation step */
 
-        if (callout->bottom.modelName != type) {
+        QString thisType = type;
 
-          Where current2(type,0);
-          skipHeader(current2);          
+        if (mode != CalloutBeginMeta::Unassembled) {
+          thisType = callout->wholeSubmodel(steps->meta,type,line,0);
+        }
+
+        if (callout->bottom.modelName != thisType) {
+
+          Where current2(thisType,0);
+          skipHeader(current2);
           callout->meta.rotStep.clear();
           SubmodelStack tos(current.modelName,current.lineNumber,stepNum);
           callout->meta.submodelStack << tos;
-
           Meta saveMeta = callout->meta;
           callout->meta.LPub.pli.constrain.resetToDefault();
 
@@ -381,7 +390,6 @@ int Gui::drawPage(
           QHash<QString, QStringList> calloutBfx;
 
           int rc;
-
           rc = drawPage(
                  view,
                  scene,
@@ -402,7 +410,8 @@ int Gui::drawPage(
 
           if (callout->meta.LPub.pli.show.value() &&
             ! callout->meta.LPub.callout.pli.perStep.value() &&
-            ! pliIgnore && ! partIgnore && ! synthBegin) {
+            ! pliIgnore && ! partIgnore && ! synthBegin &&
+              mode == CalloutBeginMeta::Unassembled) {
 
             pliParts += calloutParts;
           }
@@ -413,7 +422,9 @@ int Gui::drawPage(
           }
         } else {
           callout->instances++;
-          pliParts += calloutParts;
+          if (mode == CalloutBeginMeta::Unassembled) {
+            pliParts += calloutParts;
+          }
         }
 
         /* remind user what file we're working on */
@@ -727,7 +738,7 @@ int Gui::drawPage(
 
         /* finished off a multiStep */
         case StepGroupEndRc:
-          if (multiStep) {
+          if (multiStep && steps->list.size()) {
             // save the current meta as the meta for step group
             // PLI for non-pli-per-step
             if (partsAdded) {
@@ -747,7 +758,7 @@ int Gui::drawPage(
             steps->placement = steps->meta.LPub.multiStep.placement;
             showLine(steps->topOfSteps());
             
-            bool endOfSubmodel = stepNum == ldrawFile.numSteps(current.modelName);
+            bool endOfSubmodel = stepNum >= ldrawFile.numSteps(current.modelName);
             int  instances = ldrawFile.instances(current.modelName,isMirrored);
             addGraphicsPageItems(steps, coverPage, endOfSubmodel,instances, view, scene,printing);
             return HitEndOfPage;
@@ -858,18 +869,14 @@ int Gui::drawPage(
             }
 
             if ( ! multiStep && ! calledOut) {
-
               /*
                * Simple step
                */
-              if (steps->list.size() == 0) {
-                steps->relativeType = PageType;
-              }
               steps->placement = steps->meta.LPub.assem.placement;
               showLine(topOfStep);
 
               int  numSteps = ldrawFile.numSteps(current.modelName);
-              bool endOfSubmodel = numSteps == 0 || stepNum == numSteps;
+              bool endOfSubmodel = numSteps == 0 || stepNum >= numSteps;
               int  instances = ldrawFile.instances(current.modelName,isMirrored);
 
               addGraphicsPageItems(steps,coverPage,endOfSubmodel,instances,view,scene,printing);
@@ -935,6 +942,7 @@ int Gui::findPage(
   bool bfxStore1  = false;
   bool bfxStore2  = false;
   bool stepGroupBfxStore2 = false;
+  bool callout    = false;
   
   QStringList bfxParts;
   QStringList saveBfxParts;
@@ -990,7 +998,9 @@ int Gui::findPage(
 
         if (tokens[1] == "16") {
           split(addLine,addTokens);
-          tokens[1] = addTokens[1];
+          if (addTokens.size() == 15) {
+            tokens[1] = addTokens[1];
+          }
           line = tokens.join(" ");
         }
 
@@ -1009,11 +1019,11 @@ int Gui::findPage(
           
           QString    type = token[token.size()-1];
           
-          // isMirrored = ldrawFile.mirrored(token);
           bool contains   = ldrawFile.isSubmodel(type);
           bool rendered   = ldrawFile.rendered(type,ldrawFile.mirrored(token));
+          CalloutBeginMeta::CalloutMode mode = meta.LPub.callout.begin.value();
                     
-          if (contains) {
+          if (contains && (!callout || callout && mode != CalloutBeginMeta::Unassembled)) {
             if ( ! rendered && (! bfxStore2 || ! bfxParts.contains(token[1]+type))) {
 
               isMirrored = ldrawFile.mirrored(token);
@@ -1112,7 +1122,7 @@ int Gui::findPage(
                   saveBfx        = bfx;
                   saveBfxParts   = bfxParts;
                   saveStepPageNum = stepPageNum;
-                  bfxParts.clear();
+                  // bfxParts.clear();
                 }
                 saveCurrent    = current;
                 saveRotStep = meta.rotStep;
@@ -1128,6 +1138,7 @@ int Gui::findPage(
                   }
                   page.meta.pop();
                   page.meta.rotStep = saveRotStep;
+                  page.meta.rotStep = meta.rotStep;
                   QStringList pliParts;
                                     
                   (void) drawPage(view,
@@ -1168,23 +1179,11 @@ int Gui::findPage(
           break;  
 
           case CalloutBeginRc:
-            ++current;
-            {
-              Meta tmpMeta;
-              while (rc != CalloutEndRc && current.lineNumber < numLines) {
-                line = ldrawFile.readLine(current.modelName,current.lineNumber++).trimmed();
-                rc = OkRc;
-                if (line[0] == '0') {
-                  rc = tmpMeta.parse(line,current);
-                } else if (line[0] >= '1' && line[0] <= '5') {
-                  if (line[0] == '1') {
-                    partsAdded++;
-                    csiParts << line;
-                  }
-                }
-              }
-            }
-            --current;
+            callout = true;
+          break;
+
+          case CalloutEndRc:
+            callout = false;
           break;
           
           case InsertCoverPageRc:
@@ -1370,8 +1369,9 @@ int Gui::getBOMParts(
 
               getBOMParts(current2,line,pliParts);
             } else {
+              QString newLine = Pli::partLine(line,current,meta);
 
-              pliParts << Pli::partLine(line,current,meta);
+              pliParts << newLine;
             }
           }
           if (bfxStore1) {
@@ -1518,7 +1518,7 @@ void Gui::attitudeAdjustment()
           argv[0] == "0" &&
          (argv[1] == "LPUB" || argv[1] == "!LPUB") &&
           argv[2] == "CALLOUT") {
-        if (argv[3] == "BEGIN") {
+        if (argv.size() == 4 && argv[3] == "BEGIN") {
           callout = true;
           pending.clear();
         } else if (argv[3] == "END") {

@@ -361,7 +361,8 @@ protected:
   void contextMenuEvent(QGraphicsSceneContextMenuEvent *event);
 };
 
-class PGraphicsPixmapItem : public ResizePixmapItem
+class PGraphicsPixmapItem : public QGraphicsPixmapItem,
+                            public MetaItem  // ResizePixmapItem
 {
 public:
   PGraphicsPixmapItem(

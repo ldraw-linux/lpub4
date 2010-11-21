@@ -35,18 +35,7 @@
 
 void PlacementNum::sizeit()
 {
-  if (number < 1) {
-    size[0] = 0;
-    size[1] = 0;
-  } else {
-    QString string = QString("%1x") .arg(number);
-    QFont   f;
-    f.fromString(font);
-    QFontMetrics fm(f);
-    QSize fSize = fm.size(0,string);
-    size[0] = fSize.width();
-    size[1] = fSize.height();
-  }
+  sizeit("%1");
 }
 
 void PlacementNum::sizeit(QString format)
@@ -400,8 +389,8 @@ void Placement::placeRelative(
       break;
     }
   }
-  them->loc[XX] += size[XX] * int(them->placement.value().offsets[XX]);
-  them->loc[YY] += size[YY] * int(them->placement.value().offsets[YY]);
+  them->loc[XX] += int(size[XX] * them->placement.value().offsets[XX]);
+  them->loc[YY] += int(size[YY] * them->placement.value().offsets[YY]);
 }
 
 void Placement::justifyX(

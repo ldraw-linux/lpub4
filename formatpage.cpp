@@ -315,7 +315,7 @@ int Gui::addGraphicsPageItems(
       instanceCount = new SubmodelInstanceCount(
         page,
         page->meta.LPub.page.instanceCount,
-        "x%d  ",
+        "x%d ",
         instances,
         pageBg);
         
@@ -342,10 +342,11 @@ int Gui::addGraphicsPageItems(
                         
         PlacementData placementData = instanceCount->placement.value();
         
-        if (placementData.relativeTo == PageType) {
-          plPage.placeRelative(instanceCount);
-        } else {
+        if (placementData.relativeTo == PageNumberType &&
+            page->meta.LPub.page.dpn.value()) {
           pageNumber->placeRelative(instanceCount);
+        } else {
+          plPage.placeRelative(instanceCount);
         }
         instanceCount->setPos(instanceCount->loc[XX],instanceCount->loc[YY]);
       }
@@ -435,7 +436,7 @@ int Gui::addGraphicsPageItems(
   
   // If the page contains a single step then process it here
 
-  if (page->relativeType == SingleStepType) {
+  if (page->relativeType == SingleStepType && page->list.size()) {
     if (page->list.size()) {
       Range *range = dynamic_cast<Range *>(page->list[0]);
       if (range->relativeType == RangeType) {        
@@ -463,11 +464,11 @@ int Gui::addGraphicsPageItems(
                                   step->submodelLevel,
                                   pageBg,
                                   page->relativeType);
-          step->csiItem->assign(&step->csiPlacement);  
         
           if (step->csiItem == NULL) {
             exit(-1);
           }
+          step->csiItem->assign(&step->csiPlacement);
 
           step->csiItem->boundingSize[XX] = step->csiItem->size[XX];
           step->csiItem->boundingSize[YY] = step->csiItem->size[YY];
@@ -505,7 +506,7 @@ int Gui::addGraphicsPageItems(
           // place the PLI relative to the entire step's box
           step->pli.setPos(step->pli.loc[XX],
                            step->pli.loc[YY]);
-    
+
           // allocate QGraphicsTextItem for step number
       
           if ( ! step->onlyChild()) {
@@ -520,6 +521,8 @@ int Gui::addGraphicsPageItems(
                                step->stepNumber.loc[YY]);
             stepNumber->relativeToSize[0] = step->stepNumber.relativeToSize[0];
             stepNumber->relativeToSize[1] = step->stepNumber.relativeToSize[1];
+          } else if (step->pli.background) {
+            step->pli.background->setFlag(QGraphicsItem::ItemIsMovable,false);
           }
               
           // foreach callout
@@ -534,7 +537,7 @@ int Gui::addGraphicsPageItems(
                              
             // add the callout's graphics items to the scene
 
-            callout->addGraphicsItems(0,0,csiRect,pageBg);
+            callout->addGraphicsItems(0,0,csiRect,pageBg,true);
 
             // foreach pointer
             //   add the pointer to the graphics scene

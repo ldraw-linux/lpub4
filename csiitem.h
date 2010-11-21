@@ -37,7 +37,8 @@
 
 class Step;
 
-class CsiItem : public ResizePixmapItem {
+class CsiItem : public ResizePixmapItem
+{
 public:
   Meta          *meta;
   AssemMeta     *assem;

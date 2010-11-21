@@ -100,6 +100,7 @@ Step::Step(
   } else {
     csiPlacement.margin     = meta.LPub.assem.margin;         // assembly meta's
     csiPlacement.placement  = meta.LPub.assem.placement;
+    placement               = meta.LPub.assem.placement;
     pli.margin             = meta.LPub.assem.margin;
     pli.placement          = meta.LPub.pli.placement;
     stepNumber.font         = meta.LPub.stepNumber.font.valueFoo();
@@ -890,7 +891,8 @@ void Step::addGraphicsItems(
   int             offsetY,
   Meta           *meta,
   PlacementType   parentRelativeType,
-  QGraphicsItem  *parent)
+  QGraphicsItem  *parent,
+  bool            movable)
 {
   offsetX += loc[XX];
   offsetY += loc[YY];
@@ -904,7 +906,8 @@ void Step::addGraphicsItems(
   csiItem->assign(&csiPlacement);
   csiItem->setPos(offsetX + csiItem->loc[XX],
                   offsetY + csiItem->loc[YY]);
-  
+  csiItem->setFlag(QGraphicsItem::ItemIsMovable,movable);
+
   if (pli.tsize()) {
     pli.addPli(submodelLevel, parent);
     pli.setPos(offsetX + pli.loc[XX],
@@ -930,6 +933,8 @@ void Step::addGraphicsItems(
     }
     sn->setPos(offsetX + stepNumber.loc[XX],
                offsetY + stepNumber.loc[YY]);
+
+    sn->setFlag(QGraphicsItem::ItemIsMovable,movable);
   }
 
   for (int i = 0; i < list.size(); i++) {
@@ -942,9 +947,13 @@ void Step::addGraphicsItems(
                csiItem->size[YY]);
 
     if (placementData.relativeTo == CalloutType) {
-      callout->addGraphicsItems(offsetX-loc[XX],offsetY-loc[YY],rect,parent);
+      callout->addGraphicsItems(offsetX-loc[XX],offsetY-loc[YY],rect,parent, movable);
     } else {
-      callout->addGraphicsItems(offsetX,offsetY,rect,parent);
+      bool callout_movable = movable;
+      if (parentRelativeType == StepGroupType && placementData.relativeTo == StepGroupType) {
+        callout_movable = true;
+      }
+      callout->addGraphicsItems(offsetX,offsetY,rect,parent, callout_movable);
     }  
     for (int i = 0; i < callout->pointerList.size(); i++) {
       Pointer *pointer = callout->pointerList[i];

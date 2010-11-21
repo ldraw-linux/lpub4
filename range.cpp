@@ -459,7 +459,7 @@ void Range::addGraphicsItems(
   for (int i = 0; i < list.size(); i++) {
     if (list[i]->relativeType == StepType) {
       Step *step = dynamic_cast<Step *>(list[i]);
-      step->addGraphicsItems(xx+loc[XX],yy+loc[YY],meta,parentRelativeType,parent);
+      step->addGraphicsItems(xx+loc[XX],yy+loc[YY],meta,parentRelativeType,parent,false);
     }
   }
 }

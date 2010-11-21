@@ -779,10 +779,12 @@ void Gui::enableActions2()
     MetaItem mi;
     insertCoverPageAct->setEnabled(mi.okToInsertCoverPage());
     appendCoverPageAct->setEnabled(mi.okToAppendCoverPage());
-    insertNumberedPageAct->setEnabled(mi.okToInsertNumberedPage());
-    appendNumberedPageAct->setEnabled(mi.okToAppendNumberedPage());
+    bool frontCover = mi.okToInsertNumberedPage();
+    insertNumberedPageAct->setEnabled(frontCover);
+    bool backCover = mi.okToAppendNumberedPage();
+    appendNumberedPageAct->setEnabled(backCover);
     deletePageAct->setEnabled(page.list.size() == 0);
-    addBomAct->setEnabled(page.coverPage);
+    addBomAct->setEnabled(frontCover||backCover);
     addTextAct->setEnabled(false);
 }
 

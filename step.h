@@ -113,6 +113,6 @@ class Step : public AbstractRangeElement
       int &left,
       int &right);
       
-    virtual void addGraphicsItems(int ox, int oy, Meta *, PlacementType, QGraphicsItem *);
+    virtual void addGraphicsItems(int ox, int oy, Meta *, PlacementType, QGraphicsItem *, bool);
 };
 #endif

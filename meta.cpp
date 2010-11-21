@@ -1825,15 +1825,15 @@ PageMeta::PageMeta() : BranchMeta()
   togglePnPlacement.setValue(false);
   number.placement.setValue(BottomRightInsideCorner,PageType);
   number.color.setValue("black");
-  number.font.setValuePoints("Arial,20,-1,75,0,0,0,0,0");
-  instanceCount.placement.setValue(BottomRightInsideCorner,PageType);
+  number.font.setValuePoints("Arial,18,-1,255,75,0,0,0,0,0");
+  instanceCount.placement.setValue(LeftBottomOutside,PageNumberType);
   instanceCount.color.setValue("black");
-  instanceCount.font.setValuePoints("Arial,48,-1,75,0,0,0,0,0");
+  instanceCount.font.setValuePoints("Arial,48,-1,255,75,0,0,0,0,0");
 
-  subModelColor.setValue("0xffffff");
-  subModelColor.setValue("0xffffcc");
-  subModelColor.setValue("0xffcccc");
-  subModelColor.setValue("0xccccff");
+  subModelColor.setValue("#ffffff");
+  subModelColor.setValue("#ffffcc");
+  subModelColor.setValue("#ffcccc");
+  subModelColor.setValue("#ccccff");
 }
 
 void PageMeta::init(BranchMeta *parent, QString name)
@@ -1883,7 +1883,7 @@ PliMeta::PliMeta() : BranchMeta()
   borderData.margin[0] = DEFAULT_MARGIN;
   borderData.margin[1] = DEFAULT_MARGIN;
   border.setValueInches(borderData);
-  background.setValue(BackgroundData::BgColor,"0xffffff");
+  background.setValue(BackgroundData::BgColor,"#ffffff");
   margin.setValuesInches(0.0f,0.0f);
   // instance - default
   // annotate - default
@@ -1897,12 +1897,14 @@ PliMeta::PliMeta() : BranchMeta()
   ldgliteParms.setValue("-fh -w1");
   ldviewParms.setValue("");
   includeSubs.setValue(false);
-  subModelColor.setValue("0xffffff");
-  subModelColor.setValue("0xffffcc");
-  subModelColor.setValue("0xffcccc");
-  subModelColor.setValue("0xccccff");
+  subModelColor.setValue("#ffffff");
+  subModelColor.setValue("#ffffcc");
+  subModelColor.setValue("#ffcccc");
+  subModelColor.setValue("#ccccff");
   part.margin.setValuesInches(0.05f,0.03f);
+  instance.font.setValuePoints("Arial,24,-1,255,75,0,0,0,0,0");
   instance.margin.setValuesInches(0.0f,0.0f);
+  annotate.font.setValuePoints("Arial,24,-1,255,75,0,0,0,0,0");
   annotate.margin.setValuesInches(0.0f,0.0f);
   margin.setValuesInches(DEFAULT_MARGIN,DEFAULT_MARGIN);
   pack.setValue(true);
@@ -1929,6 +1931,7 @@ void PliMeta::init(BranchMeta *parent, QString name)
   part         .init(this,"PART");
   begin        .init(this,"BEGIN");
   end          .init(this,"END",           PliEndRc);
+  sort         .init(this,"SORT");
 }
 
 /* ------------------ */ 
@@ -1944,7 +1947,7 @@ BomMeta::BomMeta() : PliMeta()
   borderData.margin[0] = DEFAULT_MARGIN;
   borderData.margin[1] = DEFAULT_MARGIN;
   border.setValueInches(borderData);
-  background.setValue(BackgroundData::BgColor,"0xffffff");
+  background.setValue(BackgroundData::BgColor,"#ffffff");
   margin.setValuesInches(0.0f,0.0f);
   // instance - default
   // annotate - default
@@ -1958,12 +1961,14 @@ BomMeta::BomMeta() : PliMeta()
   ldgliteParms.setValue("-fh -w1");
   ldviewParms.setValue("");
   includeSubs.setValue(false);
-  subModelColor.setValue("0xffffff");
-  subModelColor.setValue("0xffffcc");
-  subModelColor.setValue("0xffcccc");
-  subModelColor.setValue("0xccccff");
+  subModelColor.setValue("#ffffff");
+  subModelColor.setValue("#ffffcc");
+  subModelColor.setValue("#ffcccc");
+  subModelColor.setValue("#ccccff");
   part.margin.setValuesInches(0.05f,0.03f);
+  instance.font.setValuePoints("Arial,18,-1,255,75,0,0,0,0,0");
   instance.margin.setValuesInches(0.0f,0.0f);
+  annotate.font.setValuePoints("Arial,18,-1,255,75,0,0,0,0,0");
   annotate.margin.setValuesInches(0.0f,0.0f);
   pack.setValue(false);
   sort.setValue(true);
@@ -1990,12 +1995,54 @@ void BomMeta::init(BranchMeta *parent, QString name)
   begin        .init(this,"BEGIN");
   begin.ignore.rc = BomBeginIgnRc;
   end          .init(this,"END",BomEndRc);
+  sort         .init(this,"SORT");
 }
 
 /* ------------------ */ 
 
+Rc CalloutBeginMeta::parse(QStringList &argv, int index,Where &here)
+{
+  Rc rc = FailureRc;
+  int argc = argv.size() - index;
+
+  if (argc == 0) {
+    rc = CalloutBeginRc;
+    mode = Unassembled;
+  } else if (argc == 1 && argv[index] == "ASSEMBLED") {
+    rc = CalloutBeginRc;
+    mode = Assembled;
+  } else if (argc == 1 && argv[index] == "ROTATED") {
+    rc = CalloutBeginRc;
+    mode = Rotated;
+  }
+  if (rc != FailureRc) {
+    _here[0] = here;
+    _here[1] = here;
+  }
+  return rc;
+}
+
+QString CalloutBeginMeta::format(bool local, bool global)
+{
+  QString foo;
+
+  if (mode == Assembled) {
+    foo = "ASSEMBLED";
+  } else if (mode == Rotated) {
+    foo = "ROTATED";
+  }
+  return LeafMeta::format(local,global,foo);
+}
+
+void CalloutBeginMeta::doc(QStringList &out, QString preamble)
+{
+  out << preamble;
+  out << preamble + " WHOLE";
+}
+
 CalloutMeta::CalloutMeta() : BranchMeta()
 {
+  stepNum.font.setValuePoints("Arial,18,-1,255,75,0,0,0,0,0");
   stepNum.color.setValue("black");
   // stepNum.font - default
   stepNum.placement.setValue(LeftTopOutside,PartsListType);
@@ -2009,14 +2056,15 @@ CalloutMeta::CalloutMeta() : BranchMeta()
   borderData.margin[1] = DEFAULT_MARGIN;
   border.setValueInches(borderData);
   // subModelFont - default
+  instance.font.setValuePoints("Arial,24,-1,255,75,0,0,0,0,0");
   instance.color.setValue("black");
   // instance - default
   instance.placement.setValue(RightBottomOutside, CalloutType);
   background.setValue(BackgroundData::BgSubmodelColor);
-  subModelColor.setValue("0xffffff");
-  subModelColor.setValue("0xffffcc");
-  subModelColor.setValue("0xffcccc");
-  subModelColor.setValue("0xccccff");
+  subModelColor.setValue("#ffffff");
+  subModelColor.setValue("#ffffcc");
+  subModelColor.setValue("#ffcccc");
+  subModelColor.setValue("#ccccff");
   subModelFontColor.setValue("black");
   placement.setValue(RightOutside,CsiType);
   // freeform
@@ -2146,7 +2194,7 @@ void NoStepMeta::init(
   AbstractMeta::init(parent,name);
   rc = _rc;
 }
-Rc NoStepMeta::parse(QStringList &argv, int index,Where &here)
+Rc NoStepMeta::parse(QStringList &argv, int index,Where & /* here */ )
 {
   if (index == argv.size()) {
     return rc;
@@ -2189,7 +2237,8 @@ void LPubMeta::init(BranchMeta *parent, QString name)
   resolution             .init(this,"RESOLUTION");
   insert                 .init(this,"INSERT");
   include                .init(this,"INCLUDE", IncludeRc);
-  nostep                 .init(this,"NOSTEP",NoStepRc);
+  nostep                 .init(this,"NOSTEP",NoStepRc);\
+  reserve.setRange(0.0,1000000.0);
 }
 
 /* ------------------ */ 

@@ -59,10 +59,6 @@ void Preferences::ldrawPreferences(bool force)
   QSettings settings(LPUB,SETTINGS);
   QString const ldrawKey("LDrawDir");
   
-  if (ldrawPath == "") {
-    ldrawPath = " ";
-  }
-  
   if (settings.contains(ldrawKey)) {
     ldrawPath = settings.value(ldrawKey).toString();
   }
@@ -75,11 +71,23 @@ void Preferences::ldrawPreferences(bool force)
     }
   }
 
-  ldrawPath = QFileDialog::getExistingDirectory(NULL,
-                QFileDialog::tr("Locate LDraw Directory"),
-                "/",
-                QFileDialog::ShowDirsOnly | 
-                QFileDialog::DontResolveSymlinks);
+  ldrawPath = "c:/LDraw";
+
+  QDir guesses;
+  guesses.setPath(ldrawPath);
+  if ( ! guesses.exists()) {
+    ldrawPath = "c:/Program Files/LDraw";
+    guesses.setPath(ldrawPath);
+    if ( ! guesses.exists()) {
+
+      ldrawPath = QFileDialog::getExistingDirectory(NULL,
+                  QFileDialog::tr("Locate LDraw Directory"),
+                  "/",
+                  QFileDialog::ShowDirsOnly |
+                  QFileDialog::DontResolveSymlinks);
+    }
+  }
+
   fileInfo.setFile(ldrawPath);
 
   if (fileInfo.exists()) {
@@ -205,11 +213,9 @@ void Preferences::unitsPreferences()
 {
   QSettings settings(LPUB,SETTINGS);
   if ( ! settings.contains("Centimeters")) {
-    QMessageBox::information(NULL,
-      QMessageBox::tr("LPub"),
-      QMessageBox::tr("You need to specify a preference for inches or centimeters"),
-      QMessageBox::Ok);
-    getPreferences();
+    QVariant value(false);
+    preferCentimeters = false;
+    settings.setValue("Centimeters",value);
   } else {
     preferCentimeters = settings.value("Centimeters").toBool();
   }

@@ -39,6 +39,8 @@
 #include "lpub.h"
 #include "placementdialog.h"
 #include "commonmenus.h"
+#include "paths.h"
+#include "render.h"
 
 //---------------------------------------------------------------------------
 
@@ -114,7 +116,7 @@ void Callout::sizeIt()
     instanceCount.placement = meta.LPub.callout.instance.placement;
     instanceCount.margin    = meta.LPub.callout.instance.margin;
     instanceCount.font = meta.LPub.callout.instance.font.valueFoo();
-    instanceCount.sizeit();
+    instanceCount.sizeit("%1x");
     
     bool fit = true;
 
@@ -202,21 +204,28 @@ void Callout::sizeIt()
 
       int a = instanceWidth  * size[YY];
       int b = instanceHeight * size[XX];
+      int max;
 
       if (a < b) {
         instanceCount.loc[XX] = size[XX];
-        instanceCount.loc[YY] = instanceTop;
-        size[XX] += instanceCount.size[XX];
+        max = (instanceCount.margin.valuePixels(YY) > borderData.margin[YY]) ? instanceCount.margin.valuePixels(YY) : borderData.margin[YY];
+        instanceCount.loc[YY] = instanceTop + int(max + borderData.thickness);
+        max = (instanceCount.margin.valuePixels(XX) > borderData.margin[XX]) ? instanceCount.margin.valuePixels(XX) : borderData.margin[XX];
+        size[XX] += instanceCount.size[XX] + max;
+        size[YY] += int(borderData.margin[YY]);
       } else {
-        instanceCount.loc[XX] = instanceLeft;
+        max = (instanceCount.margin.valuePixels(XX) > borderData.margin[XX]) ? instanceCount.margin.valuePixels(XX) : borderData.margin[XX];
+        instanceCount.loc[XX] = instanceLeft + int(max + borderData.thickness);
         instanceCount.loc[YY] = size[YY];
-        size[YY] += instanceCount.size[YY];
+        max = (instanceCount.margin.valuePixels(YY) > borderData.margin[YY]) ? instanceCount.margin.valuePixels(YY) : borderData.margin[YY];
+        size[YY] += instanceCount.size[YY] + max;
+        size[XX] += int(borderData.margin[XX]);
       }
     }
+  } else {
+    size[XX] += int(borderData.margin[XX]);
+    size[YY] += int(borderData.margin[YY]);
   }
-
-  size[XX] += int(borderData.margin[XX]);
-  size[YY] += int(borderData.margin[YY]);
 
   size[XX] += int(borderData.thickness);
   size[YY] += int(borderData.thickness);
@@ -226,7 +235,8 @@ void Callout::addGraphicsItems(
   int            offsetX,
   int            offsetY,
   QRect         &csiRect,
-  QGraphicsItem *parent)
+  QGraphicsItem *parent,
+  bool           movable)
 {
   PlacementData placementData = placement.value();
   
@@ -253,6 +263,7 @@ void Callout::addGraphicsItems(
                      view);
 
   background->setPos(newLoc[XX],newLoc[YY]);
+  background->setFlag(QGraphicsItem::ItemIsMovable, movable);
 
   int saveX = loc[XX];
   int saveY = loc[YY];
@@ -263,9 +274,9 @@ void Callout::addGraphicsItems(
   loc[YY] = int(borderData.margin[1]);
  
   if (meta.LPub.callout.alloc.value() == Vertical) {
-    addGraphicsItems(Vertical,0,int(borderData.thickness),background);
+    addGraphicsItems(Vertical,0,int(borderData.thickness),background, movable);
   } else {
-    addGraphicsItems(Horizontal,int(borderData.thickness),0,background);
+    addGraphicsItems(Horizontal,int(borderData.thickness),0,background, movable);
   }
   loc[XX] = saveX;
   loc[YY] = saveY;
@@ -275,7 +286,8 @@ void Callout::addGraphicsItems(
   AllocEnc       allocEnc,
   int            offsetX,
   int            offsetY,
-  QGraphicsItem *parent)
+  QGraphicsItem *parent,
+  bool           movable)
 {
   int margin;
 
@@ -312,6 +324,7 @@ void Callout::addGraphicsItems(
                           offsetX,
                           offsetY,
                           parent);
+  background->setFlag(QGraphicsItem::ItemIsMovable,movable);
 }
 
 void Callout::sizeitFreeform(
@@ -458,4 +471,54 @@ void CalloutInstanceItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     placement.setValue(placementData);
     changePlacementOffset(callout->topOfCallout(),&placement,CalloutType,false);
   }
+}
+
+
+QString Callout::wholeSubmodel(
+  Meta    & meta,
+  QString &modelName,
+  QString & addLine,
+  int depth)
+{
+  const QString wholeName = "whole_" + modelName;
+  if (gui->subFileSize(wholeName)) {
+    return wholeName;
+  }
+
+  int numLines = gui->subFileSize(modelName);
+  QStringList csiParts;
+  Where walk(modelName,0);
+
+  for ( ; walk < numLines; walk++) {
+    QString line = gui->readLine(walk);
+    QStringList tokens;
+    split(line,tokens);
+    int num_tokens = tokens.size();
+
+    if (num_tokens > 0 && tokens[0] == "0") {
+      if (num_tokens == 2 && tokens[1] == "STEP") {
+        continue;
+      }
+      if (num_tokens > 1 && tokens[1] == "ROTSTEP") {
+        continue;
+      }
+      if (num_tokens > 2 && (tokens[1] == "LPUB" || tokens[1] == "!LPUB") && tokens[2] == "MULTI_STEP") {
+        continue;
+      }
+    } else if (num_tokens == 15 && tokens[0] == "1") {
+      if (gui->isSubmodel(tokens[14])) {
+        tokens[14] = wholeSubmodel(meta,tokens[14],line,depth + 1);
+        line = tokens.join(" ");
+      }
+    }
+    csiParts << line;
+  }
+  
+  if (meta.LPub.callout.begin.value() == CalloutBeginMeta::Rotated && depth == 0) {
+    Render::rotateParts(addLine,meta.rotStep,csiParts,false);
+  }
+
+  gui->insertGeneratedModel(wholeName,csiParts);
+
+  return wholeName;
 }

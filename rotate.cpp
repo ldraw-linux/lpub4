@@ -146,14 +146,52 @@ void rotateMatrix(
   }
 }
 
-
 int Render::rotateParts(
   const QString     &addLine,
         RotStepMeta &rotStep,
   const QStringList &parts,
         QString     &ldrName)
 {
-//  QMessageBox::information(NULL,"rotate",addLine);
+  QStringList rotatedParts = parts;
+
+  rotateParts(addLine,rotStep,rotatedParts);
+
+  QFile file(ldrName);
+  if ( ! file.open(QFile::WriteOnly | QFile::Text)) {
+    QMessageBox::warning(NULL,
+                         QMessageBox::tr("LPub"),
+                         QMessageBox::tr("Cannot open file %1 for writing:\n%2")
+                         .arg(ldrName) .arg(file.errorString()));
+    return -1;
+  }
+
+  QTextStream out(&file);
+
+  RotStepData rotStepData = rotStep.value();
+  QString rotsComment = QString("0 // ROTSTEP %1 %2 %3 %4")
+                                .arg(rotStepData.type)
+                                .arg(rotStepData.rots[0])
+                                .arg(rotStepData.rots[1])
+                                .arg(rotStepData.rots[2]);
+                                
+  out << rotsComment << endl;
+
+  for (int i = 0; i < rotatedParts.size(); i++) {
+    QString line = rotatedParts[i];
+    out << line << endl;
+  }
+
+  file.close();
+
+  return 0;
+}
+
+int Render::rotateParts(
+  const QString     &addLine,
+        RotStepMeta &rotStep,
+        QStringList &parts,
+        bool         defaultRot)
+{
   double min[3], max[3];
 
   min[0] = 1e23, max[0] = -1e23,
@@ -162,9 +200,15 @@ int Render::rotateParts(
 
   double defaultViewMatrix[3][3], defaultViewRots[3];
 
-  defaultViewRots[0] = 23;
-  defaultViewRots[1] = 45;
-  defaultViewRots[2] = 0;
+  if (defaultRot) {
+    defaultViewRots[0] = 23;
+    defaultViewRots[1] = 45;
+    defaultViewRots[2] = 0;
+  } else {
+    defaultViewRots[0] = 0;
+    defaultViewRots[1] = 0;
+    defaultViewRots[2] = 0;
+  }
 
   matrixMakeRot(defaultViewMatrix,defaultViewRots);
 
@@ -183,13 +227,13 @@ int Render::rotateParts(
       matrixMult3(rm,defaultViewMatrix,rotStepMatrix);
     }
   }
-  
+
   QStringList tokens;
-	
+
   split(addLine,tokens);
 
   if (addLine.size() && tokens.size() == 15 && tokens[0] == "1") {
-    if (LDrawFile::mirrored(tokens)) {
+    if (LDrawFile::mirrored(tokens) || ! defaultRot) {
 
       double alm[3][3];
 
@@ -198,9 +242,9 @@ int Render::rotateParts(
         alm[(token-5) / 3][(token-5) % 3] = value;
       }
       matrixMult(rm,alm);
-	  }
+    }
   }
-  
+
   // rotate all the parts
 
   QString processed_parts;
@@ -209,9 +253,9 @@ int Render::rotateParts(
 
     QString line = parts[i];
     QStringList tokens;
- 
+
     split(line,tokens);
-    
+
     if (tokens.size() < 2) {
       continue;
     }
@@ -315,29 +359,10 @@ int Render::rotateParts(
     center[d] = (min[d] + max[d])/2;
   }
 
-  QFile file(ldrName);
-  if ( ! file.open(QFile::WriteOnly | QFile::Text)) {
-    QMessageBox::warning(NULL,
-                         QMessageBox::tr("LPub"),
-                         QMessageBox::tr("Cannot open file %1 for writing:\n%2")
-                         .arg(ldrName) .arg(file.errorString()));
-    return -1;
-  }
-
-  QTextStream out(&file);
-  
-  QString rotsComment = QString("0 // ROTSTEP %1 %2 %3 %4")
-                                .arg(rotStepData.type)
-                                .arg(rotStepData.rots[0])
-                                .arg(rotStepData.rots[1])
-                                .arg(rotStepData.rots[2]);
-                                
-  out << rotsComment << endl;
-
   for (int i = 0; i < parts.size(); i++) {
     QString line = parts[i];
     QStringList tokens;
- 
+
     split(line,tokens);
 
     if (tokens.size() < 2) {
@@ -379,8 +404,7 @@ int Render::rotateParts(
                    .arg(pm[2][0]) .arg(pm[2][1]) .arg(pm[2][2])
                    .arg(tokens[tokens.size()-1]);
 
-
-      out << t1 << endl;
+      parts[i] = t1;
     } else if (tokens[0] == "2") {
 
       int c = 2;
@@ -400,7 +424,7 @@ int Render::rotateParts(
                    .arg(tokens[1])
                    .arg( v[0][0]) .arg( v[0][1]) .arg( v[0][2])
                    .arg( v[1][0]) .arg( v[1][1]) .arg( v[1][2]);
-      out << t1 << endl;
+      parts[i] = t1;
     } else if (tokens[0] == "3") {
 
       int c = 2;
@@ -422,7 +446,7 @@ int Render::rotateParts(
                      .arg( v[0][0]) .arg( v[0][1]) .arg( v[0][2])
                      .arg( v[1][0]) .arg( v[1][1]) .arg( v[1][2])
                      .arg( v[2][0]) .arg( v[2][1]) .arg( v[2][2]);
-      out << t1 << endl;
+      parts[i] = t1;
     } else if (tokens[0] == "4") {
 
       int c = 2;
@@ -446,7 +470,7 @@ int Render::rotateParts(
                      .arg( v[1][0]) .arg( v[1][1]) .arg( v[1][2])
                      .arg( v[2][0]) .arg( v[2][1]) .arg( v[2][2])
                      .arg( v[3][0]) .arg( v[3][1]) .arg( v[3][2]);
-      out << t1 << endl;
+      parts[i] = t1;
     } else if (tokens[0] == "5") {
 
       int c = 2;
@@ -470,16 +494,8 @@ int Render::rotateParts(
                      .arg( v[1][0]) .arg( v[1][1]) .arg( v[1][2])
                      .arg( v[2][0]) .arg( v[2][1]) .arg( v[2][2])
                      .arg( v[3][0]) .arg( v[3][1]) .arg( v[3][2]);
- 
-      out << t1 << endl;
-
-    } else if (tokens[0] == "0" && tokens[1] == "STEP") {
-      out << line << endl;
+      parts[i] = t1;
     }
   }
-
-  file.close();
-
   return 0;
 }
-

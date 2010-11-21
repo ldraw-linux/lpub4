@@ -17,6 +17,11 @@
 #include "lpub.h"
 #include "commands.h"
 
+QString Gui::topLevelFile()
+{
+  return ldrawFile.topLevelFile();
+}
+
 void Gui::insertLine(const Where &here, const QString &line, QUndoCommand *parent)
 {
   if (ldrawFile.contains(here.modelName)) {

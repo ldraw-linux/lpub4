@@ -379,6 +379,7 @@ class FloatPairMeta : public RcMeta {
 protected:
   float     _value[2][2];
   float     _min,_max;
+  bool      _default;
 public:
   int       _fieldWidth;
   int       _precision;
@@ -392,6 +393,7 @@ public:
     _fieldWidth = 6;
     _precision = 4;
     _inputMask = "9.9999";
+    _default = true;
   }
   FloatPairMeta(const FloatPairMeta &rhs) : RcMeta(rhs)
   {
@@ -413,11 +415,13 @@ public:
   void setValue(int which, float v)
   {
     _value[pushed][which] = v;
+    _default = false;
   }
   void setValues(float v1, float v2)
   {
     _value[pushed][0] = v1;
     _value[pushed][1] = v2;
+    _default = false;
   }
   void setRange(
     float min,
@@ -434,6 +438,10 @@ public:
     _fieldWidth = fieldWidth;
     _precision  = precision;
     _inputMask  = inputMask;
+  }
+  bool isDefault()
+  {
+    return _default;
   }
   virtual ~FloatPairMeta() {};
   virtual void    init(BranchMeta *parent, 
@@ -732,7 +740,7 @@ public:
   }
   FontMeta() : StringMeta()
   {
-    _value[0] = "Arial,16,-1,75,0,0,0,0,0";
+    _value[0] = "Arial,33,-1,255,75,0,0,0,0,0";
   }
   FontMeta(const FontMeta &rhs) : StringMeta(rhs) {}
   virtual ~FontMeta() {}
@@ -1510,6 +1518,36 @@ public:
 
 /*------------------------*/
 
+// 0 LPUB CALLOUT BEGIN
+
+class CalloutBeginMeta : public RcMeta
+{
+
+private:
+public:
+  enum CalloutMode { Unassembled, Assembled, Rotated } mode;
+
+  CalloutMode value()
+  {
+    return mode;
+  }
+  CalloutBeginMeta() : RcMeta()
+  {
+    mode = Unassembled;
+  }
+  CalloutBeginMeta(const CalloutBeginMeta &rhs) : RcMeta(rhs)
+  {
+    mode = rhs.mode;
+  }
+
+  virtual ~CalloutBeginMeta() {}
+  Rc parse(QStringList &argv, int index, Where &here);
+  QString format(bool,bool);
+  virtual void doc(QStringList &out, QString preamble);
+};
+
+/*------------------------*/
+
 /* This class is to parse MLCad's rotation step */
 
 class RotStepMeta : public LeafMeta
@@ -1681,7 +1719,7 @@ public:
   NumberPlacementMeta stepNum;
   SepMeta        sep;
   FreeFormMeta   freeform;
-  RcMeta         begin;
+  CalloutBeginMeta begin;
   RcMeta         divider;
   RcMeta         end;
   AllocMeta      alloc;

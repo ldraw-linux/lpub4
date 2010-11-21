@@ -52,6 +52,7 @@ class LDrawSubFile {
     bool        _mirrorRendered;
     bool        _changedSinceLastWrite;
     bool        _unofficialPart;
+    bool        _generated;
 
     LDrawSubFile()
     {
@@ -60,7 +61,8 @@ class LDrawSubFile {
     LDrawSubFile(
       const QStringList &contents,
             QDateTime   &datetime,
-            bool         unofficialPart);
+            bool         unofficialPart,
+            bool         generated = false);
     ~LDrawSubFile()
     {
       _contents.clear();
@@ -88,7 +90,8 @@ class LDrawFile {
     void insert(const QString     &fileName, 
                       QStringList &contents, 
                       QDateTime   &datetime,
-                      bool         unofficialPart);
+                      bool         unofficialPart,
+                      bool         generated = false);
 
     int  size(const QString &fileName);
     void empty();

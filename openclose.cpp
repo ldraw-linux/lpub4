@@ -105,13 +105,30 @@ void Gui::saveAs()
     }
   }
 #endif
-  QString fileName = QFileDialog::getSaveFileName(this);
+  QString fileName = QFileDialog::getSaveFileName(this,tr("Save As"),curFile,tr("LDraw (*.mpd *.ldr *.dat)"));
   if (fileName.isEmpty()) {
     return;
   }
-  saveFile(fileName); 
-  closeFile();
-  openFile(fileName);
+  QFileInfo fileInfo(fileName);
+  QString suffix = fileInfo.suffix();
+
+  if (suffix == "mpd" ||
+      suffix == "MPD" ||
+      suffix == "ldr" ||
+      suffix == "LDR" ||
+      suffix == "dat" ||
+      suffix == "DAT") {
+
+    saveFile(fileName);
+    closeFile();
+    openFile(fileName);
+    displayPage();
+  } else {
+    QMessageBox::warning(NULL,QMessageBox::tr("LPub"),
+                              QMessageBox::tr("Invalid LDraw suffix %1.  File not saved.")
+                                .arg(suffix));
+
+  }
 #ifdef WATCHER
   if (curFile != "") {
     if (isMpd()) {
