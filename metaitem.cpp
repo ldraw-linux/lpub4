@@ -2278,6 +2278,7 @@ QPointF MetaItem::defaultPointerTip(
     pixmap.load(imageName);
 
     QImage color = pixmap.toImage();
+
     QImage alpha = pixmap.toImage();
 
     int width = color.width();
@@ -2324,3 +2325,25 @@ QPointF MetaItem::defaultPointerTip(
   return QPointF(0.5,0.5);
 }
 
+void MetaItem::removeLPubFormatting()
+{
+  beginMacro("RemoveLPubFormatting");
+  QStringList fileList = gui->fileList();
+
+  for (int i = 0; i < fileList.size(); ++i) {
+    Where walk(fileList[i],0);
+    int numLines = gui->subFileSize(fileList[i]);
+    for (; walk.lineNumber < numLines; ) {
+      QString line = gui->readLine(walk);
+      QStringList argv;
+      split(line,argv);
+      if (argv.size() > 2 && argv[0] == "0" && (argv[1] == "LPUB" || argv[1] == "!LPUB")) {
+        gui->deleteLine(walk);
+        --numLines;
+      } else {
+        ++walk;
+      }
+    }
+  }
+  endMacro();
+}

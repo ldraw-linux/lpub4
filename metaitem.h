@@ -255,6 +255,8 @@ public:
   void changeConstraintStepGroup(Where topOfStep, Where bottomOfStep, ConstrainMeta *constraint, int append = 1);
   void changeInsertOffset(InsertMeta *placement);
 
+  void removeLPubFormatting();
+
   void replaceMeta(const Where &here, const QString &line);
   void insertMeta( const Where &here, const QString &line);
   void appendMeta( const Where &here, const QString &line);

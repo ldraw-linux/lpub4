@@ -100,6 +100,14 @@ void Gui::addBom()
   mi.insertBOM();
 }
 
+void Gui::removeLPubFormatting()
+{
+  MetaItem mi;
+  mi.removeLPubFormatting();
+  displayPageNum = 1;
+  displayPage();
+}
+
 void Gui::displayPage()
 {
   if (macroNesting == 0) {
@@ -638,6 +646,11 @@ void Gui::createActions()
     addBomAct->setEnabled(false);
     connect(addBomAct, SIGNAL(triggered()), this, SLOT(addBom()));
 
+    removeLPubFormattingAct = new QAction(tr("Remove LPub Formatting"),this);
+    removeLPubFormattingAct->setStatusTip(tr("Remove all LPub metacommands from all files"));
+    removeLPubFormattingAct->setEnabled(false);
+    connect(removeLPubFormattingAct, SIGNAL(triggered()), this, SLOT(removeLPubFormatting()));
+
     // fitWidth,fitVisible,actualSize
 
     fitWidthAct = new QAction(QIcon(":/images/fitWidth.png"), tr("Fit Width"), this);
@@ -772,6 +785,7 @@ void Gui::enableActions()
     multiStepSetupAct->setEnabled(true);
     projectSetupAct->setEnabled(true);
     addPictureAct->setEnabled(true);
+    removeLPubFormattingAct->setEnabled(true);
 }
 
 void Gui::enableActions2()
@@ -825,6 +839,7 @@ void Gui::createMenus()
     editMenu->addAction(addPictureAct);
     editMenu->addAction(addTextAct);
     editMenu->addAction(addBomAct);
+    editMenu->addAction(removeLPubFormattingAct);
 
     viewMenu = menuBar()->addMenu(tr("&View"));
     viewMenu->addAction(fitWidthAct);

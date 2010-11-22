@@ -399,6 +399,31 @@ public:
   
   FitMode fitMode;         // how to fit the scene into the view
 
+  Where &topOfPage();
+  Where &bottomOfPage();
+
+  void    changePageNum(int offset)
+  {
+    displayPageNum += offset;
+  }
+  void    displayPage();
+
+  /* We need to send ourselved these, to eliminate resursion and the model
+   * changing under foot */
+  void drawPage(                   // this is the workhorse for preparing a
+    LGraphicsView *view,           // page for viewing.  It depends heavily
+    QGraphicsScene *scene,         // on the next two functions
+    bool            printing);
+
+  /*--------------------------------------------------------------------*
+   * These are the work horses for back annotating user changes into    *
+   * the LDraw files                                                    *
+   *--------------------------------------------------------------------*/
+
+  QStringList fileList()
+  {
+    return ldrawFile.subFileOrder();
+  }
   int subFileSize(const QString &modelName)
   {
     return ldrawFile.size(modelName);
@@ -432,27 +457,6 @@ public:
     QDateTime date;
     ldrawFile.insert(name,csiParts,date,false,true);
   }
-  Where &topOfPage();
-  Where &bottomOfPage();
-
-  void    changePageNum(int offset)
-  {
-    displayPageNum += offset;
-  }
-  void    displayPage();
-
-  /* We need to send ourselved these, to eliminate resursion and the model
-   * changing under foot */
-  void drawPage(                   // this is the workhorse for preparing a
-    LGraphicsView *view,           // page for viewing.  It depends heavily
-    QGraphicsScene *scene,         // on the next two functions
-    bool            printing);
-
-  /*--------------------------------------------------------------------*
-   * These are the work horses for back annotating user changes into    *
-   * the LDraw files                                                    *
-   *--------------------------------------------------------------------*/
-
   void insertLine (const Where &here, const QString &line, QUndoCommand *parent = 0);
   void appendLine (const Where &here, const QString &line, QUndoCommand *parent = 0);
   void replaceLine(const Where &here, const QString &line, QUndoCommand *parent = 0);
@@ -624,6 +628,7 @@ private slots:
     void addPicture();
     void addText();
     void addBom();
+    void removeLPubFormatting();
 
     void nextPage();
     void prevPage();
@@ -734,6 +739,7 @@ private:
   QAction  *addPictureAct;
   QAction  *addTextAct;
   QAction  *addBomAct;
+  QAction  *removeLPubFormattingAct;
 
   // view
   // zoom toolbar
