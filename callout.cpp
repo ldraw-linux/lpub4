@@ -53,6 +53,9 @@ Callout::Callout(
   meta = _meta;
   instances = 1;
   shared = false;
+  if (meta.LPub.callout.begin.mode != CalloutBeginMeta::Unassembled) {
+    meta.LPub.callout.pli.perStep.setValue(false);
+  }
 }
 
 Callout::~Callout()

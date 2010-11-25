@@ -865,6 +865,9 @@ void Step::placeit(
         case PartsListType:
         case StepNumberType:
           callout->loc[y] = origins[callout->tbl[y]];
+          if (callout->shared) {
+            callout->loc[y] -= callout->margin.value(y) - 500;
+          }
 
           if (y == YY) {
             callout->justifyY(origins[callout->tbl[y]],
@@ -953,7 +956,7 @@ void Step::addGraphicsItems(
       if (parentRelativeType == StepGroupType && placementData.relativeTo == StepGroupType) {
         callout_movable = true;
       }
-      callout->addGraphicsItems(offsetX,offsetY,rect,parent, callout_movable);
+      callout->addGraphicsItems(callout->shared ? 0 : offsetX,offsetY,rect,parent, callout_movable);
     }  
     for (int i = 0; i < callout->pointerList.size(); i++) {
       Pointer *pointer = callout->pointerList[i];
