@@ -1514,8 +1514,8 @@ void PliBackgroundItem::contextMenuEvent(
                       pli->perStep,
                       PartsListType,
                       me+" Placement",
-                      top,
-                      bottom,
+                      topOfStep,
+                      bottomOfStep,
                      &pli->placement);
     } else if (selectedAction == marginAction) {
       changeMargins(me+" Margins",

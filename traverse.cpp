@@ -352,7 +352,7 @@ int Gui::drawPage(
       // in a sequence of steps.  This used to be commented out which
       // means it didn't work in some cases, but we need it in step
       // group cases, so.... bfxStore1 && multiStep (was just bfxStore1)
-        if (bfxStore1 && multiStep) {
+        if (bfxStore1 && (multiStep || calledOut)) {
           bfxParts << colorType;
         }
       }
@@ -1342,8 +1342,10 @@ int Gui::getBOMParts(
 
           if (token[1] == "16") {
             split(addLine,addToken);
-            token[1] = addToken[1];
-            line = token.join(" ");
+            if (addToken.size() == 15) {
+              token[1] = addToken[1];
+              line = token.join(" ");
+            }
           }
 
           /*
