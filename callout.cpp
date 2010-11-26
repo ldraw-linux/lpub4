@@ -483,10 +483,18 @@ QString Callout::wholeSubmodel(
   QString & addLine,
   int depth)
 {
-  const QString wholeName = "whole_" + modelName;
-  if (gui->subFileSize(wholeName)) {
-    return wholeName;
+  QStringList argv;
+  split(addLine,argv);
+  QString mirrored;
+  bool isMirrored = LDrawFile::mirrored(argv);
+
+  if (isMirrored) {
+    mirrored = "mirrored_";
   }
+  const QString wholeName = "whole_" + mirrored + modelName;
+  //if (gui->subFileSize(wholeName)) {
+    //return wholeName;
+  //}
 
   int numLines = gui->subFileSize(modelName);
   QStringList csiParts;
@@ -517,7 +525,7 @@ QString Callout::wholeSubmodel(
     csiParts << line;
   }
   
-  if (meta.LPub.callout.begin.value() == CalloutBeginMeta::Rotated && depth == 0) {
+  if ( ! isMirrored && meta.LPub.callout.begin.value() == CalloutBeginMeta::Rotated && depth == 0) {
     Render::rotateParts(addLine,meta.rotStep,csiParts,false);
   }
 
