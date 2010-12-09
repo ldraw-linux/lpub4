@@ -249,6 +249,7 @@ int Gui::drawPage(
   bool        bfxLoad     = false;
   int         numLines = ldrawFile.size(current.modelName);
   bool        firstStep   = true;
+  bool        noStep      = false;
   
   steps->isMirrored = isMirrored;
   
@@ -307,7 +308,7 @@ int Gui::drawPage(
 
       /* since we have a part usage, we have a valid step */
 
-      if (step == NULL) {
+      if (step == NULL  && ! noStep) {
         if (range == NULL) {
           range = newRange(steps,calledOut);
           steps->append(range);
@@ -359,7 +360,7 @@ int Gui::drawPage(
 
       /* if it is a sub-model, then process it */
 
-      if (ldrawFile.isSubmodel(type) && callout) {
+      if (ldrawFile.isSubmodel(type) && callout && ! noStep) {
 
         CalloutBeginMeta::CalloutMode mode = callout->meta.LPub.callout.begin.value();
 
@@ -369,7 +370,29 @@ int Gui::drawPage(
         QString thisType = type;
 
         if (mode != CalloutBeginMeta::Unassembled) {
-          thisType = callout->wholeSubmodel(steps->meta,type,line,0);
+          /* So, we process callouts in-line, not when we finally hit the STEP or
+             ROTSTEP that ends this processing, but for ASSEMBLED or ROTATED
+             callouts, the ROTSTEP state affects the results, so we have to search
+             forward until we hit STEP or ROTSTEP to know how the submodel might
+             want to be rotated.  Also, for submodel's who's scale is different
+             than their parent's scale, we want to scan ahead and find out the
+             parent's scale and "render" the submodels at the parent's scale */
+          Meta tmpMeta = curMeta;
+          Where walk = current;
+          for (++walk; walk < numLines; ++walk) {
+            QStringList tokens;
+            QString scanLine = ldrawFile.readLine(walk.modelName,walk.lineNumber);
+            split(scanLine,tokens);
+            if (tokens.size() > 2 && tokens[0] == "0") {
+              Rc rc = tmpMeta.parse(scanLine,walk,false);
+              if (rc == StepRc || rc == RotStepRc) {
+                break;
+              }
+            }
+          }
+          callout->meta.rotStep = tmpMeta.rotStep;
+          callout->meta.LPub.assem.modelScale = tmpMeta.LPub.assem.modelScale;
+          thisType = callout->wholeSubmodel(callout->meta,type,line,0);
         }
 
         if (callout->bottom.modelName != thisType) {
@@ -443,7 +466,7 @@ int Gui::drawPage(
       /* we've got a line, triangle or polygon, so add it to the list */
       /* and make sure we know we have a step */
 
-      if (step == NULL) {
+      if (step == NULL && ! noStep) {
         if (range == NULL) {            
           range = newRange(steps,calledOut);
           steps->append(range);
@@ -523,7 +546,7 @@ int Gui::drawPage(
             pliParts << Pli::partLine(addPart,current,curMeta);
           }
 
-          if (step == NULL) {
+          if (step == NULL && ! noStep) {
             if (range == NULL) {
               range = newRange(steps,calledOut);
               steps->append(range);
@@ -554,7 +577,7 @@ int Gui::drawPage(
             pliParts << Pli::partLine(addPart,current,curMeta);
           }
 
-          if (step == NULL) {
+          if (step == NULL && ! noStep) {
             if (range == NULL) {
               range = newRange(steps,calledOut);
               steps->append(range);
@@ -633,7 +656,7 @@ int Gui::drawPage(
             }
             csiParts = newCSIParts;
 
-            if (step == NULL) {
+            if (step == NULL && ! noStep) {
               if (range == NULL) {
                 range = newRange(steps,calledOut);
                 steps->append(range);
@@ -765,11 +788,16 @@ int Gui::drawPage(
           }
         break;
 
+        case NoStepRc:
+          noStep = true;
+        break;
+
         /* we're hit some kind of step, or implied step and end of file */
         case EndOfFileRc:
         case RotStepRc:
         case StepRc:
-          if ( ! partsAdded && bfxLoad) {  // special case of no parts added, but BFX load
+          if ( ! partsAdded && bfxLoad && ! noStep) {
+            // special case of no parts added, but BFX load sans NOSTEP
             if (step == NULL) {
               if (range == NULL) {
                 range = newRange(steps,calledOut);
@@ -791,7 +819,7 @@ int Gui::drawPage(
               steps->meta);
             partsAdded = true; // OK, so this is a lie, but it works
           }
-          if (partsAdded) {
+          if (partsAdded && ! noStep) {
             if (firstStep) {
               steps->stepGroupMeta = curMeta;
               firstStep = false;
@@ -897,6 +925,7 @@ int Gui::drawPage(
           }
           inserts.clear();
           steps->setBottomOfSteps(current);
+          noStep = false;
         break;
         case RangeErrorRc:
           showLine(current);
@@ -963,6 +992,7 @@ int Gui::findPage(
   Where       stepGroupCurrent;
   int         saveStepNumber = 1;
               saveStepPageNum = stepPageNum;
+  bool        noStep = false;
               
   Meta        saveMeta = meta;
 
@@ -1111,7 +1141,7 @@ int Gui::findPage(
 
           case RotStepRc:
           case StepRc:
-            if (partsAdded) {
+            if (partsAdded && ! noStep) {
               stepNumber += ! coverPage && ! stepPage;
               stepPageNum += ! coverPage && ! stepGroup;
               if (pageNum < displayPageNum) {
@@ -1176,6 +1206,7 @@ int Gui::findPage(
               saveCurrent = current;  // so that draw page doesn't have to
                                       // deal with steps that are not steps
             }
+		    noStep = false;
           break;  
 
           case CalloutBeginRc:
@@ -1258,7 +1289,7 @@ int Gui::findPage(
           break;
 
           case NoStepRc:
-            partsAdded = false;
+            noStep = true;
           break;
           
           default:

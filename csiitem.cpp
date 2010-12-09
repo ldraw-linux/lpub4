@@ -314,7 +314,7 @@ void CsiItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
                   bottomOfStep, 
                   margins);
   } else if (selectedAction == noStepAction) {
-    insertMeta(bottomOfStep,"0 !LPUB NOSTEP");
+    appendMeta(topOfStep,"0 !LPUB NOSTEP");
   }
 }
 

@@ -118,6 +118,7 @@ void CalloutBackgroundItem::contextMenuEvent(
   QAction *editBackgroundAction = commonMenus.backgroundMenu(menu,co);
   QAction *editBorderAction     = commonMenus.borderMenu(menu,co);
   QAction *marginAction         = commonMenus.marginMenu(menu,co);
+  QAction *rotateAction         = NULL;
 
   QAction *unCalloutAction;
 
@@ -125,6 +126,11 @@ void CalloutBackgroundItem::contextMenuEvent(
     unCalloutAction = menu.addAction("Unpack Callout");
   } else {
     unCalloutAction = menu.addAction("Remove Callout");
+    if (calloutMeta.begin.value() == CalloutBeginMeta::Assembled) {
+      rotateAction = menu.addAction("Rotate");
+    } else {
+      rotateAction = menu.addAction("Unrotate");
+    }
   }
 
   QAction *addPointerAction = menu.addAction("Add Arrow");
@@ -174,6 +180,8 @@ void CalloutBackgroundItem::contextMenuEvent(
     removeCallout(callout->modelName(),
                   callout->topOfCallout(),
                   callout->bottomOfCallout());
+  } else if (selectedAction == rotateAction) {
+    changeRotation(callout->topOfCallout());
   } else if (selectedAction == allocAction) {
     changeAlloc(callout->topOfCallout(),
                 callout->bottomOfCallout(),

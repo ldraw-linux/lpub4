@@ -1825,7 +1825,7 @@ PageMeta::PageMeta() : BranchMeta()
   togglePnPlacement.setValue(false);
   number.placement.setValue(BottomRightInsideCorner,PageType);
   number.color.setValue("black");
-  number.font.setValuePoints("Arial,18,-1,255,75,0,0,0,0,0");
+  number.font.setValuePoints("Arial,24,-1,255,75,0,0,0,0,0");
   instanceCount.placement.setValue(LeftBottomOutside,PageNumberType);
   instanceCount.color.setValue("black");
   instanceCount.font.setValuePoints("Arial,48,-1,255,75,0,0,0,0,0");
@@ -1902,9 +1902,9 @@ PliMeta::PliMeta() : BranchMeta()
   subModelColor.setValue("#ffcccc");
   subModelColor.setValue("#ccccff");
   part.margin.setValuesInches(0.05f,0.03f);
-  instance.font.setValuePoints("Arial,24,-1,255,75,0,0,0,0,0");
+  instance.font.setValuePoints("Arial,36,-1,255,75,0,0,0,0,0");
   instance.margin.setValuesInches(0.0f,0.0f);
-  annotate.font.setValuePoints("Arial,24,-1,255,75,0,0,0,0,0");
+  annotate.font.setValuePoints("Arial,36,-1,255,75,0,0,0,0,0");
   annotate.margin.setValuesInches(0.0f,0.0f);
   margin.setValuesInches(DEFAULT_MARGIN,DEFAULT_MARGIN);
   pack.setValue(true);
@@ -1966,9 +1966,9 @@ BomMeta::BomMeta() : PliMeta()
   subModelColor.setValue("#ffcccc");
   subModelColor.setValue("#ccccff");
   part.margin.setValuesInches(0.05f,0.03f);
-  instance.font.setValuePoints("Arial,18,-1,255,75,0,0,0,0,0");
+  instance.font.setValuePoints("Arial,24,-1,255,75,0,0,0,0,0");
   instance.margin.setValuesInches(0.0f,0.0f);
-  annotate.font.setValuePoints("Arial,18,-1,255,75,0,0,0,0,0");
+  annotate.font.setValuePoints("Arial,24,-1,255,75,0,0,0,0,0");
   annotate.margin.setValuesInches(0.0f,0.0f);
   pack.setValue(false);
   sort.setValue(true);
@@ -2042,7 +2042,7 @@ void CalloutBeginMeta::doc(QStringList &out, QString preamble)
 
 CalloutMeta::CalloutMeta() : BranchMeta()
 {
-  stepNum.font.setValuePoints("Arial,18,-1,255,75,0,0,0,0,0");
+  stepNum.font.setValuePoints("Arial,36,-1,255,75,0,0,0,0,0");
   stepNum.color.setValue("black");
   // stepNum.font - default
   stepNum.placement.setValue(LeftTopOutside,PartsListType);

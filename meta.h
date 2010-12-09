@@ -684,6 +684,7 @@ public:
 
     QString pixels = _value[pushed];
 
+#if 0
     QStringList list = pixels.split(",");
 
     // points = 1/72
@@ -695,6 +696,7 @@ public:
     list[1] = QString("%1") .arg(int(units+0.5));
 
     pixels = list.join(",");
+#endif
 
     return pixels;
   }
@@ -715,7 +717,7 @@ public:
       // 9 rawMode
 
       QStringList list = _value[pushed].split(",");
-
+#if 0
       // points = 1/72
       // height = points/72
 
@@ -724,7 +726,7 @@ public:
       units /= 02.54;
 
       list[1] = QString("%1") .arg(int(units+0.5));
-
+#endif
       QString pixels = list.join(",");
 
       _value[pushed] = pixels;
@@ -740,7 +742,7 @@ public:
   }
   FontMeta() : StringMeta()
   {
-    _value[0] = "Arial,33,-1,255,75,0,0,0,0,0";
+    _value[0] = "Arial,64,-1,255,75,0,0,0,0,0";
   }
   FontMeta(const FontMeta &rhs) : StringMeta(rhs) {}
   virtual ~FontMeta() {}

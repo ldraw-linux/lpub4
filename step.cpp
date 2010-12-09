@@ -167,14 +167,14 @@ int Step::createCsi(
                         .arg(resolution())
                         .arg(resolutionType() == DPI ? "DPI" : "DPCM")
                         .arg(modelScale);
-  QString fileName = QDir::currentPath() + "/" +
-                      Paths::assemDir + "/" + key + ".png";
-  QFile csi(fileName);
+  pngName = QDir::currentPath() + "/" +
+                  Paths::assemDir + "/" + key + ".png";
+  QFile csi(pngName);
 
   bool outOfDate = false;
   
   if (csi.exists()) {
-    QDateTime lastModified = QFileInfo(fileName).lastModified();    
+    QDateTime lastModified = QFileInfo(pngName).lastModified();
     QStringList stack = submodelStack();
     stack << parent->modelName();
     if ( ! isOlder(stack,lastModified)) {
@@ -188,13 +188,13 @@ int Step::createCsi(
 
     // render the partially assembled model
 
-    rc = renderer->renderCsi(addLine,csiParts, fileName, meta);
+    rc = renderer->renderCsi(addLine,csiParts, pngName, meta);
 
     if (rc < 0) {
       return rc;
     }
   } 
-  pixmap->load(fileName);
+  pixmap->load(pngName);
   csiPlacement.size[0] = pixmap->width();
   csiPlacement.size[1] = pixmap->height();
 

@@ -486,15 +486,23 @@ QString Callout::wholeSubmodel(
   QStringList argv;
   split(addLine,argv);
   QString mirrored;
+  QString assembled;
   bool isMirrored = LDrawFile::mirrored(argv);
 
   if (isMirrored) {
     mirrored = "mirrored_";
   }
-  const QString wholeName = "whole_" + mirrored + modelName;
+
+  if (meta.LPub.callout.begin.value() == CalloutBeginMeta::Rotated) {
+    assembled = "assembled_";
+  } else {
+    assembled = "rotated_";
+  }
+  const QString wholeName = "whole_" + assembled + mirrored + modelName;
   //if (gui->subFileSize(wholeName)) {
     //return wholeName;
   //}
+
 
   int numLines = gui->subFileSize(modelName);
   QStringList csiParts;

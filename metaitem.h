@@ -72,6 +72,7 @@ public:
   void unnestCallouts(         const QString &);
   void updatePointer(          const Where &,   PointerMeta *pointer);
   void deletePointer(          const Where &);
+  void changeRotation(         const Where &);
 
   void addNextMultiStep(       const Where &topOfSteps, const Where &bottomOfSteps);
   void addPrevMultiStep(       const Where &topOfSteps, const Where &bottomOfSteps); 

@@ -56,6 +56,7 @@ class Step : public AbstractRangeElement
     int               submodelLevel;
     bool              pliPerStep;
     PlacementMeta     placement;
+    QString           pngName;
 
     Step(
       Where                 &topOfStep,

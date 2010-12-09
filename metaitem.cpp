@@ -1020,25 +1020,12 @@ void MetaItem::changeFont(
   QFont _font(fontName);
 
   QFont newFont;
-#if 0
-  QFontDialog *dialog = new QFontDialog(_font, gui);
-  int rc;
-
-  rc = dialog->exec();
-
-  if (rc == QDialog::Rejected) {
-    return;
-  }
-  newFont = dialog->selectedFont();
-  delete dialog;
-
-#else
 
   newFont = QFontDialog::getFont(&ok, _font, gui);
   if ( ! ok) {
     return;
   }
-#endif
+
   fontName2 = newFont.toString();
 
   font->setValue(fontName2);
@@ -1322,10 +1309,45 @@ void MetaItem::appendPage(QString &meta)
   if (bottomOfStep.lineNumber == gui->subFileSize(bottomOfStep.modelName)) {
     --bottomOfStep;
   }
+  bool addStep = false;
 
+  Where walk = bottomOfStep;
+  int numLines = gui->subFileSize(walk.modelName);
+
+  for (; walk < numLines && walk > 0; --walk) {
+    QString line = gui->readLine(walk);
+    QStringList tokens;
+    split(line,tokens);
+
+    if (tokens.size() == 15 && tokens[0] == "1" ||
+        tokens.size() == 4  && tokens[0] == "0" && tokens[1] == "!LPUB" && tokens[2] == "INSERT" && tokens[3] == "COVER_PAGE") {
+      addStep = true;
+      break;
+    }
+
+    if (tokens.size() == 2 && tokens[0] == "0" && tokens[1] == "STEP" ||
+        tokens.size() > 2  && tokens[0] == "0" && tokens[1] == "ROTSTEP") {
+      break;
+    }
+  }
+  walk = bottomOfStep;
+  if ( ! addStep) {
+    for ( ; walk < numLines; ++walk) {
+      QString line = gui->readLine(walk);
+      QStringList tokens;
+      split(line,tokens);
+
+      if (tokens.size() == 15 && tokens[0] == "1") {
+        addStep = true;
+        break;
+      }
+    }
+  }
   beginMacro("appendPage");
-  appendMeta(bottomOfStep,"0 STEP");
-  bottomOfStep++;
+  if (addStep) {
+    appendMeta(bottomOfStep,"0 STEP");
+    bottomOfStep++;
+  }
   appendMeta(bottomOfStep,meta);
   endMacro();
 }
@@ -1361,7 +1383,7 @@ void MetaItem::insertPicture()
 
 void MetaItem::insertText()
 {
-  QString meta = QString("0 !LPUB INSERT TEXT \"%1\" \"%2\" \"%3\"") .arg("TEST") .arg("Arial,33,-1,255,75,0,0,0,0,0") .arg("Black");
+  QString meta = QString("0 !LPUB INSERT TEXT \"%1\" \"%2\" \"%3\"") .arg("TEST") .arg("Arial,36,-1,255,75,0,0,0,0,0") .arg("Black");
   Where topOfStep = gui->topOfPages[gui->displayPageNum-1];
   scanPastGlobal(topOfStep);
   appendMeta(topOfStep,meta);
@@ -1892,7 +1914,6 @@ void MetaItem::addCalloutMetas(
   if (instanceCount) {
 
     bool together;
-    bool rotated;
 
     if (assembled) {
       if (instanceCount > 1) {
@@ -1905,26 +1926,8 @@ void MetaItem::addCalloutMetas(
       } else {
         together = false;
       }
-
-      rotated = false;
-      if ( ! together) {
-        QMessageBox::StandardButton pushed;
-        if (instanceCount == 1) {
-          pushed = QMessageBox::question(gui,gui->tr("Rotate Submodel"),
-                                             gui->tr("Do you want it rotated?"),
-                                             QMessageBox::Yes|QMessageBox::No,
-                                             QMessageBox::Yes);
-        } else {
-          pushed = QMessageBox::question(gui,gui->tr("Rotate Submodels"),
-                                             gui->tr("Do you want them rotated?"),
-                                             QMessageBox::Yes|QMessageBox::No,
-                                             QMessageBox::Yes);
-        }
-        rotated = pushed == QMessageBox::Yes;
-      }
     } else {
       together = true;
-      rotated = false;
     }
 
     Where thisInstance = firstInstance;
@@ -1954,12 +1957,7 @@ void MetaItem::addCalloutMetas(
         appendMeta(thisInstance,"0 !LPUB CALLOUT END");
         --thisInstance.lineNumber;
         if (assembled) {
-          QString begin = "0 !LPUB CALLOUT BEGIN ";
-          if (rotated) {
-            begin += "ROTATED";
-          } else {
-            begin += "ASSEMBLED";
-          }
+          QString begin = "0 !LPUB CALLOUT BEGIN ROTATED";
           insertMeta(thisInstance,begin);
           thisInstance.lineNumber += 5;
         } else {
@@ -1971,17 +1969,34 @@ void MetaItem::addCalloutMetas(
     if (together) {
       appendMeta(lastInstance,"0 !LPUB CALLOUT END");
       if (assembled) {
-        QString begin = "0 !LPUB CALLOUT BEGIN ";
-        if (rotated) {
-          begin += "ROTATED";
-        } else {
-          begin += "ASSEMBLED";
-        }
+        QString begin = "0 !LPUB CALLOUT BEGIN ROTATED";
         insertMeta(firstInstance,begin);
       } else {
         insertMeta(firstInstance,"0 !LPUB CALLOUT BEGIN");
       }
     }
+  }
+}
+
+void MetaItem::changeRotation(
+  const Where &here)
+{
+  int numLines = gui->subFileSize(here.modelName);
+  if (here.lineNumber < numLines) {
+    QString line = gui->readLine(here);
+    QStringList tokens;
+    split(line,tokens);
+    if (tokens.size() == 5 && tokens[0] == "0" && tokens[2] == "CALLOUT" && tokens[3] == "BEGIN") {
+      if (tokens[4] == "ASSEMBLED") {
+        tokens[4] = "ROTATED";
+      } else {
+        tokens[4] = "ASSEMBLED";
+      }
+    }
+    line = tokens.join(" ");
+    beginMacro("changeRotation");
+    replaceMeta(here,line);
+    endMacro();
   }
 }
 
@@ -2008,19 +2023,12 @@ void MetaItem::removeCallout(
     }
   } while (rc != EndOfFileRc);
 
-  Where start = topOfCallout;
-  QString line = gui->readLine(start);
-  QRegExp assembled("\\s*0\\s+\\!*LPUB\\s+CALLOUT\\s+BEGIN\\s+(ASSEMBLED|ROTATED)");
-  if (line.contains(assembled)) {
-    --start;
-  }
-
   QRegExp callout("^\\s*0\\s+\\!*LPUB\\s+CALLOUT");
   for (walk = bottomOfCallout;
-       walk >= start.lineNumber;
+       walk >= topOfCallout.lineNumber;
        walk--)
   {
-    line = gui->readLine(walk);
+    QString line = gui->readLine(walk);
     if (line.contains(callout)) {
       deleteMeta(walk);
     }

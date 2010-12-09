@@ -30,6 +30,7 @@
 #define CALLOUTH
 
 #include "ranges.h"
+#include "range.h"
 #include "placement.h"
 #include "where.h"
 #include "numberitem.h"
