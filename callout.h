@@ -65,6 +65,7 @@ class Callout : public Steps {
     QList<CalloutPointerItem *> graphicsPointerList;
 
     CalloutBackgroundItem *background;
+    QGraphicsRectItem     *underpinnings;
     Where                  topCallout,bottomCallout;
     
     Where &topOfCallout()

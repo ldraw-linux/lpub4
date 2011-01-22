@@ -234,6 +234,12 @@ void Callout::sizeIt()
   size[YY] += int(borderData.thickness);
 }
 
+// Callouts that have round corners are tricky, trying to get the pointer to start/end on the
+// rounded corner.  To avoid trying to know the shape of the curve, we make sure the pointer
+// is below (think zDepth) the callout.  If we make the pointer start at the center of the curved
+// corner rather than the edge, then the callout hides the starting point of the arrow, and the
+// arrow always appears to start right at the edge of the callout (no matter the shape of the
+// corner's curve.
 void Callout::addGraphicsItems(
   int            offsetX,
   int            offsetY,
@@ -251,8 +257,27 @@ void Callout::addGraphicsItems(
   }
   
   int newLoc[2] = { offsetX + loc[XX], offsetY + loc[YY] };
-  
+
+  // Add an invisible rectangle underneath the callout background item called underpinning.
+  // Pointers will be added with underpinning as the parent.  This makes sure the start of the
+  // arrow is covered by the callout background.
+
+  // If we have the pointers use callout background as parent, the pointer is on top of the
+  // background.  So by using underpinnings, the callout end of the pointer is under the
+  // background.  This allows us to have the pointers look correct for round cornered callouts.
+
+  underpinnings = new QGraphicsRectItem(
+      qreal(newLoc[XX]),qreal(newLoc[YY]),qreal(size[XX]),qreal(size[YY]),parent);
+  underpinnings->setZValue(97);
+  QPen pen;
+  QColor none(0,0,0,0);
+  pen.setColor(none);
+  underpinnings->setPen(pen);
+  underpinnings->setPos(newLoc[XX],newLoc[YY]);
+
   QRect calloutRect(newLoc[XX],newLoc[YY],size[XX],size[YY]);
+
+  // This is the background for the entire callout.
 
   background = new CalloutBackgroundItem(
                      this,

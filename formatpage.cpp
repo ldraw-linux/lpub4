@@ -544,7 +544,7 @@ int Gui::addGraphicsPageItems(
 
             for (int i = 0; i < callout->pointerList.size(); i++) {
               Pointer *pointer = callout->pointerList[i];
-              callout->addGraphicsPointerItem(pointer,callout->background);
+              callout->addGraphicsPointerItem(pointer,callout->underpinnings);
             }
           }
         }

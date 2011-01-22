@@ -39,6 +39,7 @@
 #include "metaitem.h"
 #include "lpub.h"
 #include "callout.h"
+#include "calloutbackgrounditem.h"
 #include "step.h"
 #include "range.h"
 
@@ -159,8 +160,6 @@ CalloutPointerItem::CalloutPointerItem(
   }
 
   drawPointerPoly();
-
-  setZValue(99);
   setFlag(QGraphicsItem::ItemIsFocusable,true);
 }
 
@@ -250,8 +249,12 @@ bool CalloutPointerItem::autoLocFromTip()
   ty = points[Tip].y();
 
   t = borderThickness;
-  
-  if (ty >= top && ty <= bottom) {
+
+  /* Figure out which corner */
+  BorderData borderData = callout->background->border.valuePixels();
+  int radius = (int) borderData.radius;
+
+  if (ty >= top+radius && ty <= bottom-radius) {
     if (tx < left) {
       intersect = QPoint(left,ty);
       points[Tip].setY(ty);
@@ -264,7 +267,7 @@ bool CalloutPointerItem::autoLocFromTip()
       // inside
       placement = Center;
     }
-  } else if (tx >= left && tx <= right) {
+  } else if (tx >= left+radius && tx <= right-radius) {
     if (ty < top) {
       intersect = QPoint(tx,top);
       points[Tip].setX(tx);
@@ -277,24 +280,20 @@ bool CalloutPointerItem::autoLocFromTip()
       // inside
       placement = Center;
     }
-  } else if (tx < 0) {
-
-    /* Figure out which corner */
-
-    if (ty < 0) {
-      intersect = QPoint(0,0);
+  } else if (tx < radius) {  // left?
+    if (ty < radius) {
+      intersect = QPoint(left+radius,top+radius);
       placement = TopLeft;
     } else {
-      intersect = QPoint(0,height);
+      intersect = QPoint(radius,height-radius);
       placement = BottomLeft;
     }
-
-  } else {
-    if (ty < 0) {
-      intersect = QPoint(width,0);
+  } else { // right!
+    if (ty < radius) {
+      intersect = QPoint(width-radius,radius);
       placement = TopRight;
     } else {
-      intersect = QPoint(width,height);
+      intersect = QPoint(width-radius,height-radius);
       placement = BottomRight;
     }
   }
