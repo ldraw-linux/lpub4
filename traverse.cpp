@@ -1206,7 +1206,7 @@ int Gui::findPage(
               saveCurrent = current;  // so that draw page doesn't have to
                                       // deal with steps that are not steps
             }
-		    noStep = false;
+            noStep = false;
           break;  
 
           case CalloutBeginRc:
@@ -1299,7 +1299,7 @@ int Gui::findPage(
     }
   } // for every line
   csiParts.clear();
-  if (partsAdded) {
+  if (partsAdded && ! noStep) {
     if (pageNum == displayPageNum) {
       page.meta = saveMeta;
       QStringList pliParts;

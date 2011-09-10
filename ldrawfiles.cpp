@@ -559,6 +559,8 @@ void LDrawFile::countInstances(const QString &mcFileName, bool isMirrored)
   QString fileName = mcFileName.toLower();
   bool partsAdded = false;
   bool buffExchg = false;
+  bool noStep = false;
+  bool stepIgnore = false;
   
   QMap<QString, LDrawSubFile>::iterator f = _subFiles.find(fileName);
   if (f != _subFiles.end()) {
@@ -597,25 +599,43 @@ void LDrawFile::countInstances(const QString &mcFileName, bool isMirrored)
             break;
           }
         }
-      } else if (tokens.size() >= 2 && tokens[0] == "0" && 
+      } else if (tokens.size() == 5 &&
+                 tokens[0] == "0" &&
+                 (tokens[1] == "LPUB" || tokens[1] == "!LPUB") &&
+                 tokens[2] == "PART" &&
+                 tokens[3] == "BEGIN"  &&
+                 tokens[4] == "IGN") {
+        stepIgnore = true;
+      } else if (tokens.size() == 4 &&
+                 tokens[0] == "0" &&
+                 (tokens[1] == "LPUB" || tokens[1] == "!LPUB") &&
+                 tokens[2] == "PART"&&
+                 tokens[3] == "END") {
+        stepIgnore = false;
+      } else if (tokens.size() == 3 && tokens[0] == "0" &&
+                (tokens[1] == "LPUB" || tokens[1] == "!LPUB") &&
+                 tokens[2] == "NOSTEP") {
+        noStep = true;
+      } else if (tokens.size() >= 2 && tokens[0] == "0" &&
                 (tokens[1] == "STEP" || tokens[1] == "ROTSTEP")) {
-        if (partsAdded) {
+        if (partsAdded && ! noStep) {
           int incr = isMirrored && f->_mirrorInstances == 0 ||
                      ! isMirrored && f->_instances == 0;
           f->_numSteps += incr;
         }
         partsAdded = false;
+        noStep = false;
       } else if (tokens.size() == 4 && tokens[0] == "0"
                                      && tokens[1] == "BUFEXCHG") {
         buffExchg = tokens[3] == "STORE";
       } else if (tokens.size() == 15 && tokens[0] == "1") {
-        if (contains(tokens[14]) && ! buffExchg) {
+        if (contains(tokens[14]) && ! buffExchg && ! stepIgnore) {
           countInstances(tokens[14],mirrored(tokens));
         }
         partsAdded = true;
       }
     }
-    f->_numSteps += partsAdded &&
+    f->_numSteps += partsAdded && ! noStep &&
                        (isMirrored && f->_mirrorInstances == 0 ||
                       ! isMirrored && f->_instances == 0);
     if (isMirrored) {

@@ -311,7 +311,7 @@ int Gui::addGraphicsPageItems(
     
     SubmodelInstanceCount *instanceCount;
     
-    if (endOfSubmodel&& instances > 1) {
+    if (endOfSubmodel && instances > 1) {
       instanceCount = new SubmodelInstanceCount(
         page,
         page->meta.LPub.page.instanceCount,
