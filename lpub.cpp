@@ -62,6 +62,9 @@ void Gui::appendCoverPage()
 {
   MetaItem mi;
   mi.appendCoverPage();
+  countPages();
+  ++displayPageNum;
+  displayPage();
 }
 
 void Gui::insertNumberedPage()
