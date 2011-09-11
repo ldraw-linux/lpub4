@@ -423,6 +423,7 @@ int Gui::addGraphicsPageItems(
             QString addLine;
             getBOMParts(current,addLine,bomParts);
             page->pli.pliMeta = page->meta.LPub.bom;
+            page->pli.steps = steps;
             page->pli.setParts(bomParts,page->meta,true);
             bomParts.clear();
             page->pli.sizePli(&page->meta,PageType,false);

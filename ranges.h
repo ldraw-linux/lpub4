@@ -49,6 +49,7 @@ class Steps : public Placement {
     QList<AbstractStepsElement *> list;  // of range
     QGraphicsView *view;
     Pli            pli;
+    Where          top;   // needed for non-step pages
     Where          bottom;
     bool           isMirrored;
 
@@ -79,8 +80,9 @@ class Steps : public Placement {
     const Where &bottomOfStep(AbstractStepsElement *me);
     const Where &topOfSteps();
     const Where &bottomOfSteps();
-          void  setBottomOfSteps(const Where &bos);
-          AbstractStepsElement *nextRange(const AbstractStepsElement *me);    
+    void  setTopOfSteps(const Where &tos);
+    void  setBottomOfSteps(const Where &bos);
+    AbstractStepsElement *nextRange(const AbstractStepsElement *me);
 };
 
 class Page : public Steps {

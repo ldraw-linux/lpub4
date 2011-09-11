@@ -122,11 +122,19 @@ AbstractStepsElement *Steps::nextRange(
 
 const Where &Steps::topOfSteps()
 {
-  return list[0]->topOfRange();
+  if (list.size() == 0) {
+    return top;
+  } else {
+    return list[0]->topOfRange();
+  }
 }
 const Where &Steps::bottomOfSteps()
 {
   return bottom;
+}
+void Steps::setTopOfSteps(const Where &tos)
+{
+  top = tos;
 }
 void Steps::setBottomOfSteps(const Where &bos)
 {

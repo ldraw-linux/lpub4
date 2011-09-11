@@ -1425,7 +1425,15 @@ void PliBackgroundItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
       placementData.offsets[1] += newPosition.y()/pli->relativeToSize[1];
       placement.setValue(placementData);
 
-      changePlacementOffset(pli->topOfStep(),&placement,PartsListType);
+      Where here;
+
+      if (pli->bom) {
+        here = pli->topOfSteps();
+      } else {
+        here = pli->bottomOfSteps();
+      }
+
+      changePlacementOffset(here,&placement,PartsListType);
     }
   }
 }
@@ -1481,8 +1489,13 @@ void PliBackgroundItem::contextMenuEvent(
     Where bottomOfStep;
     
     if (pli->step) {
-      topOfStep = pli->topOfStep();
-      bottomOfStep = pli->bottomOfStep();
+      if (bom) {
+        topOfStep = pli->topOfSteps();
+        bottomOfStep = pli->bottomOfSteps();
+      } else {
+        topOfStep = pli->topOfStep();
+        bottomOfStep = pli->bottomOfStep();
+      }
     }
   
     switch (parentRelativeType) {
@@ -1497,8 +1510,13 @@ void PliBackgroundItem::contextMenuEvent(
         local = false;
       break;
       default:
-        top    = pli->topOfStep();
-        bottom = pli->bottomOfStep();
+        if (pli->bom) {
+          top    = pli->topOfSteps();
+          bottom = pli->bottomOfSteps();
+        } else {
+          top    = pli->topOfStep();
+          bottom = pli->bottomOfStep();
+        }
         local = true;
       break;
     }
@@ -1597,8 +1615,15 @@ void PliBackgroundItem::change()
   
   pli->pliMeta.constrain.setValue(constrainData);
 
-  changeConstraint(pli->topOfStep(),pli->bottomOfStep(),&pli->pliMeta.constrain);
+  if (pli->bom) {
+    Where here = pli->topOfSteps();
+    changeConstraint(pli->topOfSteps(),pli->bottomOfSteps(),&pli->pliMeta.constrain);
+  } else {
+    Where here = pli->topOfStep();
+    changeConstraint(pli->topOfStep(),pli->bottomOfStep(),&pli->pliMeta.constrain);
+  }
 }
+
 QRectF PliBackgroundItem::currentRect()
 {
   if (pli->parentRelativeType == CalloutType) {

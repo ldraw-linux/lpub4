@@ -252,6 +252,8 @@ int Gui::drawPage(
   bool        noStep      = false;
   
   steps->isMirrored = isMirrored;
+  steps->setTopOfSteps(current);
+  steps->freeSteps();
   
   QList<InsertMeta> inserts;
   
@@ -1299,8 +1301,10 @@ int Gui::findPage(
     }
   } // for every line
   csiParts.clear();
+
   if (partsAdded && ! noStep) {
     if (pageNum == displayPageNum) {
+
       page.meta = saveMeta;
       QStringList pliParts;
       (void) drawPage(view,
