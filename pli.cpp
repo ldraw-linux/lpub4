@@ -1709,6 +1709,7 @@ void PGraphicsPixmapItem::contextMenuEvent(
 {
   QMenu menu;
   QString part = "Part ";
+  QAction *hideAction = menu.addAction("Hide Part(s) from Parts List");
   QAction *marginAction = commonMenus.marginMenu(menu,part);
 
 #if 0
@@ -1731,6 +1732,8 @@ void PGraphicsPixmapItem::contextMenuEvent(
                   pli->topOfStep(),
                   pli->bottomOfStep(),
                   &pli->pliMeta.part.margin);
+  } else if (selectedAction == hideAction) {
+    hidePLIParts(this->part->instances);
 #if 0
   } else if (selectedAction == scaleAction) {
     changeFloatSpinTop(
