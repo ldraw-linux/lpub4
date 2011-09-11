@@ -90,7 +90,7 @@ GlobalAssemDialog::GlobalAssemDialog(
   data->modelScale = child;
   data->children.append(child);
   boxGrid->addWidget(child,1,0,1,2);
-  
+
   /* Step Number */
 
   box = new QGroupBox("Step Number");
@@ -100,7 +100,14 @@ GlobalAssemDialog::GlobalAssemDialog(
 
   child = new NumberGui(stepNumber,box);
   data->children.append(child);
-  boxGrid->addWidget(child);
+  boxGrid->addWidget(child,0,0,1,2);
+
+  box = new QGroupBox("Display");
+  grid->addWidget(box,2,0);
+
+  child = new CheckBoxGui("Step Number",&assem->showStepNumber,box);
+  data->children.append(child);
+  boxGrid->addWidget(child,1,0,1,2);
 
   QDialogButtonBox *buttonBox;
 

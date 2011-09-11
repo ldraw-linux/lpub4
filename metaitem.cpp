@@ -2330,6 +2330,52 @@ QPointF MetaItem::defaultPointerTip(
   return QPointF(0.5,0.5);
 }
 
+void MetaItem::hidePLIParts(
+  QList<Where> &parts)
+{
+  QMap<QString,QString> map;
+
+  beginMacro("hideParts");
+
+  // Make a list of the file names and line numbers involved
+
+  for (int i = 0; i < parts.size(); ++i) {
+    QString modelName = parts[i].modelName;
+    QString lineNumber = QString("%1").arg(parts[i].lineNumber);
+
+    map[modelName] += lineNumber + ";";
+  }
+
+  // for each filename, sort the list of lineNumbers
+
+  QStringList fileNames = map.keys();
+  for (int i = 0; i < fileNames.size(); ++i) {
+    QString fileName = fileNames[i];
+    QString line = map.value(fileName);
+    line.chop(1); // remove trailing ;
+    QStringList lineNumStrings = line.split(";");
+
+    QList<int> lineNums;
+    for (int j = 0; j < lineNumStrings.size(); ++j) {
+      lineNums << lineNumStrings[j].toInt();
+    }
+    qSort(lineNums.begin(),lineNums.end());
+
+    // work it from last to first so as to not screw up our line numbers
+    int lastLineNum = -1;
+    for (int j = lineNums.size() - 1; j >= 0; --j) {
+      int lineNum = lineNums[j];
+      if (lineNum != lastLineNum) {
+        Where here(fileName,lineNum);
+        gui->appendLine(here,"0 !LPUB PLI END");
+        gui->insertLine(here,"0 !LPUB PLI BEGIN IGN");
+        lastLineNum = lineNum;
+      }
+    }
+  }
+  endMacro();
+}
+
 void MetaItem::removeLPubFormatting()
 {
   beginMacro("RemoveLPubFormatting");

@@ -1859,15 +1859,17 @@ AssemMeta::AssemMeta() : BranchMeta()
   modelScale.setValue(1.0);
   ldgliteParms.setValue("-fh -w1");
   ldviewParms.setValue("");
+  showStepNumber.setValue(true);
 }
 void AssemMeta::init(BranchMeta *parent, QString name)
 {
   AbstractMeta::init(parent, name);
-  margin.init       (this,"MARGINS");
-  placement.init    (this,"PLACEMENT");
-  modelScale.init   (this,"MODEL_SCALE");
-  ldviewParms.init  (this,"LDGLITE_PARMS");
-  ldgliteParms.init (this,"LDVIEW_PARMS");
+  margin.init        (this,"MARGINS");
+  placement.init     (this,"PLACEMENT");
+  modelScale.init    (this,"MODEL_SCALE");
+  ldviewParms.init   (this,"LDGLITE_PARMS");
+  ldgliteParms.init  (this,"LDVIEW_PARMS");
+  showStepNumber.init(this,"SHOW_STEP_NUMBER");
 }
 
 /* ------------------ */ 

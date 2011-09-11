@@ -112,6 +112,7 @@ Step::Step(
   }
   pli.steps = grandparent();
   pli.step  = this;
+  showStepNumber = meta.LPub.assem.showStepNumber.value();
 }
 
 /* step destructor destroys all callouts */
@@ -444,7 +445,9 @@ int Step::sizeit(
 
   // size up the step number
 
-  stepNumber.sizeit();
+  if (showStepNumber) {
+    stepNumber.sizeit();
+  }
 
   /****************************************************/
   /* figure out who is placed in which row and column */
@@ -917,7 +920,7 @@ void Step::addGraphicsItems(
                offsetY + pli.loc[YY]);
   }
   
-  if (stepNumber.number > 0) {
+  if (stepNumber.number > 0 && showStepNumber) {
     StepNumberItem *sn; 
     if (calledOut) {
       sn = new StepNumberItem(this,
@@ -1087,7 +1090,9 @@ void Step::sizeitFreeform(
 
   // size up the step number
 
-  stepNumber.sizeit();
+  if (showStepNumber) {
+    stepNumber.sizeit();
+  }
 
   // place everything relative to the base
 

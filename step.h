@@ -53,6 +53,7 @@ class Step : public AbstractRangeElement
     Placement         csiPlacement;
     QPixmap           csiPixmap;
     PlacementNum      stepNumber;
+    bool              showStepNumber;
     int               submodelLevel;
     bool              pliPerStep;
     PlacementMeta     placement;

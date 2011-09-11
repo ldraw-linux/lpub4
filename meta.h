@@ -1646,6 +1646,7 @@ public:
   FloatMeta     modelScale;
   StringMeta    ldviewParms;
   StringMeta    ldgliteParms;
+  BoolMeta      showStepNumber;
   AssemMeta();
   AssemMeta(const AssemMeta &rhs) : BranchMeta(rhs)
   {

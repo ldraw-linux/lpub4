@@ -443,7 +443,7 @@ int Gui::addGraphicsPageItems(
         Step *step= dynamic_cast<Step *>(range->list[0]);
         if (step && step->relativeType == StepType) {
        
-          if ( ! step->onlyChild()) {
+          if ( ! step->onlyChild() && step->showStepNumber) {
             step->stepNumber.sizeit();
           }
 
