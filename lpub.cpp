@@ -507,6 +507,19 @@ void Gui::about()
                "kevin.clague@gmail.com"));
 }
 
+// Begin Jaco's code
+
+#include <QDesktopServices>
+#include <QUrl>
+
+void Gui::onlineManual()
+{
+    QDesktopServices::openUrl(QUrl("http://lpub.binarybricks.nl"));
+}
+
+// End Jaco's code
+
+
 void Gui::meta()
 {
   Meta meta;
@@ -769,6 +782,14 @@ void Gui::createActions()
     aboutAct->setStatusTip(tr("Show the application's About box"));
     connect(aboutAct, SIGNAL(triggered()), this, SLOT(about()));
 
+    // Begin Jaco's code
+
+    onlineManualAct = new QAction(tr("&Online manual"), this);
+    onlineManualAct->setStatusTip(tr("Visit the Online Manual Website."));
+    connect(onlineManualAct, SIGNAL(triggered()), this, SLOT(onlineManual()));
+
+    // End Jaco's code
+
     metaAct = new QAction(tr("&Save LPub Metacommands to File"), this);
     metaAct->setStatusTip(tr("Save a list of the known LPub meta commands to a file"));
     connect(metaAct, SIGNAL(triggered()), this, SLOT(meta()));
@@ -877,6 +898,13 @@ void Gui::createMenus()
 
     helpMenu = menuBar()->addMenu(tr("&Help"));
     helpMenu->addAction(aboutAct);
+
+    // Begin Jaco's code
+
+    helpMenu->addAction(onlineManualAct);
+
+    // End Jaco's code
+
     helpMenu->addAction(metaAct);
 }
 
