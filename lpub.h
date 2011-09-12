@@ -615,6 +615,13 @@ private slots:
 
     void openRecentFile();
     void about();
+
+    // Begin Jaco's code
+
+    void onlineManual();
+
+    // End Jaco's code
+
     void meta();
 
     void redo();
@@ -777,6 +784,13 @@ private:
   // help
 
   QAction  *aboutAct;
+
+  // Begin Jaco's code
+
+  QAction  *onlineManualAct;
+
+  // End Jaco's code
+
   QAction  *metaAct;
   QAction  *separatorAct;
 
