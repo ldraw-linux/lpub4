@@ -1428,7 +1428,11 @@ void PliBackgroundItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
       Where here;
 
       if (pli->bom) {
-        here = pli->topOfSteps();
+        if (pli->steps->list.size()) {
+          here = pli->bottomOfSteps();
+        } else {
+          here = pli->topOfSteps();
+        }
       } else {
         here = pli->bottomOfSteps();
       }
@@ -1616,10 +1620,12 @@ void PliBackgroundItem::change()
   pli->pliMeta.constrain.setValue(constrainData);
 
   if (pli->bom) {
-    Where here = pli->topOfSteps();
-    changeConstraint(pli->topOfSteps(),pli->bottomOfSteps(),&pli->pliMeta.constrain);
+    if (pli->steps->list.size()) {
+      changeConstraint(pli->bottomOfSteps(),pli->bottomOfSteps(),&pli->pliMeta.constrain);
+    } else {
+      changeConstraint(pli->topOfSteps(),pli->bottomOfSteps(),&pli->pliMeta.constrain);
+    }
   } else {
-    Where here = pli->topOfStep();
     changeConstraint(pli->topOfStep(),pli->bottomOfStep(),&pli->pliMeta.constrain);
   }
 }
