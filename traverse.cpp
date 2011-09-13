@@ -782,6 +782,11 @@ int Gui::drawPage(
 
             steps->placement = steps->meta.LPub.multiStep.placement;
             showLine(steps->topOfSteps());
+
+            Page *page = dynamic_cast<Page *>(steps);
+            if (page) {
+              page->inserts = inserts;
+            }
             
             bool endOfSubmodel = stepNum >= ldrawFile.numSteps(current.modelName);
             int  instances = ldrawFile.instances(current.modelName,isMirrored);
