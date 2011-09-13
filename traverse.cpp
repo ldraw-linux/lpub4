@@ -862,6 +862,7 @@ int Gui::drawPage(
               if (page) {
                 page->inserts = inserts;
               }
+
               if (pliPerStep) {
                 PlacementType relativeType;
                 if (multiStep) {
@@ -876,13 +877,13 @@ int Gui::drawPage(
                 step->pli.sizePli(&steps->meta,relativeType,pliPerStep);
               }
 
+              statusBar()->showMessage("Processing " + current.modelName);
+
               int rc = step->createCsi(
                  isMirrored ? addLine : "1 color 0 0 0 1 0 0 0 1 0 0 0 1 foo.ldr",
                  csiParts,
                 &step->csiPixmap,
                  steps->meta);
-
-              statusBar()->showMessage("Processing " + current.modelName);
 
               if (rc) {
                 return rc;
@@ -979,7 +980,9 @@ int Gui::findPage(
   bool bfxStore2  = false;
   bool stepGroupBfxStore2 = false;
   bool callout    = false;
-  
+  bool noStep     = false;
+  bool noStep2    = false;
+
   QStringList bfxParts;
   QStringList saveBfxParts;
   int  partsAdded = 0;
@@ -999,7 +1002,6 @@ int Gui::findPage(
   Where       stepGroupCurrent;
   int         saveStepNumber = 1;
               saveStepPageNum = stepPageNum;
-  bool        noStep = false;
               
   Meta        saveMeta = meta;
 
@@ -1100,7 +1102,7 @@ int Gui::findPage(
             stepGroupBfxStore2 = bfxStore2;
           break;
           case StepGroupEndRc:
-            if (stepGroup) {
+            if (stepGroup && ! noStep2) {
               stepGroup = false;
               if (pageNum < displayPageNum) {
                 saveCsiParts   = csiParts;
@@ -1144,6 +1146,7 @@ int Gui::findPage(
               topOfPages.append(current);
               saveStepPageNum = ++stepPageNum;
             }
+            noStep2 = false;
           break;
 
           case RotStepRc:
@@ -1213,6 +1216,7 @@ int Gui::findPage(
               saveCurrent = current;  // so that draw page doesn't have to
                                       // deal with steps that are not steps
             }
+            noStep2 = noStep;
             noStep = false;
           break;  
 
