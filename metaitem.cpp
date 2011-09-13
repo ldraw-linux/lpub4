@@ -39,6 +39,7 @@
 #include <QTextStream>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QInputDialog>
 #include "metaitem.h"
 #include "lpub.h"
 #include "color.h"
@@ -1383,10 +1384,17 @@ void MetaItem::insertPicture()
 
 void MetaItem::insertText()
 {
-  QString meta = QString("0 !LPUB INSERT TEXT \"%1\" \"%2\" \"%3\"") .arg("TEST") .arg("Arial,36,-1,255,75,0,0,0,0,0") .arg("Black");
-  Where topOfStep = gui->topOfPages[gui->displayPageNum-1];
-  scanPastGlobal(topOfStep);
-  appendMeta(topOfStep,meta);
+  bool ok;
+  QString text = QInputDialog::getText(NULL, QInputDialog::tr("Text"),
+                                            QInputDialog::tr("Input:"),
+                                            QLineEdit::Normal,
+                                            QString(""), &ok);
+  if (ok && !text.isEmpty()) {
+    QString meta = QString("0 !LPUB INSERT TEXT \"%1\" \"%2\" \"%3\"") .arg(text) .arg("Arial,36,-1,255,75,0,0,0,0,0") .arg("Black");
+    Where topOfStep = gui->topOfPages[gui->displayPageNum-1];
+    scanPastGlobal(topOfStep);
+    appendMeta(topOfStep,meta);
+  }
 }
 
 void MetaItem::insertBOM()
@@ -1551,6 +1559,7 @@ void MetaItem::replaceMeta(const Where &here, const QString &line)
 {
   gui->replaceLine(here,line);
 }
+
 void MetaItem::deleteMeta(const Where &here)
 {
   gui->deleteLine(here);

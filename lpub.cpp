@@ -64,7 +64,7 @@ void Gui::appendCoverPage()
   mi.appendCoverPage();
   countPages();
   ++displayPageNum;
-  displayPage();
+  displayPage();  // display the page we just added
 }
 
 void Gui::insertNumberedPage()
@@ -825,7 +825,7 @@ void Gui::enableActions2()
     appendNumberedPageAct->setEnabled(backCover);
     deletePageAct->setEnabled(page.list.size() == 0);
     addBomAct->setEnabled(frontCover||backCover);
-    addTextAct->setEnabled(false);
+    addTextAct->setEnabled(true);
 }
 
 void Gui::createMenus()

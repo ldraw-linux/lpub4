@@ -1372,8 +1372,8 @@ Rc InsertMeta::parse(QStringList &argv, int index, Where &here)
   }
 
   if (rc == OkRc) {
-    _value[pushed] = insertData;
-    _here[pushed] = here;
+    _value = insertData;
+    _here[0] = here;
 
     return InsertRc;
   } else {
@@ -1389,36 +1389,36 @@ Rc InsertMeta::parse(QStringList &argv, int index, Where &here)
 QString InsertMeta::format(bool local, bool global)
 {
   QString foo;
-  switch (_value[pushed].type) {
+  switch (_value.type) {
     case InsertData::InsertPicture:
-      foo += " PICTURE \"" + _value[pushed].picName + "\"";
-      if (_value[pushed].picScale) {
-        foo += QString(" SCALE %1") .arg(_value[pushed].picScale);
+      foo += " PICTURE \"" + _value.picName + "\"";
+      if (_value.picScale) {
+        foo += QString(" SCALE %1") .arg(_value.picScale);
       }
     break;
     case InsertData::InsertText:
-      foo += QString("TEXT \"%1\" \"%2\" \"%3\"") .arg(_value[pushed].text)
-                                                                                   .arg(_value[pushed].textFont)
-                                                                                   .arg(_value[pushed].textColor);
+      foo += QString("TEXT \"%1\" \"%2\" \"%3\"") .arg(_value.text)
+                                                                                   .arg(_value.textFont)
+                                                                                   .arg(_value.textColor);
     break;
     case InsertData::InsertArrow:
       foo += " ARROW";
-      foo += QString(" %1") .arg(_value[pushed].arrowHead.rx());
-      foo += QString(" %1") .arg(_value[pushed].arrowHead.ry());
-      foo += QString(" %1") .arg(_value[pushed].arrowTail.rx());
-      foo += QString(" %1") .arg(_value[pushed].arrowTail.ry());
-      foo += QString(" %1") .arg(_value[pushed].haftingDepth);
-      foo += QString(" %1") .arg(_value[pushed].haftingTip.rx());
-      foo += QString(" %1") .arg(_value[pushed].haftingTip.ry());
+      foo += QString(" %1") .arg(_value.arrowHead.rx());
+      foo += QString(" %1") .arg(_value.arrowHead.ry());
+      foo += QString(" %1") .arg(_value.arrowTail.rx());
+      foo += QString(" %1") .arg(_value.arrowTail.ry());
+      foo += QString(" %1") .arg(_value.haftingDepth);
+      foo += QString(" %1") .arg(_value.haftingTip.rx());
+      foo += QString(" %1") .arg(_value.haftingTip.ry());
     break;
     case InsertData::InsertBom:
       foo += " BOM";
     break;
   }
 
-  if (_value[pushed].offsets[0] || _value[pushed].offsets[1]) {
-    foo += QString(" OFFSET %1 %2") .arg(_value[pushed].offsets[0])
-                                   .arg(_value[pushed].offsets[1]);
+  if (_value.offsets[0] || _value.offsets[1]) {
+    foo += QString(" OFFSET %1 %2") .arg(_value.offsets[0])
+                                   .arg(_value.offsets[1]);
   }
 
   return LeafMeta::format(local,global,foo);

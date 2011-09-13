@@ -35,8 +35,10 @@
 class TextItem : public QGraphicsTextItem, public Placement, public MetaItem
 {
 public:
-  QFont selectedFont;
   InsertMeta meta;
+  bool positionChanged;
+  QPointF position;
+  bool textChanged;
 
   TextItem()
   {
@@ -46,17 +48,36 @@ public:
     QGraphicsItem *parent) :  meta(meta)
   {
     InsertData data = meta.value();
-    setPlainText(data.text);
     setParentItem(parent);
 
-    QFont font(data.textFont);
+    QString fontString = data.textFont;
+    if (fontString.length() == 0) {
+      fontString = "Arial,48,-1,255,75,0,0,0,0,0";
+    }
+
+    QFont font;
+    font.fromString(fontString);
     setFont(font);
+
     QColor color(data.textColor);
     setDefaultTextColor(color);
+    setPlainText(data.text);
+    setTextInteractionFlags(Qt::TextEditorInteraction);
+
+    setFlag(QGraphicsItem::ItemIsMovable);
+    setFlag(QGraphicsItem::ItemIsSelectable);
+    setZValue(1000);
   }
 
 protected:
+  void mousePressEvent(QGraphicsSceneMouseEvent * /* event */);
+  void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
+  void mouseReleaseEvent(QGraphicsSceneMouseEvent * /* event */);
   void contextMenuEvent(QGraphicsSceneContextMenuEvent *event);
+  void focusInEvent(QFocusEvent *event);
+  void focusOutEvent(QFocusEvent *event);
+  void keyPressEvent(QKeyEvent *event);
+  void keyReleaseEvent(QKeyEvent *event);
 };
 
 #endif

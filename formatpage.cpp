@@ -204,7 +204,7 @@ int Gui::addGraphicsPageItems(
 
   int pW, pH;
 
- if (printing) {
+  if (printing) {
     if (view->maximumWidth() < page->meta.LPub.page.size.valuePixels(0)) {
       pW = view->maximumWidth();
     } else {

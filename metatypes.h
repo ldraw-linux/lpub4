@@ -167,22 +167,24 @@ public:
     InsertArrow,
     InsertBom
   } type;
+
   QString picName;
-  qreal      picScale;
+  qreal   picScale;
   QString text;
   QString textFont;
   QString textColor;
   QPointF arrowHead;
   QPointF arrowTail;
-  qreal       haftingDepth;
+  qreal   haftingDepth;
   QPointF haftingTip;
-  float        offsets[2];
+  float   offsets[2];
   InsertData()
   {
     picScale = 1.0;
     offsets[0] = 0.5;
     offsets[1] = 0.5;
     haftingDepth = 0;
+    textFont  = "Arial,48,-1,255,75,0,0,0,0,0";
     textColor = "Black";
   }
 };

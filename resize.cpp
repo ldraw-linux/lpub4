@@ -242,8 +242,7 @@ InsertPixmapItem::InsertPixmapItem(
 
   setFlag(QGraphicsItem::ItemIsSelectable,true);
   setFlag(QGraphicsItem::ItemIsMovable,true);
-
-  InsertData insertData = insertMeta.value();
+  setZValue(500);
 }
 
 void InsertPixmapItem::change()

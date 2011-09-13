@@ -1070,23 +1070,22 @@ public:
 class InsertMeta : public LeafMeta
 {
 private:
-  InsertData _value[2];
 public:
+  InsertData _value;
   InsertMeta() : LeafMeta()
   {
   }
   InsertMeta(const InsertMeta &rhs) : LeafMeta(rhs)
   {
-    _value[0] = rhs._value[0];
-    _value[1] = rhs._value[1];
+    _value = rhs._value;
   }
-  InsertData &value()
+  InsertData value()
   {
-    return _value[pushed];
+    return _value;
   }
   void setValue(InsertData &value)
   {
-    _value[pushed] = value;
+    _value = value;
   }
   virtual ~InsertMeta() {}
   Rc parse(QStringList &argv, int index, Where &here);
