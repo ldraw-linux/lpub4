@@ -824,12 +824,14 @@ Rc BackgroundMeta::parse(QStringList &argv, int index,Where &here)
     return FailureRc;
   }
 }
+
 QString BackgroundMeta::format(bool local, bool global)
 {
   QString foo;
   switch (_value[pushed].type) {
     case BackgroundData::BgTransparent:
-      foo = "TRANSPARENT";
+//line was      foo = "TRANSPARENT";		// Set this value to "COLOR \"#FFFFFF\"" for white background - Jaco
+      foo = "COLOR \"#FFFFFF\"";
     break;
     case BackgroundData::BgSubmodelColor:
       foo = "SUBMODEL_BACKGROUND_COLOR";
@@ -857,7 +859,7 @@ QString BackgroundMeta::text()
   BackgroundData background = value();
   switch (background.type) {
     case BackgroundData::BgTransparent:
-      return "Transparent";
+      return "Transparent (white)";			// Set this text to "Transparent (white)" - Jaco
     break;
     case BackgroundData::BgImage:
       return "Picture " + background.string;
