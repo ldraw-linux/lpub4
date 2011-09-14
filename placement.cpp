@@ -141,22 +141,27 @@ int Placement::relativeToSg(
       placeRelative(&steps->pli);
       appendRelativeTo(&steps->pli);
     }
+
     for (int j = 0; j < steps->list.size(); j++) {
+
       if (steps->list[j]->relativeType == RangeType) {
         Range *range = dynamic_cast<Range *>(steps->list[j]);
         for (int i = 0; i < range->list.size(); i++) {
+
           if (range->list[i]->relativeType == StepType) {
             Step *step = dynamic_cast<Step *>(range->list[i]);
             
             /* callouts */
 
             for (int i = 0; i < step->list.size(); i++) {
-              if (step->list[i]->relativeType == CalloutType) {
+
+              if (step->list[i]->relativeType == CalloutType || 1) {
                 Callout *callout = dynamic_cast<Callout *>(step->list[i]);
 
                 PlacementData placementData = callout->placement.value();
 
                 if (placementData.relativeTo == relativeType) {
+
                   placeRelative(callout);
 
                   steps->appendRelativeTo(callout);
