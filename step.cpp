@@ -553,7 +553,7 @@ int Step::sizeit(
         max = callout->size[y];
       }
     }
-    
+
     int rp = calloutPlacement.placement;
     switch (calloutPlacement.relativeTo) {
       case CsiType:
@@ -573,6 +573,9 @@ int Step::sizeit(
       break;
     }
     
+    if ( ! pliPerStep) {
+      sharable = false;
+    }
     square[callout->tbl[XX]][callout->tbl[YY]] = i + 1;
     int size = callout->submodelStack().size();
     if (sharable && size > 1) {
@@ -703,10 +706,8 @@ int Step::sizeit(
       case CsiType:
       case PartsListType:
       case StepNumberType:      
-        if (callout->shared) {
-          if (rows[TblCsi] < callout->size[y]) {
-            rows[TblCsi] = callout->size[y];
-          }
+        if (callout->shared && rows[TblCsi] < callout->size[y]) {
+          rows[TblCsi] = callout->size[y];
         } else {
 
           if (cols[callout->tbl[XX]] < callout->size[XX]) {
@@ -723,7 +724,7 @@ int Step::sizeit(
         }
       break;
       default:
-      break;
+     break;
     }
   }
 
