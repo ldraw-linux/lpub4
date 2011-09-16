@@ -1619,8 +1619,8 @@ void PliBackgroundItem::change()
   
   pli->pliMeta.constrain.setValue(constrainData);
 
-  if (pli->bom) {
-    if (pli->steps->list.size()) {
+  if (pli->bom || ! pli->perStep) {
+    if (pli->steps->list.size() && pli->perStep) {
       changeConstraint(pli->bottomOfSteps(),pli->bottomOfSteps(),&pli->pliMeta.constrain);
     } else {
       changeConstraint(pli->topOfSteps(),pli->bottomOfSteps(),&pli->pliMeta.constrain);
