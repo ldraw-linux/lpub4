@@ -445,7 +445,7 @@ int Step::sizeit(
 
   // size up the step number
 
-  if (showStepNumber) {
+  if ( ! onlyChild() && showStepNumber) {
     stepNumber.sizeit();
   }
 
@@ -921,7 +921,7 @@ void Step::addGraphicsItems(
                offsetY + pli.loc[YY]);
   }
   
-  if (stepNumber.number > 0 && showStepNumber) {
+  if (stepNumber.number > 0 && ! onlyChild() && showStepNumber) {
     StepNumberItem *sn; 
     if (calledOut) {
       sn = new StepNumberItem(this,
@@ -1091,7 +1091,7 @@ void Step::sizeitFreeform(
 
   // size up the step number
 
-  if (showStepNumber) {
+  if (! onlyChild() && showStepNumber) {
     stepNumber.sizeit();
   }
 
