@@ -772,6 +772,17 @@ int Gui::drawPage(
             multiStep = false;
 
             if (pliParts.size() && steps->meta.LPub.multiStep.pli.perStep.value() == false) {
+              PlacementData placementData = steps->stepGroupMeta.LPub.multiStep.pli.placement.value();
+              // Override default, which is for PliPerStep true
+              if (placementData.relativeTo != PageType &&
+                  placementData.relativeTo != StepGroupType) {
+                placementData.relativeTo = PageType;
+                placementData.placement = TopLeft;
+                placementData.preposition = Inside;
+                placementData.offsets[0] = 0;
+                placementData.offsets[1] = 0;
+                steps->stepGroupMeta.LPub.multiStep.pli.placement.setValue(placementData);
+              }
               steps->pli.bom = false;
               steps->pli.setParts(pliParts,steps->stepGroupMeta);
               steps->pli.sizePli(&steps->stepGroupMeta, StepGroupType, false);

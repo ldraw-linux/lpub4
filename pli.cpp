@@ -1346,7 +1346,6 @@ PliBackgroundItem::PliBackgroundItem(
   QGraphicsItem *parent)
 {
   pli       = _pli;
-  placement = _pli->placement;
   grabHeight = height;
   grabber = NULL;
 
@@ -1362,7 +1361,11 @@ PliBackgroundItem::PliBackgroundItem(
     toolTip = "Part List - popup menu";
   }
 
-  placement = pli->pliMeta.placement;
+  if (parentRelativeType == StepGroupType /* && pli->perStep == false */) {
+    placement = pli->meta->LPub.multiStep.pli.placement;
+  } else {
+    placement = pli->pliMeta.placement;
+  }
 
   setBackground( pixmap,
                  PartsListType,
@@ -1376,7 +1379,7 @@ PliBackgroundItem::PliBackgroundItem(
 
   setPixmap(*pixmap);
   setParentItem(parent);
-  if (parentRelativeType != SingleStepType) {
+  if (parentRelativeType != SingleStepType && pli->perStep) {
     setFlag(QGraphicsItem::ItemIsMovable,false);
   }
 }
@@ -1427,8 +1430,8 @@ void PliBackgroundItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 
       Where here;
 
-      if (pli->bom) {
-        if (pli->steps->list.size()) {
+      if (pli->bom || ! pli->perStep) {
+        if (pli->steps->list.size() && pli->perStep) {
           here = pli->bottomOfSteps();
         } else {
           here = pli->topOfSteps();
@@ -1437,7 +1440,7 @@ void PliBackgroundItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
         here = pli->bottomOfSteps();
       }
 
-      changePlacementOffset(here,&placement,PartsListType);
+      changePlacementOffset(here,&placement,pli->parentRelativeType);
     }
   }
 }
@@ -1493,13 +1496,16 @@ void PliBackgroundItem::contextMenuEvent(
     Where bottomOfStep;
     
     if (pli->step) {
-      if (bom) {
+      if (bom || pli->perStep) {
         topOfStep = pli->topOfSteps();
         bottomOfStep = pli->bottomOfSteps();
       } else {
         topOfStep = pli->topOfStep();
         bottomOfStep = pli->bottomOfStep();
       }
+    } else {
+      topOfStep = pli->topOfSteps();
+      bottomOfStep = pli->bottomOfSteps();
     }
   
     switch (parentRelativeType) {
@@ -1514,7 +1520,7 @@ void PliBackgroundItem::contextMenuEvent(
         local = false;
       break;
       default:
-        if (pli->bom) {
+        if (pli->bom || pli->perStep) {
           top    = pli->topOfSteps();
           bottom = pli->bottomOfSteps();
         } else {
@@ -1538,7 +1544,7 @@ void PliBackgroundItem::contextMenuEvent(
                       me+" Placement",
                       topOfStep,
                       bottomOfStep,
-                     &pli->placement);
+                     &pli->placement,true,1,0,false);
     } else if (selectedAction == marginAction) {
       changeMargins(me+" Margins",
                     topOfStep,
