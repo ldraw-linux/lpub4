@@ -42,6 +42,7 @@
 #include <QInputDialog>
 #include "metaitem.h"
 #include "lpub.h"
+#include "range.h"
 #include "color.h"
 #include "placementdialog.h"
 #include "pliconstraindialog.h"
@@ -1391,8 +1392,28 @@ void MetaItem::insertText()
                                             QString(""), &ok);
   if (ok && !text.isEmpty()) {
     QString meta = QString("0 !LPUB INSERT TEXT \"%1\" \"%2\" \"%3\"") .arg(text) .arg("Arial,36,-1,255,75,0,0,0,0,0") .arg("Black");
-    Where topOfStep = gui->topOfPages[gui->displayPageNum-1];
-    scanPastGlobal(topOfStep);
+    Where topOfStep;
+
+    bool multiStep = false;
+
+    Steps *steps = dynamic_cast<Steps *>(&gui->page);
+    if (steps && steps->list.size() > 0) {
+      if (steps->list.size() > 1) {
+        multiStep = true;
+      } else {
+        Range *range = dynamic_cast<Range *>(steps->list[0]);
+        if (range && range->list.size() > 1) {
+          multiStep = true;
+        }
+      }
+    }
+
+    if (multiStep) {
+      topOfStep = steps->bottomOfSteps();
+    } else {
+      topOfStep = gui->topOfPages[gui->displayPageNum-1];
+      scanPastGlobal(topOfStep);
+    }
     appendMeta(topOfStep,meta);
   }
 }
