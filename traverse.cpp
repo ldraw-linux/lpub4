@@ -253,7 +253,6 @@ int Gui::drawPage(
   
   steps->isMirrored = isMirrored;
   steps->setTopOfSteps(current);
-  steps->freeSteps();
   
   QList<InsertMeta> inserts;
   

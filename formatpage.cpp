@@ -487,7 +487,7 @@ int Gui::addGraphicsPageItems(
 
           for (int i = 0; i < step->list.size(); i++) {
 
-            if (step->list[i]->relativeType == CalloutType || 1) {
+            if (step->list[i]->relativeType == CalloutType) {
               Callout *callout = dynamic_cast<Callout *>(step->list[i]);
 
               PlacementData placementData = callout->placement.value();
@@ -575,7 +575,7 @@ int Gui::addGraphicsPageItems(
       }
     }
   } else {
-  
+
     // We've got a page that contains step groups, so add it
 
     PlacementData data = page->meta.LPub.multiStep.placement.value();
