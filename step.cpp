@@ -445,7 +445,7 @@ int Step::sizeit(
 
   // size up the step number
 
-  if ( ! onlyChild() && showStepNumber) {
+  if (showStepNumber && ! onlyChild()) {
     stepNumber.sizeit();
   }
 
@@ -1091,7 +1091,7 @@ void Step::sizeitFreeform(
 
   // size up the step number
 
-  if (! onlyChild() && showStepNumber) {
+  if (showStepNumber && ! onlyChild()) {
     stepNumber.sizeit();
   }
 

@@ -130,7 +130,7 @@ class LDrawFile {
     bool rendered(const QString &fileName, bool mirrored);
     int instances(const QString &fileName, bool mirrored);
     void countInstances();
-    void countInstances(const QString &fileName, bool mirrored);
+    void countInstances(const QString &fileName, bool mirrored, const bool callout = false);
     bool changedSinceLastWrite(const QString &fileName);
 };
 

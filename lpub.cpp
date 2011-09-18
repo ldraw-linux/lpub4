@@ -77,6 +77,9 @@ void Gui::appendNumberedPage()
 {
   MetaItem mi;
   mi.appendNumberedPage();
+  //countPages();
+  //++displayPageNum;
+  //displayPage();  // display the page we just added
 }
 
 void Gui::deletePage()

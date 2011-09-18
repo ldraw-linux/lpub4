@@ -361,6 +361,7 @@ int Gui::addGraphicsPageItems(
     QFileInfo fileInfo;    
     for (int i = 0; i < nInserts; i++) {
       InsertData insert = page->inserts[i].value();  
+
       switch (insert.type) {
         case InsertData::InsertPicture:
           {
@@ -485,7 +486,8 @@ int Gui::addGraphicsPageItems(
           // place callouts relative to the csi bounding box
 
           for (int i = 0; i < step->list.size(); i++) {
-            if (step->list[i]->relativeType == CalloutType) {
+
+            if (step->list[i]->relativeType == CalloutType || 1) {
               Callout *callout = dynamic_cast<Callout *>(step->list[i]);
 
               PlacementData placementData = callout->placement.value();
@@ -548,6 +550,27 @@ int Gui::addGraphicsPageItems(
               callout->addGraphicsPointerItem(pointer,callout->underpinnings);
             }
           }
+        }
+      }
+
+      // Place the Bill of materials on the page along with step group?????
+
+      if (page->pli.tsize()) {
+        if (page->pli.bom || 1) {
+          page->pli.setFlag(QGraphicsItem::ItemIsSelectable,true);
+          page->pli.setFlag(QGraphicsItem::ItemIsMovable,true);
+
+          PlacementData pld;
+
+          pld = page->pli.pliMeta.placement.value();
+
+          page->pli.placement.setValue(pld);
+#if 0
+          plPage.placeRelative(page->pli.background);
+          page->pli.loc[XX] = page->pli.background->loc[XX];
+          page->pli.loc[YY] = page->pli.background->loc[YY];
+          page->pli.setPos(page->pli.loc[0],page->pli.loc[1]);
+#endif
         }
       }
     }

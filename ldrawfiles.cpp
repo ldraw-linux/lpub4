@@ -554,7 +554,7 @@ bool LDrawFile::mirrored(
   //return a*(e*i - f*h) - b*(d*i - f*g) + c*(d*h - e*g) < 0;
 }
 
-void LDrawFile::countInstances(const QString &mcFileName, bool isMirrored)
+void LDrawFile::countInstances(const QString &mcFileName, bool isMirrored, bool callout)
 {
   QString fileName = mcFileName.toLower();
   bool partsAdded = false;
@@ -590,7 +590,11 @@ void LDrawFile::countInstances(const QString &mcFileName, bool isMirrored)
 
         for (++i; i < j; i++) {
           split(f->_contents[i],tokens);
-          if (tokens.size() == 4 &&
+          if (tokens.size() == 15 && tokens[0] == "1") {
+            if (contains(tokens[14]) && ! buffExchg && ! stepIgnore) {
+              countInstances(tokens[14],mirrored(tokens),true);
+            }
+          } else if (tokens.size() == 4 &&
               tokens[0] == "0" && 
               (tokens[1] == "LPUB" || tokens[1] == "!LPUB") && 
               tokens[2] == "CALLOUT" && 
@@ -638,10 +642,12 @@ void LDrawFile::countInstances(const QString &mcFileName, bool isMirrored)
     f->_numSteps += partsAdded && ! noStep &&
                        (isMirrored && f->_mirrorInstances == 0 ||
                       ! isMirrored && f->_instances == 0);
-    if (isMirrored) {
-      ++f->_mirrorInstances;
-    } else {
-      ++f->_instances;
+    if ( ! callout) {
+      if (isMirrored) {
+        ++f->_mirrorInstances;
+      } else {
+        ++f->_instances;
+      }
     }
   }
   f->_beenCounted = true;
