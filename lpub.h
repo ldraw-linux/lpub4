@@ -47,9 +47,8 @@
  *    paths(h,cpp) - a place to put the names of external dependencies like
  *      the path for the LDraw file system, the path to ldglite, etc.
  *
- *    render(h,cpp) - provides access to the renderer which currently only
- *      means ldglite.  LDView is the only other canidate renderer under
- *      consideration.
+ *    render(h,cpp) - provides access to the renderer which means either
+ *      LDGLite or LDView. You can set your preferred renderer. (red. Jaco)
  *
  *  The next layer has to do with the parsing of the LDraw files and knowing
  *  what to do with them.  At the lowest level, LPub's parsing is line based
@@ -62,7 +61,7 @@
  *  potentially use the values from configuration metas to do their jobs.
  *
  *  This and higher layers are built around some fundamental concepts
- *  provided by LPub.  These include:
+ *  provided by LPub. These include:
  *    Step - literally, this means the LDraw defined STEP metacommand.
  *           It also means an MLCad ROTSTEP metacommand.  For LPub it means
  *           one or more LDraw type 1 through type 5 lines (part, line,

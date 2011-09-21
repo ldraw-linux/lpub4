@@ -935,6 +935,8 @@ void Gui::createToolBars()
     zoomToolBar = addToolBar(tr("Zoom"));
     zoomToolBar->addAction(fitVisibleAct);
     zoomToolBar->addAction(fitWidthAct);
+// Jaco add actual size icon. Was missing.
+    zoomToolBar->addAction(actualSizeAct);
     zoomToolBar->addAction(zoomInAct);
     zoomToolBar->addAction(zoomOutAct);
 }
