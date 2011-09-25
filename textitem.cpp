@@ -44,43 +44,18 @@ void TextItem::contextMenuEvent(
   }
 
   if (selectedAction == editFontAction) {
-
-    QMessageBox::warning(NULL,
-      QMessageBox::tr("LPub"),
-      QMessageBox::tr("data = meta.value()"));
-
-    InsertData data = meta._value;
-
-    QMessageBox::warning(NULL,
-      QMessageBox::tr("LPub"),
-      QMessageBox::tr("font(data.textFont) %1") .arg(data.textFont));
+    InsertData data = meta.value();
 
     QFont font(data.textFont);
     bool ok;
-
-    QMessageBox::warning(NULL,
-      QMessageBox::tr("LPub"),
-      QMessageBox::tr("getFont()"));
 
     font = QFontDialog::getFont(&ok,font);
 
     if (ok) {
 
-      QMessageBox::warning(NULL,
-        QMessageBox::tr("LPub"),
-        QMessageBox::tr("font.toString()"));
-
       data.textFont = font.toString();
 
-      QMessageBox::warning(NULL,
-        QMessageBox::tr("LPub"),
-        QMessageBox::tr("meta.setValue(data) %1") .arg(data.textFont));
-
       meta.setValue(data);
-
-      QMessageBox::warning(NULL,
-        QMessageBox::tr("LPub"),
-        QMessageBox::tr("replaceMeta") .arg(data.textFont));
 
       beginMacro("UpdateFont");
       replaceMeta(meta.here(),meta.format(false,false));
@@ -89,7 +64,6 @@ void TextItem::contextMenuEvent(
       gui->displayPage();
     }
   } else if (selectedAction == editColorAction) {
-
     InsertData data = meta.value();
 
     QColor color(data.textColor);
