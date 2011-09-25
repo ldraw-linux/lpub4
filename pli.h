@@ -169,6 +169,7 @@ class Pli : public Placement {
     const Where &bottomOfSteps();
     const Where &topOfCallout();
     const Where &bottomOfCallout();
+    bool  autoRange(Where &top, Where &bottom);
     
     void setPos(float x, float y);
     void setFlag(QGraphicsItem::GraphicsItemFlag flag,bool value);

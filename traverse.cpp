@@ -499,6 +499,8 @@ int Gui::drawPage(
         rc = curMeta.parse(line,current,true);
       }
 
+      InsertData insertData;
+
       /* handle specific meta-commands */
 
       switch (rc) {
@@ -696,6 +698,7 @@ int Gui::drawPage(
         
         case InsertRc:
           inserts.append(curMeta.LPub.insert);  // these are always placed before any parts in step
+          insertData = curMeta.LPub.insert.value();
         break;
 
         case CalloutBeginRc:
@@ -797,12 +800,13 @@ int Gui::drawPage(
             if (page) {
               page->inserts = inserts;
             }
-            
+
             bool endOfSubmodel = stepNum >= ldrawFile.numSteps(current.modelName);
             int  instances = ldrawFile.instances(current.modelName,isMirrored);
             addGraphicsPageItems(steps, coverPage, endOfSubmodel,instances, view, scene,printing);
             return HitEndOfPage;
           }
+          inserts.clear();
         break;
 
         case NoStepRc:
@@ -918,6 +922,7 @@ int Gui::drawPage(
               /*
                * Simple step
                */
+
               steps->placement = steps->meta.LPub.assem.placement;
               showLine(topOfStep);
 
@@ -941,7 +946,9 @@ int Gui::drawPage(
             bfxStore1 = false;
             bfxLoad = false;
           }
-          inserts.clear();
+          if ( ! multiStep) {
+            inserts.clear();
+          }
           steps->setBottomOfSteps(current);
           noStep = false;
         break;

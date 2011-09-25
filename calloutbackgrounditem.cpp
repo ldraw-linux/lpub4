@@ -148,7 +148,7 @@ void CalloutBackgroundItem::contextMenuEvent(
   } else if (selectedAction == perStepAction) {
     changeBool(callout->topOfCallout(),
                callout->bottomOfCallout(),
-               &callout->meta.LPub.callout.pli.perStep,true,0);
+               &callout->meta.LPub.callout.pli.perStep,true,0,false,false);
 
   } else if (selectedAction == placementAction) {
     changePlacement(parentRelativeType, 

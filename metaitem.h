@@ -48,7 +48,8 @@ enum ScanMask {
 
   StepGroupMask = StepGroupBeginMask|StepGroupDividerMask|StepGroupEndMask,
 
-  PageMask = (1 << InsertPageRc) | (1 << InsertCoverPageRc)
+  PageMask = (1 << InsertPageRc) | (1 << InsertCoverPageRc),
+  InsertMask = (1 << InsertRc)
 };
 
 class StepGroup;
@@ -141,7 +142,8 @@ public:
                         BoolMeta    *,
                         bool  useTop = true,
                         int   append = 1, 
-                        bool allowLocal = false);
+                        bool allowLocal = false,
+                        bool askLocal = true);
 
   void changeFont(      const Where &, 
                         const Where &,
@@ -252,7 +254,7 @@ public:
                         bool local = false,
                         bool askLocal = true,
                         bool global = true);
-  void changeConstraint(Where topOfStep, Where bottomOfStep, ConstrainMeta *constraint,int append = 1);
+  void changeConstraint(Where topOfStep, Where bottomOfStep, ConstrainMeta *constraint,int append = 1, bool useBot = false);
   void changeConstraintStepGroup(Where topOfStep, Where bottomOfStep, ConstrainMeta *constraint, int append = 1);
   void changeInsertOffset(InsertMeta *placement);
 

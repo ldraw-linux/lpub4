@@ -170,7 +170,7 @@ void MultiStepRangeBackgroundItem::contextMenuEvent(
   } else if (selectedAction == perStepAction) {
     changeBool(page->topOfSteps(),
                page->bottomOfSteps(),
-              &meta->LPub.multiStep.pli.perStep);
+              &meta->LPub.multiStep.pli.perStep,true,1,false,false);
   } else if (selectedAction == marginAction) {
     changeMargins("Step Group Margins",
                   page->topOfSteps(),

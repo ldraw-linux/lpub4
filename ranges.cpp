@@ -499,7 +499,7 @@ void Steps::addGraphicsItems(
   int offsetY,
   QGraphicsItem *parent)
 {
-  if (pli.tsize()) {
+  if (pli.tsize() && ! pli.bom) {
     pli.addPli(meta.submodelStack.size(), parent);
   }
 

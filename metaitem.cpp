@@ -951,9 +951,14 @@ void MetaItem::changeConstraint(
   Where          topOfStep,
   Where          bottomOfStep,
   ConstrainMeta *constraint,
-  int            append)
+  int            append,
+  bool           useBot)
 {
-  setMetaTopOf(topOfStep,bottomOfStep,constraint,append,true,false);
+  if (useBot) {
+    setMetaBottomOf(topOfStep,bottomOfStep,constraint,append,true,false);
+  } else {
+    setMetaTopOf(topOfStep,bottomOfStep,constraint,append,true,false);
+  }
 }
 
 void MetaItem::changeConstraintStepGroup(
@@ -1203,10 +1208,11 @@ void MetaItem::changeBool(
   BoolMeta    *boolMeta,
   bool         useTop,
   int          append,
-  bool         local)   // allow local metas
+  bool         local,
+  bool         askLocal)   // allow local metas
 {
   boolMeta->setValue( ! boolMeta->value());
-  setMeta(topOfSteps,bottomOfSteps,boolMeta,useTop,append,local);
+  setMeta(topOfSteps,bottomOfSteps,boolMeta,useTop,append,local,askLocal);
 }
 
 
@@ -1504,8 +1510,8 @@ Rc  MetaItem::scanForward(
     } else {
       Rc rc = tmpMeta.parse(line,here);
       
-      if (rc == InsertRc) {
-        return rc;
+      if (rc == InsertRc && ((mask >> rc) & 1)) {
+        // return rc;
       } else if (rc == StepRc || rc == RotStepRc) {
         if (((mask >> rc) & 1) && partsAdded) {
           return rc;

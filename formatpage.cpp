@@ -423,11 +423,10 @@ int Gui::addGraphicsPageItems(
             QStringList bomParts;
             QString addLine;
             getBOMParts(current,addLine,bomParts);
-            page->pli.pliMeta = page->meta.LPub.bom;
             page->pli.steps = steps;
             page->pli.setParts(bomParts,page->meta,true);
             bomParts.clear();
-            page->pli.sizePli(&page->meta,PageType,false);
+            page->pli.sizePli(&page->meta,page->relativeType,false);
             page->pli.relativeToSize[0] = plPage.size[XX];
             page->pli.relativeToSize[1] = plPage.size[YY];
           }
@@ -550,27 +549,31 @@ int Gui::addGraphicsPageItems(
               callout->addGraphicsPointerItem(pointer,callout->underpinnings);
             }
           }
-        }
-      }
 
-      // Place the Bill of materials on the page along with step group?????
+          // Place the Bill of materials on the page along with single step
 
-      if (page->pli.tsize()) {
-        if (page->pli.bom || 1) {
-          page->pli.setFlag(QGraphicsItem::ItemIsSelectable,true);
-          page->pli.setFlag(QGraphicsItem::ItemIsMovable,true);
+          if (page->pli.tsize()) {
+            if (page->pli.bom) {
+              page->pli.addPli(0,pageBg);
+              page->pli.setFlag(QGraphicsItem::ItemIsSelectable,true);
+              page->pli.setFlag(QGraphicsItem::ItemIsMovable,true);
 
-          PlacementData pld;
+              PlacementData pld;
 
-          pld = page->pli.pliMeta.placement.value();
+              pld = page->pli.pliMeta.placement.value();
 
-          page->pli.placement.setValue(pld);
-#if 0
-          plPage.placeRelative(page->pli.background);
-          page->pli.loc[XX] = page->pli.background->loc[XX];
-          page->pli.loc[YY] = page->pli.background->loc[YY];
-          page->pli.setPos(page->pli.loc[0],page->pli.loc[1]);
-#endif
+              page->pli.placement.setValue(pld);
+              if (pld.relativeTo == PageType) {
+                plPage.placeRelative(page->pli.background);
+              } else {
+                step->csiItem->placeRelative(page->pli.background);
+              }
+              page->pli.loc[XX] = page->pli.background->loc[XX];
+              page->pli.loc[YY] = page->pli.background->loc[YY];
+
+              page->pli.setPos(page->pli.loc[XX],page->pli.loc[YY]);
+            }
+          }
         }
       }
     }
@@ -602,6 +605,7 @@ int Gui::addGraphicsPageItems(
 
     if (page->pli.tsize()) {
       if (page->pli.bom) {
+        page->pli.addPli(0,pageBg);
         page->pli.setFlag(QGraphicsItem::ItemIsSelectable,true);
         page->pli.setFlag(QGraphicsItem::ItemIsMovable,true);
 
@@ -610,14 +614,18 @@ int Gui::addGraphicsPageItems(
         pld = page->pli.pliMeta.placement.value();
 
         page->pli.placement.setValue(pld);
-        plPage.placeRelative(page->pli.background);
+        if (pld.relativeTo == PageType) {
+          plPage.placeRelative(page->pli.background);
+        } else {
+          page->placeRelative(page->pli.background);
+        }
         page->pli.loc[XX] = page->pli.background->loc[XX];
         page->pli.loc[YY] = page->pli.background->loc[YY];
       }
-      page->pli.setPos(page->pli.loc[0],page->pli.loc[1]);
+      page->pli.setPos(page->pli.loc[XX],page->pli.loc[YY]);
     }
   }
-  
+
   scene->addItem(pageBg);
   
   view->setSceneRect(pageBg->sceneBoundingRect());

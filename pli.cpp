@@ -1321,6 +1321,30 @@ void Pli::setFlag(QGraphicsItem::GraphicsItemFlag flag, bool value)
   }
 }
 
+/*
+ * Single step per page                   case 3 top/bottom of step
+ * step in step group pli per step = true case 3 top/bottom of step
+ * step in callout                        case 3 top/bottom of step
+ * step group global pli                  case 2 topOfSteps/bottomOfSteps
+ * BOM on single step per page            case 2 topOfSteps/bottomOfSteps
+ * BOM on step group page                 case 1
+ * BOM on cover page                      case 2 topOfSteps/bottomOfSteps
+ * BOM on numbered page
+ */
+
+bool Pli::autoRange(Where &top, Where &bottom)
+{
+  if (bom || ! perStep) {
+    top = topOfSteps();
+    bottom = bottomOfSteps();
+    return steps->list.size() && (perStep || bom);
+  } else {
+    top = topOfStep();
+    bottom = bottomOfStep();
+    return false;
+  }
+}
+
 QString PGraphicsPixmapItem::pliToolTip(
   QString type,
   QString color)
@@ -1362,7 +1386,11 @@ PliBackgroundItem::PliBackgroundItem(
   }
 
   if (parentRelativeType == StepGroupType /* && pli->perStep == false */) {
-    placement = pli->meta->LPub.multiStep.pli.placement;
+    if (pli-bom) {
+      placement = pli->meta->LPub.bom.placement;
+    } else {
+      placement = pli->meta->LPub.multiStep.pli.placement;
+    }
   } else {
     placement = pli->pliMeta.placement;
   }
@@ -1428,18 +1456,14 @@ void PliBackgroundItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
       placementData.offsets[1] += newPosition.y()/pli->relativeToSize[1];
       placement.setValue(placementData);
 
-      Where here;
+      Where here, bottom;
+      bool useBot;
 
-      if (pli->bom || ! pli->perStep) {
-        if (pli->steps->list.size() && pli->perStep) {
-          here = pli->bottomOfSteps();
-        } else {
-          here = pli->topOfSteps();
-        }
-      } else {
-        here = pli->bottomOfSteps();
+      useBot = pli->autoRange(here,bottom);
+
+      if (useBot) {
+        here = bottom;
       }
-
       changePlacementOffset(here,&placement,pli->parentRelativeType);
     }
   }
@@ -1496,7 +1520,7 @@ void PliBackgroundItem::contextMenuEvent(
     Where bottomOfStep;
     
     if (pli->step) {
-      if (bom || pli->perStep) {
+      if (pli->bom || pli->perStep) {
         topOfStep = pli->topOfSteps();
         bottomOfStep = pli->bottomOfSteps();
       } else {
@@ -1538,13 +1562,31 @@ void PliBackgroundItem::contextMenuEvent(
                        bottomOfStep,
                        &pli->pliMeta.constrain);
     } else if (selectedAction == placementAction) {
-      changePlacement(parentRelativeType,
-                      pli->perStep,
-                      PartsListType,
-                      me+" Placement",
-                      topOfStep,
-                      bottomOfStep,
-                     &pli->placement,true,1,0,false);
+      if (pli->bom) {
+        changePlacement(parentRelativeType,
+                        pli->perStep,
+                        PartsListType,
+                        me+" Placement",
+                        topOfStep,
+                        bottomOfStep,
+                       &pli->pliMeta.placement,true,1,0,false);
+      } else if (pli->perStep) {
+        changePlacement(parentRelativeType,
+                        pli->perStep,
+                        PartsListType,
+                        me+" Placement",
+                        pli->topOfStep(),
+                        pli->bottomOfStep(),
+                       &pli->placement);
+      } else {
+        changePlacement(parentRelativeType,
+                        pli->perStep,
+                        PartsListType,
+                        me+" Placement",
+                        pli->topOfStep(),
+                        pli->bottomOfStep(),
+                       &pli->placement,true,1,0,false);
+      }
     } else if (selectedAction == marginAction) {
       changeMargins(me+" Margins",
                     topOfStep,
@@ -1625,15 +1667,21 @@ void PliBackgroundItem::change()
   
   pli->pliMeta.constrain.setValue(constrainData);
 
-  if (pli->bom || ! pli->perStep) {
-    if (pli->steps->list.size() && pli->perStep) {
-      changeConstraint(pli->bottomOfSteps(),pli->bottomOfSteps(),&pli->pliMeta.constrain);
-    } else {
-      changeConstraint(pli->topOfSteps(),pli->bottomOfSteps(),&pli->pliMeta.constrain);
+  Where top, bottom;
+  bool useBot;
+
+  // for single step with BOM, we have to do something special
+
+  useBot = pli->autoRange(top,bottom);
+  int append = 1;
+  if (pli->bom && pli->steps->relativeType == SingleStepType && pli->steps->list.size() == 1) {
+    Range *range = dynamic_cast<Range *>(pli->steps->list[0]);
+    if (range->list.size() == 1) {
+      append = 0;
     }
-  } else {
-    changeConstraint(pli->topOfStep(),pli->bottomOfStep(),&pli->pliMeta.constrain);
   }
+
+  changeConstraint(top,bottom,&pli->pliMeta.constrain,append,useBot);
 }
 
 QRectF PliBackgroundItem::currentRect()
