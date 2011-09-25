@@ -67,6 +67,7 @@ public:
     setFlag(QGraphicsItem::ItemIsMovable);
     setFlag(QGraphicsItem::ItemIsSelectable);
     setZValue(1000);
+    margin.setValues(0.0,0.0);
   }
 
 protected:

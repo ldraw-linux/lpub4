@@ -387,7 +387,9 @@ int Gui::addGraphicsPageItems(
               
               pixmap->placement.setValue(pld);
 
-              plPage.placeRelative(pixmap);
+              int margin[2] = {0, 0};
+
+              plPage.placeRelative(pixmap, margin);
               pixmap->setPos(pixmap->loc[XX],pixmap->loc[YY]);
               pixmap->relativeToSize[0] = plPage.size[XX];
               pixmap->relativeToSize[1] = plPage.size[YY];
@@ -409,7 +411,9 @@ int Gui::addGraphicsPageItems(
 
             text->placement.setValue(pld);
 
-            plPage.placeRelative(text);
+            int margin[2] = {0, 0};
+
+            plPage.placeRelative(text, margin);
             text->setPos(text->loc[XX],text->loc[YY]);
             text->relativeToSize[0] = plPage.size[XX];
             text->relativeToSize[1] = plPage.size[YY];
