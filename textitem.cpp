@@ -118,7 +118,8 @@ void TextItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     pld.preposition   = Inside;
 
     calcOffsets(pld,insertData.offsets,topLeft,size);
-    insertData.text = toPlainText();
+    QRegExp rx("\n");
+    insertData.text = toPlainText().replace(rx,"\\n");
 
     meta.setValue(insertData);
 
@@ -142,7 +143,8 @@ void TextItem::focusOutEvent(QFocusEvent *event)
 
   if (textChanged) {
     InsertData insertData = meta.value();
-    insertData.text = toPlainText();
+    QRegExp rx("\n");
+    insertData.text = toPlainText().replace(rx,"\\n");
     meta.setValue(insertData);
 
     beginMacro(QString("Edit"));
