@@ -118,9 +118,8 @@ void TextItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     pld.preposition   = Inside;
 
     calcOffsets(pld,insertData.offsets,topLeft,size);
-    QRegExp rx("\n");
-    insertData.text = toPlainText().replace(rx,"\\n");
-
+    QStringList list = toPlainText().split("\n");
+    insertData.text = list.join("\\n");
     meta.setValue(insertData);
 
     beginMacro(QString("MoveText"));
@@ -143,8 +142,8 @@ void TextItem::focusOutEvent(QFocusEvent *event)
 
   if (textChanged) {
     InsertData insertData = meta.value();
-    QRegExp rx("\n");
-    insertData.text = toPlainText().replace(rx,"\\n");
+    QStringList list = toPlainText().split("\n");
+    insertData.text = list.join("\\n");
     meta.setValue(insertData);
 
     beginMacro(QString("Edit"));
