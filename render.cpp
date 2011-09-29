@@ -181,7 +181,7 @@ int LDGLite::renderCsi(
   ldglite.setStandardErrorFile(QDir::currentPath() + "/stderr");
   ldglite.setStandardOutputFile(QDir::currentPath() + "/stdout");
   ldglite.start(Preferences::ldgliteExe,arguments);
-  if ( ! ldglite.waitForFinished(5*60*1000)) {
+  if ( ! ldglite.waitForFinished(6*60*1000)) {
     if (ldglite.exitCode() != 0) {
       QByteArray status = ldglite.readAll();
       QString str;
@@ -375,7 +375,7 @@ int LDView::renderCsi(
   ldview.setWorkingDirectory(QDir::currentPath()+"/"+Paths::tmpDir);
   ldview.start(Preferences::ldviewExe,arguments);
 
-  if ( ! ldview.waitForFinished(5*60*1000)) {
+  if ( ! ldview.waitForFinished(6*60*1000)) {
     if (ldview.exitCode() != 0 || 1) {
       QByteArray status = ldview.readAll();
       QString str;
