@@ -463,7 +463,7 @@ Gui::Gui()
              this,      SLOT(  fileChanged(const QString &)));
 #endif
     setCurrentFile("");
-
+    // Jaco: This sets the initial size of the main window
     resize(800,600);
 
     gui = this;

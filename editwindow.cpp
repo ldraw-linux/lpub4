@@ -172,8 +172,13 @@ void EditWindow::displayFile(
   
 
 }
+// Jaco is trying to get the edit window to resize...
 
 void EditWindow::redraw()
 {
   redrawSig();
+// QT manual says
+// void QWidget::adjustSize ()
+// Adjusts the size of the widget to fit its contents.
+  adjustSize(); //Does not work.
 }

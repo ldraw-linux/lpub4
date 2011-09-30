@@ -71,6 +71,7 @@ signals:
 
 private slots:
     void contentsChange(int position, int charsRemoved, int charsAdded);
+    // Maybe this helps resizing the editwindow (Jaco)
     void redraw();
 
 public slots:
