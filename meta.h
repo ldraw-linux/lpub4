@@ -190,6 +190,14 @@ public:
   {
     return _here[pushed];
   }
+  void clear()
+  {
+    Where emptyHere;
+    _here[0] = emptyHere;
+    _here[1] = emptyHere;
+    pushed = 0;
+    global = false;
+  }
 
   void pop()
   {
@@ -814,6 +822,12 @@ public:
     _value[1] = rhs._value[1];
   }
   virtual ~PlacementMeta() {}
+  void clear()
+  {
+    LeafMeta::clear();
+    _value[0].clear();
+    _value[1].clear();
+  }
   Rc parse(QStringList &argv, int index, Where &here);
   QString format(bool,bool);
   QString formatOffset(bool,bool);
@@ -1556,7 +1570,7 @@ class RotStepMeta : public LeafMeta
 private:
   RotStepData _value;
 public:
-  RotStepData value()
+  RotStepData value() const
   {
     return _value;
   }
@@ -1572,6 +1586,13 @@ public:
   }
   RotStepMeta(const RotStepMeta &rhs) : LeafMeta(rhs)
   {
+    _value = rhs.value();
+  }
+  RotStepMeta& operator=(const RotStepMeta &rhs)
+  {
+    LeafMeta::operator=(rhs);
+    _value = rhs.value();
+    return *this;
   }
 
   virtual ~RotStepMeta() {}

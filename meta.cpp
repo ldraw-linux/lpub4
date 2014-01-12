@@ -830,8 +830,7 @@ QString BackgroundMeta::format(bool local, bool global)
   QString foo;
   switch (_value[pushed].type) {
     case BackgroundData::BgTransparent:
-//line was      foo = "TRANSPARENT";		// Set this value to "COLOR \"#FFFFFF\"" for white background - Jaco
-      foo = "COLOR \"#FFFFFF\"";
+      foo = "TRANSPARENT";
     break;
     case BackgroundData::BgSubmodelColor:
       foo = "SUBMODEL_BACKGROUND_COLOR";
@@ -859,7 +858,7 @@ QString BackgroundMeta::text()
   BackgroundData background = value();
   switch (background.type) {
     case BackgroundData::BgTransparent:
-      return "Transparent (white)";			// Set this text to "Transparent (white)" - Jaco
+      return "Transparent";
     break;
     case BackgroundData::BgImage:
       return "Picture " + background.string;

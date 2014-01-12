@@ -98,6 +98,7 @@ void BackgroundItem::setBackground(
     }
     break;
     case BackgroundData::BgTransparent:
+      brushColor = Qt::transparent;
     break;
     case BackgroundData::BgColor:
     case BackgroundData::BgSubmodelColor:

@@ -1088,11 +1088,16 @@ int Gui::findPage(
               SubmodelStack tos(current.modelName,current.lineNumber,stepNumber);
               meta.submodelStack << tos;
               Where current2(type,0);
-              meta.rotStep.clear(); // rotsteps don't affect submodels
+
+              // save rotStep, clear it, and restore it afterwards
+              // since rotsteps don't affect submodels
+              RotStepMeta saveRotStep2 = meta.rotStep;
+              meta.rotStep.clear();
 
               findPage(view,scene,pageNum,line,current2,isMirrored,meta,printing);
               saveStepPageNum = stepPageNum;
               meta.submodelStack.pop_back();
+              meta.rotStep = saveRotStep2; // restore old rotstep
             }
           }
           if (bfxStore1) {
@@ -1243,6 +1248,7 @@ int Gui::findPage(
 
           case CalloutEndRc:
             callout = false;
+            meta.LPub.callout.placement.clear();
           break;
           
           case InsertCoverPageRc:

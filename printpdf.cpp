@@ -307,13 +307,23 @@ void Gui::exportAs(QString &suffix)
   view.centerOn(boundingRect.center());
 // view.fitInView(boundingRect);
   clearPage(&view, &scene);
+    
+  // Support transparency for formats that can handle it, but use white for those that can't.
+  QColor fill = (suffix.compare(".png", Qt::CaseInsensitive) == 0) ? Qt::transparent :  Qt::white;
   
   int savePageNumber = displayPageNum;  
   for (displayPageNum = 1; displayPageNum <= maxPages; displayPageNum++) {
     
     //qApp->processEvents();
     
+    // clear the pixels of the image, just in case the background is
+    // transparent or uses a PNG image with transparency. This will
+    // prevent rendered pixels from each page layering on top of each
+    // other.
+    image.fill(fill.Rgb);
+
     // render this page
+
     // scene.render instead of view.render resolves "warm up" issue
     drawPage(&view,&scene,false);
     scene.setSceneRect(0.0,0.0,pageWidthPx,pageHeightPx);

@@ -455,6 +455,7 @@ public:
                                   QStringList &csiParts) {
     QDateTime date;
     ldrawFile.insert(name,csiParts,date,false,true);
+    writeToTmp();
   }
   void insertLine (const Where &here, const QString &line, QUndoCommand *parent = 0);
   void appendLine (const Where &here, const QString &line, QUndoCommand *parent = 0);

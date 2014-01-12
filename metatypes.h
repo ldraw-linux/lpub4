@@ -120,6 +120,10 @@ public:
   float offsets[2];
   PlacementData()
   {
+    clear();
+  }
+  void clear()
+  {
     rectPlacement = TopLeftOutsideCorner;
     offsets[0] = 0;
     offsets[1] = 0;
@@ -147,6 +151,14 @@ public:
     rots[0] = 0;
     rots[1] = 0;
     rots[2] = 0;
+  }
+  RotStepData & operator=(const RotStepData &rhs)
+  {
+    type = rhs.type;
+    rots[0] = rhs.rots[0];
+    rots[1] = rhs.rots[1];
+    rots[2] = rhs.rots[2];
+    return *this;
   }
 };
 

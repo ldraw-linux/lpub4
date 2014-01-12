@@ -695,7 +695,7 @@ BackgroundGui::BackgroundGui(
   parent->setLayout(grid);
 
   combo = new QComboBox(parent);
-  combo->addItem("None (white)");			// Set this text to "None (white)" - Jaco
+  combo->addItem("None (transparent)");
   combo->addItem("Picture");
   combo->addItem("Solid Color");
   combo->addItem("Submodel Level Color");
@@ -786,7 +786,7 @@ void BackgroundGui::typeChange(QString const &type)
 {
   BackgroundData background = meta->value();
 
-  if (type == "None (white)") {					// Set this text to "None (white)" - Jaco
+  if (type == "None (transparent)") {
     background.type = BackgroundData::BgTransparent;
   } else if (type == "Picture") {
     background.type = BackgroundData::BgImage;
