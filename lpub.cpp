@@ -501,23 +501,25 @@ void Gui::closeEvent(QCloseEvent *event)
 void Gui::about()
 {
    QMessageBox::about(this, tr("About LPub"),
-            tr("<b>LPub 4.0.0.12</b> is a proud member of the LDraw "
+            tr("<b>LPub 4.0.0.14</b> is a proud member of the LDraw "
                "family of tools.  LPub is a WYSIWYG tool for creating "
                "LEGO(c) style building instructions. "
                "LPub4 source code and application can be found on "
-               "www.sourceforge.net/projects/lpub4/files. "
+               "www.sourceforge.net/projects/lpub4/files.<br>"
                "Copyright 2000-2011 Kevin Clague "
-               "kevin.clague@gmail.com"));
+               "kevin.clague@gmail.com<br>"
+               "2014 - Daniele Benedettelli"));
 }
 
 // Begin Jaco's code
+// Danny: web url changed, as it pointed nowhere
 
 #include <QDesktopServices>
 #include <QUrl>
 
 void Gui::onlineManual()
 {
-    QDesktopServices::openUrl(QUrl("http://lpub.binarybricks.nl"));
+    QDesktopServices::openUrl(QUrl("http://sites.google.com/site/workingwithlpub/"));
 }
 
 // End Jaco's code

@@ -591,7 +591,7 @@ void LDrawFile::countInstances(const QString &mcFileName, bool isMirrored, bool 
         for (++i; i < j; i++) {
           split(f->_contents[i],tokens);
           if (tokens.size() == 15 && tokens[0] == "1") {
-            if (contains(tokens[14]) && ! buffExchg && ! stepIgnore) {
+            if (contains(tokens[14]) /*&& ! buffExchg */ && ! stepIgnore) {
               countInstances(tokens[14],mirrored(tokens),true);
             }
           } else if (tokens.size() == 4 &&
@@ -623,8 +623,8 @@ void LDrawFile::countInstances(const QString &mcFileName, bool isMirrored, bool 
       } else if (tokens.size() >= 2 && tokens[0] == "0" &&
                 (tokens[1] == "STEP" || tokens[1] == "ROTSTEP")) {
         if (partsAdded && ! noStep) {
-          int incr = isMirrored && f->_mirrorInstances == 0 ||
-                     ! isMirrored && f->_instances == 0;
+          int incr = (isMirrored && f->_mirrorInstances == 0) ||
+                     (!isMirrored && f->_instances == 0);
           f->_numSteps += incr;
         }
         partsAdded = false;
@@ -633,15 +633,17 @@ void LDrawFile::countInstances(const QString &mcFileName, bool isMirrored, bool 
                                      && tokens[1] == "BUFEXCHG") {
         buffExchg = tokens[3] == "STORE";
       } else if (tokens.size() == 15 && tokens[0] == "1") {
-        if (contains(tokens[14]) && ! buffExchg && ! stepIgnore) {
-          countInstances(tokens[14],mirrored(tokens));
+        bool containsSubFile = contains(tokens[14]);
+        // Danny: !buffExchg condition prevented from counting steps in submodels
+        if (containsSubFile /*&& ! buffExchg*/ && ! stepIgnore) {
+          countInstances(tokens[14],mirrored(tokens),false);
         }
         partsAdded = true;
       }
     }
     f->_numSteps += partsAdded && ! noStep &&
-                       (isMirrored && f->_mirrorInstances == 0 ||
-                      ! isMirrored && f->_instances == 0);
+                       ( (isMirrored && f->_mirrorInstances == 0) ||
+                       (!isMirrored && f->_instances == 0) );
     if ( ! callout) {
       if (isMirrored) {
         ++f->_mirrorInstances;

@@ -343,7 +343,11 @@ int Gui::drawPage(
               }
             }
 
-            if ( ! removed) {
+            // Danny: the following condition should help LPUB to remove automatically from PLI the parts in the buffer,
+            // but does not work if two buffers are used one after another in a multi step page.
+            // Better to make the user use the !LPUB PLI BEGIN IGN / END
+
+            if ( ! removed )  {
               pliParts << Pli::partLine(line,current,steps->meta);
             }
           } else {
@@ -482,7 +486,7 @@ int Gui::drawPage(
         range->append(step);
       }
 
-    } else if (tokens.size() > 0 && tokens[0] == "0" || gprc == EndOfFileRc) {
+    } else if ( (tokens.size() > 0 && tokens[0] == "0") || gprc == EndOfFileRc) {
       
       /* must be meta-command (or comment) */
       if (global && tokens.contains("!LPUB") && tokens.contains("GLOBAL")) {
@@ -1079,7 +1083,7 @@ int Gui::findPage(
           bool rendered   = ldrawFile.rendered(type,ldrawFile.mirrored(token));
           CalloutBeginMeta::CalloutMode mode = meta.LPub.callout.begin.value();
                     
-          if (contains && (!callout || callout && mode != CalloutBeginMeta::Unassembled)) {
+          if (contains && (!callout || (callout && mode != CalloutBeginMeta::Unassembled) )) {
             if ( ! rendered && (! bfxStore2 || ! bfxParts.contains(token[1]+type))) {
 
               isMirrored = ldrawFile.mirrored(token);

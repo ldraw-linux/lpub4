@@ -204,8 +204,27 @@ bool Pli::initAnnotationString()
     titles << "^Technic Axle\\s+(\\d+)\\s*.*$";
     titles << "^Technic Axle Flexible\\s+(\\d+)\\s*$";
     titles << "^Technic Beam\\s+(\\d+)\\s*$";
-    titles << "^Electric Cable NXT\\s+([0-9].*)$";
     titles << "^Electric Cable RCX\\s+([0-9].*)$";
+
+    // additions by Danny
+    titles << "^Electric Mindstorms NXT Cable\\s+([0-9].*)$";
+    titles << "^Electric Mindstorms EV3 Cable\\s+([0-9].*)$";
+
+     // VEX parts annotations added by Danny on 14 April 2014
+    titles <<"^VEX Beam  1 x\\s+(\\d+)\\s*$";
+    titles <<"^VEX Beam  2 x\\s+(\\d+)\\s*$";
+    titles <<"^VEX Pin Standoff\\s+([0-9]*\\.?[0-9]*)\\sM$";
+
+    //titles <<"^VEX Beam .*(?=Bent).*(?=(\\d\\d))(\\d+)";
+    //titles <<"^VEX Beam .*(?=Bent).*(?=(\\d\\d))(?!90)(\\d+)";
+    //titles <<"^VEX Beam.*(?:Double Bent).*(?!90)(\\d\\d)$";
+    //titles <<"^VEX Beam .*(?=Bent).*(?!90)(\\d\\d)";
+    titles <<"^VEX Beam(?:\\s)(?:(?!Double Bent).)*(?!90)(\\d\\d)$";
+
+    titles <<"^VEX Plate  4 x\\s+(\\d+)\\s*$";
+    titles << "^VEX Axle\\s+(\\d+)\\s*.*$";
+    titles << "^VEX-2 Smart Cable\\s+([0-9].*)$";
+
   }
   return true;
 }
