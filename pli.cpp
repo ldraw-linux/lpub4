@@ -224,6 +224,7 @@ bool Pli::initAnnotationString()
     titles <<"^VEX Plate  4 x\\s+(\\d+)\\s*$";
     titles << "^VEX Axle\\s+(\\d+)\\s*.*$";
     titles << "^VEX-2 Smart Cable\\s+([0-9].*)$";
+    titles <<"^VEX-2 Rubber Belt\\s+([0-9].*)Diameter";
 
   }
   return true;

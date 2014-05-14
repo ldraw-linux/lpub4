@@ -347,9 +347,9 @@ int Gui::drawPage(
             // but does not work if two buffers are used one after another in a multi step page.
             // Better to make the user use the !LPUB PLI BEGIN IGN / END
 
-            if ( ! removed )  {
+            //if ( ! removed )  {
               pliParts << Pli::partLine(line,current,steps->meta);
-            }
+            //}
           } else {
             pliParts << Pli::partLine(line,current,steps->meta);
           }
