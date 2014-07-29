@@ -519,9 +519,9 @@ QString Callout::wholeSubmodel(
   }
 
   if (meta.LPub.callout.begin.value() == CalloutBeginMeta::Rotated) {
-    assembled = "assembled_";
-  } else {
     assembled = "rotated_";
+  } else {
+    assembled = "assembled_";
   }
   const QString wholeName = "whole_" + assembled + mirrored + modelName;
   //if (gui->subFileSize(wholeName)) {
@@ -559,7 +559,9 @@ QString Callout::wholeSubmodel(
   }
   
   if ( ! isMirrored && meta.LPub.callout.begin.value() == CalloutBeginMeta::Rotated && depth == 0) {
-    Render::rotateParts(addLine,meta.rotStep,csiParts,false);
+    //Render::rotateParts(addLine,meta.rotStep,csiParts,false);
+    RotStepMeta emptyRotStep;
+    Render::rotateParts(addLine,emptyRotStep,csiParts,false);
   }
 
   gui->insertGeneratedModel(wholeName,csiParts);

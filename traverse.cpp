@@ -388,7 +388,7 @@ int Gui::drawPage(
             QStringList tokens;
             QString scanLine = ldrawFile.readLine(walk.modelName,walk.lineNumber);
             split(scanLine,tokens);
-            if (tokens.size() > 2 && tokens[0] == "0") {
+            if (tokens.size() > 0 && tokens[0] == "0") {
               Rc rc = tmpMeta.parse(scanLine,walk,false);
               if (rc == StepRc || rc == RotStepRc) {
                 break;
@@ -397,6 +397,7 @@ int Gui::drawPage(
           }
           callout->meta.rotStep = tmpMeta.rotStep;
           callout->meta.LPub.assem.modelScale = tmpMeta.LPub.assem.modelScale;
+          // The next command applies the rotation due to line, but not due to callout->meta.rotStep
           thisType = callout->wholeSubmodel(callout->meta,type,line,0);
         }
 
@@ -404,7 +405,10 @@ int Gui::drawPage(
 
           Where current2(thisType,0);
           skipHeader(current2);
-          callout->meta.rotStep.clear();
+          if (mode == CalloutBeginMeta::Assembled) {
+            // In this case, no additional rotation should be applied to the submodel
+            callout->meta.rotStep.clear();
+          }
           SubmodelStack tos(current.modelName,current.lineNumber,stepNum);
           callout->meta.submodelStack << tos;
           Meta saveMeta = callout->meta;
