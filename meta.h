@@ -1666,6 +1666,8 @@ public:
   FloatMeta     modelScale;
   StringMeta    ldviewParms;
   StringMeta    ldgliteParms;
+	StringMeta l3pParms;
+	StringMeta povrayParms;
   BoolMeta      showStepNumber;
   AssemMeta();
   AssemMeta(const AssemMeta &rhs) : BranchMeta(rhs)
@@ -1700,6 +1702,8 @@ public:
   StringListMeta subModelFontColor;
   StringMeta     ldviewParms;
   StringMeta     ldgliteParms;
+	StringMeta l3pParms;
+	StringMeta povrayParms;
   BoolMeta       pack;
   BoolMeta       sort;
 

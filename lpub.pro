@@ -13,7 +13,8 @@ macx {
     ICON = LPub.icns
     
     # QMAKE_MAC_SDK=/Developer/SDKs/MacOSX10.4u.sdk
-    CONFIG += x86
+    CONFIG += x86_64
+	CONFIG += debug_and_release
     #    ppc
 }
 

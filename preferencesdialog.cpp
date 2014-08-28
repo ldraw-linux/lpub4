@@ -36,14 +36,30 @@ PreferencesDialog::PreferencesDialog(QWidget     *_parent)
   ui.pliName->setText(      Preferences::pliFile);
   ui.pliBox->setChecked(    Preferences::pliFile != "");
   ui.ldglitePath->setText(  Preferences::ldgliteExe);
-  ui.ldgliteBox->setChecked(Preferences::ldgliteExe != "");
+	ui.ldgliteBox->setChecked(Preferences::ldgliteExe != "");
+	ui.l3pPath->setText(  Preferences::l3pExe);
+	ui.povrayPath->setText(Preferences::povrayExe);
+	ui.l3pBox->setChecked(Preferences::l3pExe != "" && Preferences::povrayExe != "");
+	ui.lgeoPath->setText(Preferences::lgeoPath);
+	ui.lgeoBox->setChecked(Preferences::lgeoPath != "");
   ui.ldviewPath->setText(   Preferences::ldviewExe);
   ui.ldviewBox->setChecked( Preferences::ldviewExe != "");
   
   ui.preferredRenderer->setMaxCount(0);
-  ui.preferredRenderer->setMaxCount(2);
+	ui.preferredRenderer->setMaxCount(3);
+	
+	QFileInfo fileInfo(Preferences::l3pExe);
+	int l3pIndex = ui.preferredRenderer->count();
+	bool l3pExists = fileInfo.exists();
+	fileInfo.setFile(Preferences::povrayExe);
+	l3pExists &= fileInfo.exists();
+	if (l3pExists) {
+		ui.preferredRenderer->addItem("L3P");
+	}
+	
+	
   
-  QFileInfo fileInfo(Preferences::ldgliteExe);
+  fileInfo.setFile(Preferences::ldgliteExe);
   int ldgliteIndex = ui.preferredRenderer->count();
   bool ldgliteExists = fileInfo.exists();
   if (ldgliteExists) {
@@ -64,6 +80,9 @@ PreferencesDialog::PreferencesDialog(QWidget     *_parent)
   } else if (Preferences::preferredRenderer == "LDGLite" && ldgliteExists) {
     ui.preferredRenderer->setCurrentIndex(ldgliteIndex);
     ui.preferredRenderer->setEnabled(true);
+  }  else if (Preferences::preferredRenderer == "L3P" && l3pExists) {
+	  ui.preferredRenderer->setCurrentIndex(l3pIndex);
+	  ui.preferredRenderer->setEnabled(true);
   } else {
     ui.preferredRenderer->setEnabled(false);
   }
@@ -75,6 +94,24 @@ PreferencesDialog::PreferencesDialog(QWidget     *_parent)
 void PreferencesDialog::on_browseLDraw_clicked()
 {
   Preferences::ldrawPreferences(true);
+}
+
+void PreferencesDialog::on_browseLGEO_clicked()
+{
+	QFileDialog dialog(parent);
+	dialog.setFileMode(QFileDialog::Directory);
+	dialog.setWindowTitle(tr("Locate LGEO Directory"));
+	dialog.setOptions(QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+	
+	if (dialog.exec()) {
+		QStringList selectedFiles = dialog.selectedFiles();
+		
+		if (selectedFiles.size() == 1) {
+			ui.lgeoPath->setText(selectedFiles[0]);
+			QFileInfo  fileInfo(selectedFiles[0]);
+			ui.lgeoBox->setChecked(fileInfo.exists());
+		}
+	}
 }
 
 void PreferencesDialog::on_browsePli_clicked()
@@ -157,9 +194,79 @@ void PreferencesDialog::on_browseLDGLite_clicked()
   }
 }
 
+void PreferencesDialog::on_browseL3P_clicked()
+{
+	QFileDialog dialog(parent);
+	
+	dialog.setWindowTitle(tr("Locate L3P program"));
+	dialog.setFileMode(QFileDialog::ExistingFile);
+	
+#ifdef __APPLE__
+	//dialog.setFilter("Program (*.app,*.App)");
+#else
+	dialog.setFilter("Program (*.exe)");
+#endif
+	if (dialog.exec()) {
+		QStringList selectedFiles = dialog.selectedFiles();
+		
+		if (selectedFiles.size() == 1) {
+			ui.l3pPath->setText(selectedFiles[0]);
+			QFileInfo  fileInfo(selectedFiles[0]);
+			QFileInfo povrayInfo(ui.povrayPath->text());
+			if (fileInfo.exists() && povrayInfo.exists()) {
+				int l3pIndex = ui.preferredRenderer->findText("L3P");
+				if (l3pIndex < 0) {
+					ui.preferredRenderer->addItem("L3P");
+				}
+				ui.preferredRenderer->setEnabled(true);
+			}
+			ui.l3pBox->setChecked(fileInfo.exists() && povrayInfo.exists());
+		}
+	}
+}
+
+void PreferencesDialog::on_browsePOVRAY_clicked()
+{
+	QFileDialog dialog(parent);
+	
+	dialog.setWindowTitle(tr("Locate POV-RAY program"));
+	dialog.setFileMode(QFileDialog::ExistingFile);
+	
+#ifdef __APPLE__
+	//dialog.setFilter("Program (*.app,*.App)");
+#else
+	dialog.setFilter("Program (*.exe)");
+#endif
+	if (dialog.exec()) {
+		QStringList selectedFiles = dialog.selectedFiles();
+		
+		if (selectedFiles.size() == 1) {
+			ui.povrayPath->setText(selectedFiles[0]);
+			QFileInfo  fileInfo(selectedFiles[0]);
+			QFileInfo l3pInfo(ui.l3pPath->text());
+			if (fileInfo.exists() && l3pInfo.exists()) {
+				int l3pIndex = ui.preferredRenderer->findText("L3P");
+				if (l3pIndex < 0) {
+					ui.preferredRenderer->addItem("L3P");
+				}
+				ui.preferredRenderer->setEnabled(true);
+			}
+			ui.l3pBox->setChecked(fileInfo.exists() && l3pInfo.exists());
+		}
+	}
+}
+
 QString const PreferencesDialog::ldrawPath()
 {
   return ui.ldrawPath->displayText();
+}
+
+QString const PreferencesDialog::lgeoPath()
+{
+	if (ui.l3pBox->isChecked() && ui.lgeoBox->isChecked()){
+		return ui.lgeoPath->displayText();
+	}
+	return "";
 }
 
 QString const PreferencesDialog::pliFile()
@@ -183,7 +290,22 @@ QString const PreferencesDialog::ldgliteExe()
   if (ui.ldgliteBox->isChecked()) {
     return ui.ldglitePath->displayText();
   }
-  return "";
+	return "";
+}
+
+QString const PreferencesDialog::povrayExe()
+{
+	if (ui.l3pBox->isChecked()) {
+		return ui.povrayPath->displayText();
+	}
+	return "";
+}
+QString const PreferencesDialog::l3pExe()
+{
+	if (ui.l3pBox->isChecked()) {
+		return ui.l3pPath->displayText();
+	}
+	return "";
 }
 
 QString const PreferencesDialog::preferredRenderer()

@@ -25,6 +25,7 @@ class Preferences
     Preferences();
     static void lpubPreferences();
     static void ldrawPreferences(bool);
+	static void lgeoPreferences();
 	  static void renderPreferences();
 	  static void pliPreferences();
     static void unitsPreferences();
@@ -32,8 +33,11 @@ class Preferences
 	  static bool getPreferences();
 
     static QString ldrawPath;
+    static QString lgeoPath;
     static QString ldgliteExe;
     static QString ldviewExe;
+	static QString l3pExe;
+	static QString povrayExe;
 	  static QString preferredRenderer;
     static QString pliFile;
     static QString lpubPath;

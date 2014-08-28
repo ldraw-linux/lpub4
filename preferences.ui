@@ -7,16 +7,16 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>395</width>
-    <height>493</height>
+    <width>469</width>
+    <height>614</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>LPub Preferences</string>
   </property>
-  <layout class="QVBoxLayout">
+  <layout class="QVBoxLayout" name="verticalLayout_2">
    <item>
-    <widget class="QGroupBox" name="pliBox_2">
+    <widget class="QGroupBox" name="ldrawBox">
      <property name="toolTip">
       <string>This directory contains the LDraw parts directory</string>
      </property>
@@ -98,10 +98,10 @@
       <item>
        <widget class="QPushButton" name="browsePli">
         <property name="toolTip">
-         <string>Use directory dialog to find LDraw directory</string>
+         <string>Use directory dialog to find the PLI file</string>
         </property>
         <property name="whatsThis">
-         <string>This lets you find the LDraw directory</string>
+         <string>Use directory dialog to find the PLI file</string>
         </property>
         <property name="text">
          <string>Browse...</string>
@@ -112,67 +112,176 @@
     </widget>
    </item>
    <item>
-    <widget class="QGroupBox" name="ldgliteBox">
-     <property name="title">
-      <string>LDGLite is installed</string>
-     </property>
-     <property name="checkable">
+    <widget class="QScrollArea" name="renderersArea">
+     <property name="widgetResizable">
       <bool>true</bool>
      </property>
-     <property name="checked">
-      <bool>false</bool>
-     </property>
-     <layout class="QHBoxLayout">
-      <item>
-       <widget class="QLabel" name="label">
-        <property name="text">
-         <string>Name</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLineEdit" name="ldglitePath"/>
-      </item>
-      <item>
-       <widget class="QPushButton" name="browseLDGLite">
-        <property name="text">
-         <string>Browse...</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item>
-    <widget class="QGroupBox" name="ldviewBox">
-     <property name="title">
-      <string>LDView is installed</string>
-     </property>
-     <property name="checkable">
-      <bool>true</bool>
-     </property>
-     <property name="checked">
-      <bool>false</bool>
-     </property>
-     <layout class="QHBoxLayout">
-      <item>
-       <widget class="QLabel" name="label_2">
-        <property name="text">
-         <string>Name</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLineEdit" name="ldviewPath"/>
-      </item>
-      <item>
-       <widget class="QPushButton" name="browseLDView">
-        <property name="text">
-         <string>Browse...</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
+     <widget class="QWidget" name="scrollAreaWidgetContents">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>428</width>
+        <height>355</height>
+       </rect>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <widget class="QGroupBox" name="l3pBox">
+         <property name="title">
+          <string>L3P is installed</string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <property name="checked">
+          <bool>false</bool>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_2">
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_7">
+            <property name="text">
+             <string>L3P</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLineEdit" name="l3pPath"/>
+          </item>
+          <item row="0" column="2">
+           <widget class="QPushButton" name="browseL3P">
+            <property name="text">
+             <string>Browse...</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_3">
+            <property name="text">
+             <string>POV-RAY</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLineEdit" name="povrayPath"/>
+          </item>
+          <item row="1" column="2">
+           <widget class="QPushButton" name="browsePOVRAY">
+            <property name="text">
+             <string>Browse...</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0" colspan="3">
+           <widget class="QGroupBox" name="lgeoBox">
+            <property name="toolTip">
+             <string>This library provides higher quality rendering models for POV RAY</string>
+            </property>
+            <property name="title">
+             <string>LGEO is available</string>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
+            </property>
+            <layout class="QGridLayout" name="gridLayout">
+             <item row="0" column="0">
+              <widget class="QLineEdit" name="lgeoPath">
+               <property name="minimumSize">
+                <size>
+                 <width>200</width>
+                 <height>0</height>
+                </size>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="1">
+              <widget class="QPushButton" name="browseLGEO">
+               <property name="toolTip">
+                <string>Use directory dialog to find LGEO directory</string>
+               </property>
+               <property name="whatsThis">
+                <string>This lets you find the LGEO directory</string>
+               </property>
+               <property name="text">
+                <string>Browse...</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="ldgliteBox">
+         <property name="title">
+          <string>LDGLite is installed</string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <property name="checked">
+          <bool>false</bool>
+         </property>
+         <layout class="QHBoxLayout">
+          <item>
+           <widget class="QLabel" name="label">
+            <property name="text">
+             <string>Name</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="ldglitePath"/>
+          </item>
+          <item>
+           <widget class="QPushButton" name="browseLDGLite">
+            <property name="text">
+             <string>Browse...</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="ldviewBox">
+         <property name="title">
+          <string>LDView is installed</string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <property name="checked">
+          <bool>false</bool>
+         </property>
+         <layout class="QHBoxLayout">
+          <item>
+           <widget class="QLabel" name="label_2">
+            <property name="text">
+             <string>Name</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="ldviewPath"/>
+          </item>
+          <item>
+           <widget class="QPushButton" name="browseLDView">
+            <property name="text">
+             <string>Browse...</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
     </widget>
    </item>
    <item>
@@ -198,6 +307,11 @@
      </item>
      <item>
       <widget class="QComboBox" name="preferredRenderer">
+       <item>
+        <property name="text">
+         <string>L3P</string>
+        </property>
+       </item>
        <item>
         <property name="text">
          <string>LDGLite</string>

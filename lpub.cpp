@@ -405,6 +405,7 @@ Gui::Gui()
 {
     Preferences::lpubPreferences();
     Preferences::renderPreferences();
+	Preferences::lgeoPreferences();
     Preferences::pliPreferences();
 
     displayPageNum = 1;

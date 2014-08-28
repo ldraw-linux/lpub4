@@ -26,7 +26,10 @@ class PreferencesDialog : public QDialog
     PreferencesDialog(QWidget *parent = 0);
 	
 	QString const ldrawPath();
+	QString const lgeoPath();
 	QString const pliFile();
+	QString const l3pExe();
+	QString const povrayExe();
 	QString const ldgliteExe();
 	QString const ldviewExe();
 	QString const preferredRenderer();
@@ -34,7 +37,10 @@ class PreferencesDialog : public QDialog
 	
   private slots:
   void on_browseLDraw_clicked();
+	void on_browseLGEO_clicked();
 	void on_browsePli_clicked();
+	void on_browseL3P_clicked();
+	void on_browsePOVRAY_clicked();
 	void on_browseLDView_clicked();
 	void on_browseLDGLite_clicked();
 		

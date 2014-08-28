@@ -32,9 +32,12 @@
 Preferences preferences;
 
 QString Preferences::ldrawPath = " ";
+QString Preferences::lgeoPath;
 QString Preferences::lpubPath = ".";
 QString Preferences::ldgliteExe;
 QString Preferences::ldviewExe;
+QString Preferences::l3pExe;
+QString Preferences::povrayExe;
 QString Preferences::pliFile;
 QString Preferences::preferredRenderer;
 bool    Preferences::preferCentimeters = false;
@@ -97,6 +100,26 @@ void Preferences::ldrawPreferences(bool force)
   }
 }
 
+void Preferences::lgeoPreferences()
+{
+	QSettings settings(LPUB,SETTINGS);
+	bool lgeoInstalled;
+	QString lgeoDirKey("LGEO");
+	QString lgeoDir;
+	if (settings.contains(lgeoDirKey)){
+		lgeoDir = settings.value(lgeoDirKey).toString();
+		QFileInfo info(lgeoDir);
+		if (info.exists()) {
+			lgeoInstalled = true;
+			lgeoPath = lgeoDir;
+		} else {
+			settings.remove(lgeoDirKey);
+			lgeoInstalled = false;
+		}
+	} else {
+		lgeoInstalled = false;
+	}
+}
 
 void Preferences::renderPreferences()
 {
@@ -141,6 +164,43 @@ void Preferences::renderPreferences()
   } else {
     ldviewInstalled = false;
   }
+	
+	/* Find L3P's installation status */
+	
+	bool    l3pInstalled;
+	QString const l3pPathKey("L3P");
+	QString const povrayPathKey("POVRAY");
+	QString l3pPath, povrayPath;
+	
+	if (settings.contains(l3pPathKey)) {
+		l3pPath = settings.value(l3pPathKey).toString();
+		QFileInfo info(l3pPath);
+		if (info.exists()) {
+			l3pInstalled = true;
+			l3pExe = l3pPath;
+		} else {
+			settings.remove(l3pPathKey);
+			l3pInstalled = false;
+		}
+	} else {
+		l3pInstalled = false;
+	}
+	
+	
+	
+	if (settings.contains(povrayPathKey)) {
+		povrayPath = settings.value(povrayPathKey).toString();
+		QFileInfo info(povrayPath);
+		if (info.exists()) {
+			l3pInstalled &= true;
+			povrayExe = povrayPath;
+		} else {
+			settings.remove(povrayPathKey);
+			l3pInstalled &= false;
+		}
+	} else {
+		l3pInstalled &= false;
+	}
 
   /* Find out if we have a valid preferred renderer */
     
@@ -158,13 +218,20 @@ void Preferences::renderPreferences()
         preferredRenderer.clear();
       settings.remove(preferredRendererKey);
       }
+    } else if (preferredRenderer == "L3P") {
+		if ( ! l3pInstalled) {
+			preferredRenderer.clear();
+			settings.remove(preferredRendererKey);
+		}
     }
   }
   if (preferredRenderer == "") {
     if (ldviewInstalled && ldgliteInstalled) {
-      preferredRenderer = "LDGLite";
+		preferredRenderer = l3pInstalled? "L3P" : "LDGLite";
+    } else if (l3pInstalled) {
+      preferredRenderer = "L3P";
     } else if (ldviewInstalled) {
-      preferredRenderer = "LDView";
+		preferredRenderer = "LDView";
     } else if (ldgliteInstalled) {
       preferredRenderer = "LDGLite";
     }
@@ -236,6 +303,7 @@ bool Preferences::getPreferences()
         settings.setValue("LDrawDir",ldrawPath);
       }
     }
+	  
     if (pliFile != dialog->pliFile()) {
       pliFile = dialog->pliFile();
       if (pliFile == "") {
@@ -243,7 +311,36 @@ bool Preferences::getPreferences()
       } else {
         settings.setValue("PliControl",pliFile);
       }
-    } 
+    }
+	  if (l3pExe != dialog->l3pExe()) {
+		  l3pExe = dialog->l3pExe();
+		  if (l3pExe == "") {
+			  settings.remove("L3P");
+		  } else {
+			  settings.setValue("L3P",l3pExe);
+		  }
+	  }
+	  
+	  
+	  if (povrayExe != dialog->povrayExe()) {
+		  povrayExe = dialog->povrayExe();
+		  if (povrayExe == "") {
+			  settings.remove("POVRAY");
+		  } else {
+			  settings.setValue("POVRAY",povrayExe);
+		  }
+	  }
+	  
+	  
+	  if (lgeoPath != dialog->lgeoPath()) {
+		  lgeoPath = dialog->lgeoPath();
+		  if(lgeoPath == "") {
+			  settings.remove("LGEO");
+		  } else {
+			  settings.setValue("LGEO",lgeoPath);
+		  }
+	  }
+	  
     if (ldgliteExe != dialog->ldgliteExe()) {
       ldgliteExe = dialog->ldgliteExe();
       if (ldgliteExe == "") {
