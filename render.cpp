@@ -40,8 +40,7 @@
 #include "lpub_preferences.h"
 #include "paths.h"
 
-/* FIXME: Better find what symbol represents MS Windows */
-#if !defined(__APPLE__) && !defined(__linux__)
+#ifdef _WIN32
 #include <windows.h>
 #endif
 
@@ -61,7 +60,7 @@ static double pi = 4*atan(1.0);
 static float LduDistance = 10.0/tan(0.005*pi/180);
 
 QString fixupDirname(const QString &dirNameIn) {
-#if defined(__APPLE__) || defined(__linux__)
+#ifndef _WIN32
 	return dirNameIn;
 #else
 	long     length = 0;
