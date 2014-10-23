@@ -23,7 +23,7 @@
 
 int main(int argc, char *argv[])
 {
-    Q_INIT_RESOURCE(LPub);
+    Q_INIT_RESOURCE(lpub);
 
     QApplication app(argc, argv);
 	
