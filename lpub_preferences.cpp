@@ -74,12 +74,13 @@ void Preferences::ldrawPreferences(bool force)
     }
   }
 
-  ldrawPath = "c:/LDraw";
+
+  ldrawPath = LDRAW_PATH_DEFAULT;
 
   QDir guesses;
   guesses.setPath(ldrawPath);
   if ( ! guesses.exists()) {
-    ldrawPath = "c:/Program Files/LDraw";
+    ldrawPath = LDRAW_PATH_DEFAULT2;
     guesses.setPath(ldrawPath);
     if ( ! guesses.exists()) {
 
@@ -106,17 +107,17 @@ void Preferences::lgeoPreferences()
 	bool lgeoInstalled;
 	QString lgeoDirKey("LGEO");
 	QString lgeoDir;
-	if (settings.contains(lgeoDirKey)){
+	if (settings.contains(lgeoDirKey))
 		lgeoDir = settings.value(lgeoDirKey).toString();
-		QFileInfo info(lgeoDir);
-		if (info.exists()) {
-			lgeoInstalled = true;
-			lgeoPath = lgeoDir;
-		} else {
-			settings.remove(lgeoDirKey);
-			lgeoInstalled = false;
-		}
+	else
+		lgeoDir = LGEO_PATH_DEFAULT;
+
+	QFileInfo info(lgeoDir);
+	if (info.exists()) {
+		lgeoInstalled = true;
+		lgeoPath = lgeoDir;
 	} else {
+		settings.remove(lgeoDirKey);
 		lgeoInstalled = false;
 	}
 }
@@ -131,17 +132,17 @@ void Preferences::renderPreferences()
   QString const ldglitePathKey("LDGLite");
   QString ldglitePath;
   
-  if (settings.contains(ldglitePathKey)) {
+  if (settings.contains(ldglitePathKey))
     ldglitePath = settings.value(ldglitePathKey).toString();
-      QFileInfo info(ldglitePath);
-    if (info.exists()) {
-      ldgliteInstalled = true;
-      ldgliteExe = ldglitePath;
-    } else {
-      settings.remove(ldglitePathKey);
-      ldgliteInstalled = false;
-    }
+  else
+    ldglitePath = LDGLITE_PATH_DEFAULT;
+
+  QFileInfo ldglite_info(ldglitePath);
+  if (ldglite_info.exists()) {
+    ldgliteInstalled = true;
+    ldgliteExe = ldglitePath;
   } else {
+    settings.remove(ldglitePathKey);
     ldgliteInstalled = false;
   }
   
@@ -151,54 +152,52 @@ void Preferences::renderPreferences()
   QString const ldviewPathKey("LDView");
   QString ldviewPath;
   
-  if (settings.contains(ldviewPathKey)) {
+  if (settings.contains(ldviewPathKey))
     ldviewPath = settings.value(ldviewPathKey).toString();
-    QFileInfo info(ldviewPath);
-    if (info.exists()) {
-      ldviewInstalled = true;
-      ldviewExe = ldviewPath;
-    } else {
-      settings.remove(ldviewPathKey);
-      ldviewInstalled = false;
-    }
+  else
+    ldviewPath = LDVIEW_PATH_DEFAULT;
+
+  QFileInfo ldview_info(ldviewPath);
+  if (ldview_info.exists()) {
+    ldviewInstalled = true;
+    ldviewExe = ldviewPath;
   } else {
+    settings.remove(ldviewPathKey);
     ldviewInstalled = false;
   }
-	
+
 	/* Find L3P's installation status */
-	
+
 	bool    l3pInstalled;
 	QString const l3pPathKey("L3P");
 	QString const povrayPathKey("POVRAY");
 	QString l3pPath, povrayPath;
-	
-	if (settings.contains(l3pPathKey)) {
+
+	if (settings.contains(l3pPathKey))
 		l3pPath = settings.value(l3pPathKey).toString();
-		QFileInfo info(l3pPath);
-		if (info.exists()) {
-			l3pInstalled = true;
-			l3pExe = l3pPath;
-		} else {
-			settings.remove(l3pPathKey);
-			l3pInstalled = false;
-		}
+	else
+		l3pPath = L3P_PATH_DEFAULT;
+
+	QFileInfo l3p_info(l3pPath);
+	if (l3p_info.exists()) {
+		l3pInstalled = true;
+		l3pExe = l3pPath;
 	} else {
+		settings.remove(l3pPathKey);
 		l3pInstalled = false;
 	}
-	
-	
-	
-	if (settings.contains(povrayPathKey)) {
+
+	if (settings.contains(povrayPathKey))
 		povrayPath = settings.value(povrayPathKey).toString();
-		QFileInfo info(povrayPath);
-		if (info.exists()) {
-			l3pInstalled &= true;
-			povrayExe = povrayPath;
-		} else {
-			settings.remove(povrayPathKey);
-			l3pInstalled &= false;
-		}
+	else
+		povrayPath = POVRAY_PATH_DEFAULT;
+
+	QFileInfo povray_info(povrayPath);
+	if (povray_info.exists()) {
+		l3pInstalled &= true;
+		povrayExe = povrayPath;
 	} else {
+		settings.remove(povrayPathKey);
 		l3pInstalled &= false;
 	}
 
