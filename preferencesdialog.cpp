@@ -141,9 +141,7 @@ void PreferencesDialog::on_browseLDView_clicked()
   dialog.setWindowTitle(tr("Locate LDView program"));
   dialog.setFileMode(QFileDialog::ExistingFile);
 
-#ifdef __APPLE__
-  //dialog.setFilter("Program (*.app,*.App)");
-#else
+#ifdef _WIN32
   dialog.setFilter("Program (*.exe)");
 #endif
   if (dialog.exec()) {
@@ -171,9 +169,7 @@ void PreferencesDialog::on_browseLDGLite_clicked()
   dialog.setWindowTitle(tr("Locate LDGLite program"));
   dialog.setFileMode(QFileDialog::ExistingFile);
 
-#ifdef __APPLE__
-  //dialog.setFilter("Program (*.app,*.App)");
-#else
+#ifdef _WIN32
   dialog.setFilter("Program (*.exe)");
 #endif
   if (dialog.exec()) {
@@ -201,10 +197,8 @@ void PreferencesDialog::on_browseL3P_clicked()
 	dialog.setWindowTitle(tr("Locate L3P program"));
 	dialog.setFileMode(QFileDialog::ExistingFile);
 	
-#ifdef __APPLE__
-	//dialog.setFilter("Program (*.app,*.App)");
-#else
-	dialog.setFilter("Program (*.exe)");
+#ifdef _WIN32
+  dialog.setFilter("Program (*.exe)");
 #endif
 	if (dialog.exec()) {
 		QStringList selectedFiles = dialog.selectedFiles();
@@ -232,10 +226,8 @@ void PreferencesDialog::on_browsePOVRAY_clicked()
 	dialog.setWindowTitle(tr("Locate POV-RAY program"));
 	dialog.setFileMode(QFileDialog::ExistingFile);
 	
-#ifdef __APPLE__
-	//dialog.setFilter("Program (*.app,*.App)");
-#else
-	dialog.setFilter("Program (*.exe)");
+#ifdef _WIN32
+  dialog.setFilter("Program (*.exe)");
 #endif
 	if (dialog.exec()) {
 		QStringList selectedFiles = dialog.selectedFiles();
