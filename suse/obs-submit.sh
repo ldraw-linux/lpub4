@@ -20,7 +20,7 @@ FORCE=false
 if git status --porcelain |grep -q M; then
 	echo "Uncommited changes:"
 	git status --short
-	if git status --porcelain .. |grep -q M && $!FORCE; then
+	if git status --porcelain .. |grep -q M && ! $FORCE; then
 		echo "Please commit your changes to git first. To override, run:" >&2
 		echo "$0 $1 force" >&2
 		exit 1
