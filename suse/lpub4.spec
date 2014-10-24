@@ -15,7 +15,7 @@
 #
 
 Name:           lpub4
-Version:	4.0.0
+Version:	__VERSION__
 Release:	0
 License:	GPL-2.0
 Summary:	Creates building instructions for LEGO models using the LDraw file format
