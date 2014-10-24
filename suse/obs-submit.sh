@@ -1,6 +1,6 @@
 #!/bin/bash 
 PRJ="$1"
-PKG=ldglite
+PKG=lpub4
 
 if [[ -z $1 ]] ; then
 	echo "Usage: $0 OBS_PROJECT_NAME [build|force]" >&2
@@ -20,7 +20,7 @@ FORCE=false
 if git status --porcelain |grep -q M; then
 	echo "Uncommited changes:"
 	git status --short
-	if git status --porcelain ../src |grep -q M && !FORCE; then
+	if git status --porcelain .. |grep -q M && $!FORCE; then
 		echo "Please commit your changes to git first. To override, run:" >&2
 		echo "$0 $1 force" >&2
 		exit 1
@@ -65,8 +65,8 @@ popd
 SPEC=$PKG.spec
 sed "s/__VERSION__/$TAG/" $SPEC >$PRJD/$SPEC
 
-pushd ../src
-git archive HEAD | bzip2 > $PRJD/$PKG.tar.bz2
+pushd ..
+git archive --prefix=$PKG/ HEAD | bzip2 > $PRJD/$PKG.tar.bz2
 popd
 HASH=`git log -1 --pretty="format:%H"`
 
@@ -78,7 +78,7 @@ if $BUILD; then
 	echo "Keeping build source directory: $D"
 else
 	osc addremove
-	osc vc -m "See the GIT history at https://github.com/ldraw-linux/ldglite/commits/$HASH"
+	osc vc -m "See the GIT history at https://github.com/ldraw-linux/$PKG/commits/$HASH"
 	osc add $PKG.changes
 	osc commit -m "git commit: $HASH"
 	popd
