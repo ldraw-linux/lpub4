@@ -40,7 +40,7 @@
 #include "lpub_preferences.h"
 #include "paths.h"
 
-#ifndef __APPLE__
+#ifdef _WIN32
 #include <windows.h>
 #endif
 
@@ -60,7 +60,7 @@ static double pi = 4*atan(1.0);
 static float LduDistance = 10.0/tan(0.005*pi/180);
 
 QString fixupDirname(const QString &dirNameIn) {
-#ifdef __APPLE__
+#ifndef _WIN32
 	return dirNameIn;
 #else
 	long     length = 0;

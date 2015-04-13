@@ -1,0 +1,6 @@
+Makefile
+objs/*
+moc/*
+rcc/*
+ui_preferences.h
+lpub

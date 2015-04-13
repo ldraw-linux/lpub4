@@ -197,6 +197,7 @@ void Gui::printToFile()
   // create a PDF printer
   QPrinter printer(QPrinter::ScreenResolution);
   //printer.setResolution(resolution());
+  printer.setColorMode(QPrinter::Color);
   printer.setOutputFileName(fileName);
   printer.setOrientation(orientation);
   printer.setPaperSize(paperSize);

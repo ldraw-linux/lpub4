@@ -815,7 +815,7 @@ void BackgroundGui::browsePicture(bool)
     gui,
     tr("Choose Picture File"),
     picture,
-    tr("Picture Files (*.png;*.jpg)"));
+    tr("Picture Files (*.png *.jpg)"));
   if (foo != "") {
     picture = foo;
     background.string = foo;

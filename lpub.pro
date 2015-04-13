@@ -10,7 +10,7 @@ MOC_DIR = ./moc
 OBJECTS_DIR = ./objs
 RCC_DIR = ./rcc
 macx { 
-    ICON = LPub.icns
+    ICON = lpub.icns
     
     # QMAKE_MAC_SDK=/Developer/SDKs/MacOSX10.4u.sdk
     CONFIG += x86_64
@@ -34,7 +34,7 @@ HEADERS += backgrounddialog.h \
     globals.h \
     highlighter.h \
     ldrawfiles.h \
-    LPub.h \
+    lpub.h \
     lpub_preferences.h \
     meta.h \
     metagui.h \
@@ -84,7 +84,7 @@ SOURCES += assemglobals.cpp \
     formatpage.cpp \
     highlighter.cpp \
     ldrawfiles.cpp \
-    LPub.cpp \
+    lpub.cpp \
     lpub_preferences.cpp \
     main.cpp \
     meta.cpp \
@@ -121,4 +121,4 @@ SOURCES += assemglobals.cpp \
     traverse.cpp \
     undoredo.cpp \
     textitem.cpp
-RESOURCES += LPub.qrc
+RESOURCES += lpub.qrc

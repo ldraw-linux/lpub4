@@ -40,7 +40,7 @@ void Gui::open()
       this,
       tr("Open LDraw File"),
       modelDir,
-      tr("LDraw Files (*.DAT;*.LDR;*.MPD;*.dat;*.ldr;*.mpd)"));
+      tr("LDraw Files (*.DAT *.LDR *.MPD *.dat *.ldr *.mpd)"));
 
     QFileInfo info(fileName);
 
