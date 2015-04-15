@@ -59,6 +59,7 @@ void Preferences::lpubPreferences()
 void Preferences::ldrawPreferences(bool force)
 {
   QFileInfo fileInfo;
+  bool ldrawPathSetManually = false;
   QSettings settings(LPUB,SETTINGS);
   QString const ldrawKey("LDrawDir");
   
@@ -75,26 +76,31 @@ void Preferences::ldrawPreferences(bool force)
   }
 
 
-  ldrawPath = LDRAW_PATH_DEFAULT;
-
   QDir guesses;
+
+  ldrawPath = qgetenv("LDRAW_PATH");
   guesses.setPath(ldrawPath);
   if ( ! guesses.exists()) {
-    ldrawPath = LDRAW_PATH_DEFAULT2;
+    ldrawPath = LDRAW_PATH_DEFAULT;
     guesses.setPath(ldrawPath);
     if ( ! guesses.exists()) {
+      ldrawPath = LDRAW_PATH_DEFAULT2;
+      guesses.setPath(ldrawPath);
+      if ( ! guesses.exists()) {
 
-      ldrawPath = QFileDialog::getExistingDirectory(NULL,
-                  QFileDialog::tr("Locate LDraw Directory"),
-                  "/",
-                  QFileDialog::ShowDirsOnly |
-                  QFileDialog::DontResolveSymlinks);
+        ldrawPath = QFileDialog::getExistingDirectory(NULL,
+                    QFileDialog::tr("Locate LDraw Directory"),
+                    "/",
+                    QFileDialog::ShowDirsOnly |
+                    QFileDialog::DontResolveSymlinks);
+	ldrawPathSetManually = true;
+      }
     }
   }
 
   fileInfo.setFile(ldrawPath);
 
-  if (fileInfo.exists()) {
+  if (ldrawPathSetManually && fileInfo.exists()) {
     settings.setValue(ldrawKey,ldrawPath);
   } else {
     exit(-1);
