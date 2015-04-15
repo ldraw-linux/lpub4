@@ -23,7 +23,7 @@ Url:		http://lpub4.sourceforge.net/
 Group:		Productivity/Graphics/CAD
 Source:		lpub4.tar.bz2
 BuildRequires:	libqt4-devel libpng-devel gcc-c++
-Requires:	ldraw-library ldraw-renderer
+Requires:	ldraw-library>=2014.02.0 ldraw-renderer
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 Provides:	lpub
 
@@ -43,7 +43,8 @@ make
 
 %install
 install -d %{buildroot}/%{_bindir}
-install -m 755 lpub  %{buildroot}/%{_bindir}/lpub
+install -m 755 lpub  %{buildroot}/%{_bindir}/lpub.bin
+ln -s %{_libexecdir}/ldraw-wrapper %{_bindir}/lpub
 
 %files
 %defattr(-,root,root)
