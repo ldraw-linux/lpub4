@@ -78,7 +78,7 @@ void Preferences::ldrawPreferences(bool force)
 
   QDir guesses;
 
-  ldrawPath = qgetenv("LDRAW_PATH");
+  ldrawPath = qgetenv("LDRAWDIR");
   guesses.setPath(ldrawPath);
   if ( ! guesses.exists()) {
     ldrawPath = LDRAW_PATH_DEFAULT;
