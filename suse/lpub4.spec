@@ -44,10 +44,11 @@ make
 %install
 install -d %{buildroot}/%{_bindir}
 install -m 755 lpub  %{buildroot}/%{_bindir}/lpub.bin
-ln -s %{_libexecdir}/ldraw-wrapper %{_bindir}/lpub
+ln -s %{buildroot}/%{_libexecdir}/ldraw-wrapper %{buildroot}%{_bindir}/lpub
 
 %files
 %defattr(-,root,root)
 %{_bindir}/lpub
+%{_bindir}/lpub.bin
 
 %changelog
