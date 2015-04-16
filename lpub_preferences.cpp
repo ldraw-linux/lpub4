@@ -100,11 +100,10 @@ void Preferences::ldrawPreferences(bool force)
 
   fileInfo.setFile(ldrawPath);
 
-  if (ldrawPathSetManually && fileInfo.exists()) {
-    settings.setValue(ldrawKey,ldrawPath);
-  } else {
+  if (!fileInfo.exists())
     exit(-1);
-  }
+  if (ldrawPathSetManually)
+    settings.setValue(ldrawKey,ldrawPath);
 }
 
 void Preferences::lgeoPreferences()
