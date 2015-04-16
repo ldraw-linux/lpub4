@@ -22,8 +22,10 @@ Summary:	Creates building instructions for LEGO models using the LDraw file form
 Url:		http://lpub4.sourceforge.net/
 Group:		Productivity/Graphics/CAD
 Source:		lpub4.tar.bz2
+BuildRequires:	ldraw-library >= 2014.02.1
 BuildRequires:	libqt4-devel libpng-devel gcc-c++
-Requires:	ldraw-library>=2014.02.0 ldraw-renderer
+Requires:	ldraw-library >= 2014.02.1
+Requires:	ldraw-renderer
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 Provides:	lpub
 
@@ -44,7 +46,7 @@ make
 %install
 install -d %{buildroot}/%{_bindir}
 install -m 755 lpub  %{buildroot}/%{_bindir}/lpub.bin
-ln -s %{buildroot}/%{_libexecdir}/ldraw-wrapper %{buildroot}%{_bindir}/lpub
+ln -s %{_libexecdir}/ldraw-wrapper %{buildroot}/%{_bindir}/lpub
 
 %files
 %defattr(-,root,root)
