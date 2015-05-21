@@ -95,7 +95,7 @@ mkdir "$SRCDIR" || die "Cannot create a temporary directory $SRCDIR"
 
 SPEC=$PKG.spec
 CHANGEFILE=$PKG.changes
-git archive --prefix=$PKG/ HEAD | bzip2 > $SRCDIR/$PKG.tar.bz2
+git archive --prefix=$PKG/ HEAD | tar --delete ${PKG}/suse/ | bzip2 > $SRCDIR/$PKG.tar.bz2
 sed "s/__VERSION__/$TAG/" suse/$SPEC >$SRCDIR/$SPEC
 generate_changes_file >$SRCDIR/$CHANGEFILE
 
