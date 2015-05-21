@@ -27,7 +27,7 @@ function shorten_history() {
 		done
 		read version
 		read URL
-		git log --pretty=format:"-------------------------------------------------------------------%n%ad - %ce%n%n- ${version}%n  ${URL}%n" start^..start ;
+		git log -1 --pretty=format:"-------------------------------------------------------------------%n%ad - %ce%n%n- ${version}%n  ${URL}%n" start ;
 	}
 }
 
