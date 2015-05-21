@@ -32,7 +32,7 @@ function shorten_history() {
 }
 
 function generate_changes_file() {
-	git log --pretty=format:'-------------------------------------------------------------------%n%ad - %ce%n%n- %s%n  %h%n' start..HEAD | cat
+	git log --date-order --pretty=format:'%at;-------------------------------------------------------------------|n|%ad - %ce|n||n|- %s|n|  %h|n|' start..HEAD | sort -nr -t \; -k 1 | sed 's/^[0-9]*;//;s/|n|/\n/g'
 	shorten_history
 }
 
