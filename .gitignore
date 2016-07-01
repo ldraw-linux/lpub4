@@ -1,6 +1,1 @@
-Makefile
-objs/*
-moc/*
-rcc/*
-ui_preferences.h
-lpub
+.obs_config

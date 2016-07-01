@@ -38,10 +38,12 @@ LDraw is an open standard for LEGO CAD programs that allow the user to create
 virtual LEGO models and scenes.
 
 %prep
-%setup -q -n lpub4
+%setup -q 
 
 __PATCHES_APPLY__
 
+%build
+qmake
 make
 
 %install
