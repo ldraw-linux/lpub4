@@ -1,0 +1,22 @@
+diff --git a/rpm/lpub4.spec b/rpm/lpub4.spec
+index f8f6cff..61be45e 100644
+--- a/lpub4.spec
++++ b/lpub4.spec
+@@ -23,7 +23,7 @@ Url:		http://lpub4.sourceforge.net/
+ Group:		Productivity/Graphics/CAD
+ Source:		lpub4_%{version}.orig.tar.gz
+ BuildRequires:	ldraw-library >= 2014.02.1
+-BuildRequires:	libqt4-devel libpng-devel gcc-c++
++BuildRequires:	qt-devel libpng-devel gcc-c++ 
+ Requires:	ldraw-library >= 2014.02.1
+ Requires:	ldraw-renderer
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+@@ -43,7 +43,7 @@ virtual LEGO models and scenes.
+ __PATCHES_APPLY__
+ 
+ %build
+-qmake
++qmake-qt4
+ make
+ 
+ %install

@@ -4,9 +4,7 @@ DH_VERBOSE=
 %:
 	dh $@
 
-override_dh_fixperms:
-	dh_fixperms
-	chmod a+x $(CURDIR)/debian/ldraw-library/usr/lib/ldraw-wrapper
-
 override_dh_auto_build:
-	{ cd ldraw/parts ; chmod a+x ../../ldraw-mklist ; ../../ldraw-mklist > ../parts.lst ; }
+	qmake
+	make
+	mv lpub lpub.bin
