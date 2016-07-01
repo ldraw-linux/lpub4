@@ -15,19 +15,20 @@
 #
 
 Name:           lpub4
-Version:	__VERSION__
-Release:	0
+Version:	__UPSTREAM_VERSION__
+Release:	__RELEASE_VERSION__
 License:	GPL-2.0
 Summary:	Creates building instructions for LEGO models using the LDraw file format
 Url:		http://lpub4.sourceforge.net/
 Group:		Productivity/Graphics/CAD
-Source:		lpub4.tar.bz2
+Source:		lpub4_%{version}.orig.tar.gz
 BuildRequires:	ldraw-library >= 2014.02.1
 BuildRequires:	libqt4-devel libpng-devel gcc-c++
 Requires:	ldraw-library >= 2014.02.1
 Requires:	ldraw-renderer
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 Provides:	lpub
+__PATCHES_DECLARE__
 
 %description
 LPub is a program that allow the production of step by step building
@@ -39,8 +40,8 @@ virtual LEGO models and scenes.
 %prep
 %setup -q -n lpub4
 
-%build
-qmake
+__PATCHES_APPLY__
+
 make
 
 %install
