@@ -1,0 +1,16 @@
+Source: lpub4
+Maintainer: Milan Vancura <mvancura@suse.com>
+Section: misc
+Priority: optional
+Standards-Version: 3.9.6
+Build-Depends: debhelper (>=9)
+Vcs-Git: https://github.com/ldraw-linux/lpub4.git
+
+Package: lpub4
+Architecture: all
+Description: creates building instructions for LEGO models using the LDraw file format
+ LPub is a program that allow the production of step by step building
+ instructions for LEGO models created using the LDraw file format. 
+
+ LDraw is an open standard for LEGO CAD programs that allow the user to create
+ virtual LEGO models and scenes.
